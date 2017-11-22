@@ -40,7 +40,7 @@ import java.util.Date;
  */
 public class PathInfo implements Info {
 	
-	private final Path path;
+	protected final Path path;
 	private final BasicFileAttributes attributes;
 	
 	public PathInfo(Path path) throws IOException {

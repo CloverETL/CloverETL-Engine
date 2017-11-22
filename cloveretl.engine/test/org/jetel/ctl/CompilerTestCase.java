@@ -9203,6 +9203,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_mathlib_pow");
 		check("power1", Math.pow(3,1.2));
 		check("power2", Double.NaN);
+		check("power3", 0.001);
+		check("power4", new BigDecimal("0.001"));
 		
 		check("intResult", Arrays.asList(new BigDecimal("8"), new BigDecimal("8"), new BigDecimal("8"), new BigDecimal("8")));
 		check("longResult", Arrays.asList(new BigDecimal("8"), new BigDecimal("8"), new BigDecimal("8"), new BigDecimal("8")));

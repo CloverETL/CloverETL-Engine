@@ -16,38 +16,47 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component.fileoperation.hadoop;
+package org.jetel.component.fileoperation;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 
-public class Hadoop412OperationHandlerTest extends HadoopOperationHandlerTest {
+/**
+ * Fixed version of {@link PathInfo} for file: protocol with UNC paths (Windows shares).
+ * 
+ * @author krivanekm (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created 9. 11. 2017
+ */
+public class LocalPathInfo extends PathInfo {
 
-	@Override
-	protected URI getTestingURI() {
-		return URI.create(CDH412);
+	/**
+	 * @param path
+	 * @throws IOException
+	 */
+	public LocalPathInfo(Path path) throws IOException {
+		super(path);
 	}
 
-	/*
-	 * Used for testing MOVE between two servers.
+	/**
+	 * Constructor with pre-computed BasicFileAttributes - performance optimization.
+	 * 
+	 * @param path
+	 * @param attributes
+	 */
+	LocalPathInfo(Path path, BasicFileAttributes attributes) {
+		super(path, attributes);
+	}
+
+	/**
+	 * CLO-12042: path.toUri() returns incorrect number of slashes.
 	 */
 	@Override
-	protected URI getRemoteURI() {
-		return URI.create(CDH560);
-	}
-
-	@Override
-	public void testInterruptDelete() throws Exception {
-		// FIXME disabled - takes too long in Jenkins
-	}
-
-	@Override
-	public void testInterruptCopy() throws Exception {
-		// FIXME disabled - takes too long in Jenkins
-	}
-
-	@Override
-	public void testInterruptMove() throws Exception {
-		// FIXME disabled - takes too long in Jenkins
+	public URI getURI() {
+		return path.toFile().toURI();
 	}
 
 }

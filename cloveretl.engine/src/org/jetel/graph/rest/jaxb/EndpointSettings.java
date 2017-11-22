@@ -92,8 +92,9 @@ public class EndpointSettings implements Serializable {
 	}
 
 	public List<String> getRequestMethodNames() {
-		List<String> result = new ArrayList<>();
-		for (RequestMethod method : getRequestMethods()) {
+		List<RequestMethod> methods = getRequestMethods();
+		List<String> result = new ArrayList<>(methods.size());
+		for (RequestMethod method : methods) {
 			result.add(method.getName());
 		}
 		return result;

@@ -41,50 +41,171 @@ import org.jetel.util.RestJobUtils;
  * @created 22.3.2017
  */
 public class RestJobPhasesTest extends CloverTestCase {
-
 	
-	public void testRestJobAnalysisAndPhases() throws Exception {
-		
-		DataRecordMetadata metadata = new DataRecordMetadata("rc1", DataRecordParsingType.DELIMITED);
-		metadata.addField(new DataFieldMetadata("f1", DataFieldType.STRING, "|"));
-		
-		Edge edge = EdgeFactory.newEdge("e1", metadata);
-		edge.setEdgeType(EdgeTypeEnum.DIRECT_FAST_PROPAGATE);
+	private static final Phase INIT_PHASE = new Phase(Phase.INITIAL_PHASE_ID);
+	private static final Phase FINAL_PHASE = new Phase(Phase.FINAL_PHASE_ID);
+	private TransformationGraph restJob;
+	private DataRecordMetadata metadata;
+	private HelloWorldComponent restJobInput;
+	private HelloWorldComponent restJobOutput;
+	private Phase mainPhase;
 	
-		TransformationGraph graph = new TransformationGraph();
-		graph.setStaticJobType(JobType.RESTJOB);
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+		restJob = new TransformationGraph();
+		restJob.setStaticJobType(JobType.RESTJOB);
 		GraphRuntimeContext ctx = new GraphRuntimeContext();
 		ctx.setUseJMX(false);
-		graph.setInitialRuntimeContext(ctx);
-		
-		HelloWorldComponent input = new HelloWorldComponent("HELLO1");
-		input.setGreeting("Hello from job input!");
-		input.setPartOfRestInput(true);
-		
-		HelloWorldComponent body = new HelloWorldComponent("HELLO2");
-		
-		HelloWorldComponent barrier = new HelloWorldComponent("HELLOBARRIER");
-		barrier.setGreeting("Hello from barrier");
-		barrier.setType(RestJobUtils.REST_JOB_OUTPUT_TYPE);
-		barrier.setPartOfRestOutput(true);
-		barrier.addOutputPort(0, edge);
-		
-		HelloWorldComponent output = new HelloWorldComponent("HELLO3");
-		output.setGreeting("Hello from job output!");
-		output.setPartOfRestOutput(true);
-		output.addInputPort(0, edge);
-		
-		Phase main = new Phase(7);
-		main.addNode(input, output, body, barrier);
+		restJob.setInitialRuntimeContext(ctx);
+		metadata = new DataRecordMetadata("record1", DataRecordParsingType.DELIMITED);
+		metadata.addField(new DataFieldMetadata("field1", DataFieldType.STRING, "|"));
+		restJobInput = new HelloWorldComponent("RESTJOB_INPUT");
+		restJobInput.setPartOfRestInput(true);
+		restJobInput.setType(RestJobUtils.REST_JOB_INPUT_TYPE);
+		restJobInput.setGreeting("Hello from rest job input!");
+		restJobOutput = new HelloWorldComponent("RESTJOB_OUTPUT");
+		restJobOutput.setPartOfRestOutput(true);
+		restJobOutput.setType(RestJobUtils.REST_JOB_OUTPUT_TYPE);
+		restJobOutput.setGreeting("Hello from rest job output!");
+		mainPhase = new Phase(7);
+		mainPhase.addNode(restJobInput, restJobOutput);
+		restJob.addPhase(mainPhase);
+	}
 	
-		graph.addPhase(main);
-		graph.addEdge(edge);
+	private void generateResponse() throws Exception {
+		if (restJobOutput.getOutPorts().size() == 0) {
+			Edge out2res = createEdge("out2res");
+			restJobOutput.addOutputPort(0, out2res);
+			HelloWorldComponent restJobResponse = new HelloWorldComponent("RESTJOB_RESPONSE");
+			restJobResponse.setGreeting("Hello from rest job response");
+			restJobResponse.setPartOfRestOutput(true);
+			restJobResponse.addInputPort(0, out2res);
+			mainPhase.addNode(restJobResponse);
+			restJob.addEdge(out2res);
+		}
+	}
+	
+	private Edge createEdge(String id) {
+		Edge edge = EdgeFactory.newEdge(id, metadata);
+		edge.setEdgeType(EdgeTypeEnum.DIRECT_FAST_PROPAGATE);
+		return edge;
+	}
+
+	public void testJobWithBody() throws Exception {
+		generateResponse();
 		
-		EngineInitializer.initGraph(graph, ctx);
+		HelloWorldComponent body = new HelloWorldComponent("HELLO_WORLD");
+		body.setGreeting("Hello from body");
 		
-		assertTrue("REST job output in wrong phase", main.getNodes().containsValue(barrier));
-		assertEquals("Unexpected count of phases", 3, graph.getPhases().length);
+		mainPhase.addNode(body);
+	
+		EngineInitializer.initGraph(restJob, restJob.getRuntimeContext());
 		
-		runGraph(graph);
+		checkPhases(2, mainPhase, mainPhase);
+		
+		runGraph(restJob);
+	}
+	
+	public void testEmptyJobWithCustomResponse() throws Exception {
+		EngineInitializer.initGraph(restJob, restJob.getRuntimeContext());
+		
+		checkPhases(3, INIT_PHASE, FINAL_PHASE);
+	}
+	
+	public void testEmptyJobWithGeneratedResponse() throws Exception {
+		generateResponse();
+		
+		EngineInitializer.initGraph(restJob, restJob.getRuntimeContext());
+		
+		checkPhases(2, mainPhase, mainPhase);
+	}
+	
+	public void testJobWith3Phases() throws Exception {
+		generateResponse();
+		
+		HelloWorldComponent checkData = new HelloWorldComponent("DATA_CHECK");
+		checkData.setGreeting("Hello from data check");
+		Phase checkPhase = new Phase(3);
+		checkPhase.addNode(checkData);
+		restJob.addPhase(checkPhase);
+		
+		HelloWorldComponent loadData = new HelloWorldComponent("DATA_LOAD");
+		loadData.setGreeting("Hello from data load");
+		mainPhase.addNode(loadData);
+		
+		HelloWorldComponent saveData = new HelloWorldComponent("DATA_SAVE");
+		saveData.setGreeting("Hello from create response");
+		Phase savePhase = new Phase(5);
+		savePhase.addNode(saveData);
+		restJob.addPhase(savePhase);
+		
+		EngineInitializer.initGraph(restJob, restJob.getRuntimeContext());
+		
+		checkPhases(4, checkPhase, mainPhase);
+	}
+	
+	public void testJobWith3PhasesInputConnected() throws Exception {
+		generateResponse();
+		
+		HelloWorldComponent checkData = new HelloWorldComponent("DATA_CHECK");
+		checkData.setGreeting("Hello from data check");
+		Phase checkPhase = new Phase(3);
+		checkPhase.addNode(checkData);
+		restJob.addPhase(checkPhase);
+		
+		Edge in2load = createEdge("in2load");
+		restJobInput.addOutputPort(0, in2load);
+		HelloWorldComponent loadData = new HelloWorldComponent("DATA_LOAD");
+		loadData.setGreeting("Hello from data load");
+		loadData.addInputPort(0, in2load);
+		mainPhase.addNode(loadData);
+		restJob.addEdge(in2load);
+		
+		HelloWorldComponent saveData = new HelloWorldComponent("DATA_SAVE");
+		saveData.setGreeting("Hello from create response");
+		Phase savePhase = new Phase(5);
+		savePhase.addNode(saveData);
+		restJob.addPhase(savePhase);
+		
+		EngineInitializer.initGraph(restJob, restJob.getRuntimeContext());
+		
+		checkPhases(4, checkPhase, mainPhase);
+	}
+	
+	public void testJobWith3PhasesAndRequiredParametersValidator() throws Exception {
+		generateResponse();
+		
+		HelloWorldComponent validator = new HelloWorldComponent("RESTJOB_VALIDATOR");
+		validator.setPartOfRestInput(true);
+		validator.setType("RESTJOB_VALIDATOR");
+		validator.setGreeting("Hello from rest job input!");
+		mainPhase.addNode(validator);
+		
+		HelloWorldComponent checkData = new HelloWorldComponent("DATA_CHECK");
+		checkData.setGreeting("Hello from data check");
+		Phase checkPhase = new Phase(3);
+		checkPhase.addNode(checkData);
+		restJob.addPhase(checkPhase);
+		
+		HelloWorldComponent loadData = new HelloWorldComponent("DATA_LOAD");
+		loadData.setGreeting("Hello from data load");
+		mainPhase.addNode(loadData);
+		
+		HelloWorldComponent saveData = new HelloWorldComponent("DATA_SAVE");
+		saveData.setGreeting("Hello from create response");
+		Phase savePhase = new Phase(5);
+		savePhase.addNode(saveData);
+		restJob.addPhase(savePhase);
+		
+		EngineInitializer.initGraph(restJob, restJob.getRuntimeContext());
+		
+		checkPhases(5, checkPhase, mainPhase);
+	}
+	
+	private void checkPhases(int count, Phase input, Phase output) {
+		assertEquals("Unexpected count of phases", count, restJob.getPhases().length);
+		assertEquals("REST job input in wrong phase", input.getPhaseNum(), restJobInput.getPhaseNum());
+		assertEquals("REST job output in wrong phase", output.getPhaseNum(), restJobOutput.getPhaseNum());
 	}
 }

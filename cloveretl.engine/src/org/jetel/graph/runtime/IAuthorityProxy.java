@@ -618,14 +618,14 @@ public abstract class IAuthorityProxy {
 	public abstract void modifyGraphParameter(GraphParameter graphParameter);
 	
 	/**
-	 * Returns instance of HttpContext if this job is a RestJob
+	 * Returns instance of HTTP context if current job is a REST job.
 	 * @return
 	 * @throws HttpContextNotAvailableException 
 	 */
 	public abstract HttpContext getHttpContext() throws HttpContextNotAvailableException;
 	
 	/**
-	 * Returns true if HttpContext is available
+	 * Returns <tt>true</tt> if HTTP context is available, i.e. the job is serving an HTTP request.
 	 */
 	public abstract boolean isHttpContextAvailable();
 	

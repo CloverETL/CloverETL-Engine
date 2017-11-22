@@ -26,6 +26,8 @@ import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.ctl.ASTnode.CLVFArguments;
 import org.jetel.ctl.ASTnode.CLVFArrayAccessExpression;
 import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
@@ -54,6 +56,8 @@ public class ErrorReporter {
 	final static int MAX_VALUE_LENGTH = 512; // CLO-2658: decreased from 2048
 	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 	
+	static Log logger = LogFactory.getLog(TransformLangExecutor.class);
+
 	final static String NULL_STR_CONST = "null";
 	
 	TransformLangExecutorRuntimeException runtimeException;
@@ -241,7 +245,14 @@ public class ErrorReporter {
 	
 	String process(CLVFIdentifier node) {
 		if (identifiers.add(node.getName())) {
-			Object value = (stack != null) ? stack.getVariable(node.getBlockOffset(), node.getVariableOffset()) : "(value not available)";
+			Object value = "(value not available)";
+			if (stack != null) {
+				try {
+					value = stack.getVariable(node.getBlockOffset(), node.getVariableOffset());
+				} catch (Exception ex) {
+					logger.debug(String.format("Failed to get variable '%s' from stack", node.getName()), ex);
+				}
+			}
 			if (node.getType().isPrimitive() || value==null){
 				err.format("variable \"%s\" (%s) -> %s%n",node.getName(),node.getType(),maxstr(value==null ? NULL_STR_CONST : value.toString()));
 			} else {

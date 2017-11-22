@@ -22,12 +22,14 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.PrivilegedExceptionAction;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.SequenceFile.Reader;
 import org.apache.hadoop.io.Writable;
 import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
@@ -44,6 +46,7 @@ import org.jetel.hadoop.component.IHadoopSequenceFileParser;
 import org.jetel.hadoop.connection.HadoopConnection;
 import org.jetel.hadoop.connection.HadoopURLUtils;
 import org.jetel.hadoop.provider.filesystem.HadoopCloverConvert.Hadoop2Clover;
+import org.jetel.hadoop.provider.utils.KerberosUtils;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
@@ -177,7 +180,23 @@ public class HadoopSequenceFileParser extends AbstractParser implements IHadoopS
 				if (fs == null) {
 					fs = getFileSystem(uri, graph, user, config, this);
 				}
-				reader = new SequenceFile.Reader(fs, new Path(uri.getPath()), config);
+
+				final URI fUri = uri;
+				class CreateReaderAction implements PrivilegedExceptionAction<SequenceFile.Reader> {
+
+					@Override
+					public Reader run() throws Exception {
+						return new SequenceFile.Reader(fs, new Path(fUri.getPath()), config);
+					}
+					
+				}
+				CreateReaderAction createReaderAction = new CreateReaderAction();
+				try {
+					// CLO-12064: SequenceFile.Reader must be created with UserGroupInformation context
+					reader = KerberosUtils.doAs(createReaderAction, user, config);
+				} catch (Exception e) {
+					throw new IOException(e);
+				}
 			} catch (IOException e) {
 				throw new ComponentNotReadyException("Failed to create Hadoop sequence file reader", e);
 			} finally {
@@ -241,7 +260,7 @@ public class HadoopSequenceFileParser extends AbstractParser implements IHadoopS
 			// Here it's assumed that if MultiFileReader detects that a local file is to be read, it always
 			// provides to this method an absolute URI (resolved in context of contextURL) with scheme "file" (never null).
 			try {
-				fileSystem = FileSystemRegistry.getAndRegister(uri, configuration, user, owner);
+				fileSystem = FileSystemRegistry.getAndRegister(uri, configuration, user, owner, null);
 			} catch (InterruptedException e) {
 				throw new IOException("Internal error: failed to retrieve file system", e);
 			}

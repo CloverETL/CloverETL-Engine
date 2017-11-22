@@ -16,38 +16,26 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component.fileoperation.hadoop;
+package org.jetel.util;
 
-import java.net.URI;
+/**
+ * @author jedlickad (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created 15. 11. 2017
+ */
+public enum RestJobResponseFormat {
 
-public class Hadoop412OperationHandlerTest extends HadoopOperationHandlerTest {
-
-	@Override
-	protected URI getTestingURI() {
-		return URI.create(CDH412);
+	JSON, XML, CSV, CUSTOM, FILE;
+	
+	public static RestJobResponseFormat fromString(String format) {
+		if (format != null) {
+			for (RestJobResponseFormat value : values()) {
+				if (value.name().equals(format)) {
+					return value;
+				}
+			} 
+		}
+		return null;
 	}
-
-	/*
-	 * Used for testing MOVE between two servers.
-	 */
-	@Override
-	protected URI getRemoteURI() {
-		return URI.create(CDH560);
-	}
-
-	@Override
-	public void testInterruptDelete() throws Exception {
-		// FIXME disabled - takes too long in Jenkins
-	}
-
-	@Override
-	public void testInterruptCopy() throws Exception {
-		// FIXME disabled - takes too long in Jenkins
-	}
-
-	@Override
-	public void testInterruptMove() throws Exception {
-		// FIXME disabled - takes too long in Jenkins
-	}
-
 }

@@ -228,7 +228,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		TypedProperties customProps = typedProperties.getPropertiesStartWith(XML_JDBC_PROPERTIES_PREFIX);
 		Set<Object> keys = customProps.keySet();
 		for (Object key : keys) {
-			String value = customProps.getProperty((String) key);
+			String value = customProps.getStringProperty((String) key, null, RefResFlag.SPEC_CHARACTERS_OFF);
 
 			String newKey = (String) key;
 			newKey = newKey.substring(XML_JDBC_PROPERTIES_PREFIX.length());
