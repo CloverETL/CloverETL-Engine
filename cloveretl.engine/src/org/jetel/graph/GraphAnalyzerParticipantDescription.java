@@ -16,26 +16,37 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.util;
+package org.jetel.graph;
+
+import org.jetel.data.GraphElementDescriptionImpl;
+import org.jetel.plugin.Extension;
 
 /**
- * @author jedlickad (info@cloveretl.com)
+ * @author adamekl (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 15. 11. 2017
+ * @created 20. 11. 2017
  */
-public enum RestJobResponseFormat {
+public class GraphAnalyzerParticipantDescription extends GraphElementDescriptionImpl {
 
-	JSON, XML, CSV, CUSTOM, FILE;
-	
-	public static RestJobResponseFormat fromString(String format) {
-		if (format != null) {
-			for (RestJobResponseFormat value : values()) {
-				if (value.name().equals(format)) {
-					return value;
-				}
-			} 
-		}
-		return null;
+    public final static String EXTENSION_POINT_ID = "graphAnalyzerParticipant";
+    
+    private final static String PRIORITY = "priority";
+
+    private int priority;
+    
+    public GraphAnalyzerParticipantDescription(Extension compilerExtension) {
+        super(EXTENSION_POINT_ID, compilerExtension);
+        
+        this.priority = Integer.valueOf(compilerExtension.getParameter(PRIORITY, "0").getString());
+    }
+
+	public int getPriority() {
+		return priority;
 	}
+
+	public void setPriority(int priority) {
+		this.priority = priority;
+	}
+
 }

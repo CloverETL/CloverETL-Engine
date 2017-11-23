@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
@@ -55,14 +54,10 @@ import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.graph.modelview.impl.MetadataPropagationResult;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.SingleThreadWatchDog;
-import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.GraphUtils;
 import org.jetel.util.Pair;
-import org.jetel.util.RestJobMappingProvider;
-import org.jetel.util.RestJobResponseFormat;
 import org.jetel.util.RestJobUtils;
 import org.jetel.util.SubgraphUtils;
-import org.jetel.util.file.HttpPartUrlUtils;
 
 
 /*
@@ -83,10 +78,6 @@ public class TransformationGraphAnalyzer {
 
 	static PrintStream log = System.out;// default info messages to stdout
 	
-	private static final String FILE_URL_ATTRIBUTE = "fileURL";
-	private static final String MAPPING_ATTRIBUTE = "mapping";
-	private static final String REST_JOB_RESPONSE_WRITER_NAME = "REST Job Response Writer";
-
 	/**
 	 * Several pre-execution steps is performed in this graph analysis.
 	 * - disable nodes are removed from graph
@@ -110,19 +101,6 @@ public class TransformationGraphAnalyzer {
 
 		//remove optional input and output edges in subgraphs
 		removeOptionalEdges(graph);
-		
-		/*
-		 *  analyze REST Job - put components before RestJobInput into initial phase,
-		 *  components after RestJobOutput into final phase
-		 */
-		if (runtimeContext.getJobType() == JobType.RESTJOB || graph.getStaticJobType() == JobType.RESTJOB) {
-			try {
-				createRestJobOutput(graph);
-				analyseRestJob(graph);
-			} catch (GraphConfigurationException e) {
-				throw new JetelRuntimeException("REST job analysis failed", e);
-			}
-		}
 		
 		// analyze subgraph - check layout and removes debug components if necessary
 		boolean subJobRuntime = runtimeContext.getJobType().isSubJob();
@@ -153,6 +131,14 @@ public class TransformationGraphAnalyzer {
 			//validateImplicitMetadata(mvGraph);
 		}
 		
+        for (GraphAnalyzerParticipant analyzerParticipant : GraphAnalyzerParticipantFactory.getAllAnalyzerParticipants()) {
+        	try {
+        		analyzerParticipant.afterPropagate(graph, runtimeContext, propagateMetadata);
+        	} catch (Exception e) {
+        		throw new JetelRuntimeException("Plugin Graph Analyzer failed.", e);
+        	}
+        }
+        
 		try {
 			TransformationGraphAnalyzer.removeBlockedNodes(graph);
 		} catch (GraphConfigurationException e) {
@@ -167,158 +153,6 @@ public class TransformationGraphAnalyzer {
 		}
         
         graph.setAnalysed(true);
-	}
-	
-	/**
-	 * This method splits REST job into three sections - REST job input and any components attached to it are
-	 * placed into initial phase, anything to which REST job output is attached is placed into final phase.
-	 * Rest of the job is left in original configuration.
-	 * 
-	 * @param graph
-	 * @throws GraphConfigurationException
-	 */
-	private static void analyseRestJob(TransformationGraph graph) throws GraphConfigurationException {
-		
-		Phase inputPhase = new Phase(Phase.INITIAL_PHASE_ID);
-		Phase outputPhase = new Phase(Phase.FINAL_PHASE_ID);
-		Phase formestPhase = new Phase(Integer.MAX_VALUE);
-		
-		for (Phase phase : graph.getPhases()) {
-			Set<Node> input = new HashSet<>();
-			Set<Node> output = new HashSet<>();
-			Set<Edge> inputOutgoing = new HashSet<>();
-			Set<Edge> outputOnly = new HashSet<>();
-			for (Node node : phase.getNodes().values()) {
-				if (node.isPartOfRestInput()) {
-					input.add(node);
-					List<Node> incoming = findPrecedentNodesRecursive(node, null);
-					input.addAll(incoming);
-				} else if (node.isPartOfRestOutput()) {
-					if (RestJobUtils.isRestJobOutputComponent(node.getType())) {
-						/*
-						 * if there are no components following the output, put the output component
-						 * to the final phase so that eventual file writing is performed in that phase
-						 */
-						List<Node> outgoing = findFollowingNodesRecursive(node, null);
-						if (outgoing.isEmpty()) {
-							output.add(node);
-						}
-					} else {
-						List<Node> outgoing = findFollowingNodesRecursive(node, null);
-						output.add(node);
-						output.addAll(outgoing);
-					}
-				}
-			}
-			for (Node node : input) {
-				phase.deleteNode(node);
-				inputPhase.addNode(node);
-			}
-			/*
-			 * Move all edges outgoing from input-side components to the initial phase,
-			 * move edges whose both components are in the final phase to that phase.
-			 * CLO-10928
-			 */
-			for (Edge edge : phase.getEdges().values()) {
-				if (input.contains(edge.getWriter())) {
-					inputOutgoing.add(edge);
-				} else if (output.contains(edge.getReader()) && output.contains(edge.getWriter())) {
-					outputOnly.add(edge);
-				}
-			}
-			for (Edge edge : inputOutgoing) {
-				phase.deleteEdge(edge);
-				inputPhase.addEdge(edge);
-			}
-			for (Node node : output) {
-				phase.deleteNode(node);
-				outputPhase.addNode(node);
-			}
-			for (Edge edge : outputOnly) {
-				phase.deleteEdge(edge);
-				outputPhase.addEdge(edge);
-			}
-			
-			if (isFormerPhase(formestPhase, phase)) {
-				formestPhase = phase;
-			}
-		}
-		
-		if (formestPhase.getPhaseNum() != Integer.MAX_VALUE) {
-			for (Node node : new ArrayList<Node>(inputPhase.getNodes().values())) {
-				if (RestJobUtils.isRestJobInputComponent(node.getType())) {
-					inputPhase.deleteNode(node);
-					formestPhase.addNode(node);
-				}
-			}
-			
-			for (Edge edge : new ArrayList<Edge>(inputPhase.getEdges().values())) {
-				inputPhase.deleteEdge(edge);
-				formestPhase.addEdge(edge);
-			}
-		}
-		if (!inputPhase.getNodes().isEmpty()) {
-			graph.addPhase(inputPhase);
-		}
-
-		if (!outputPhase.getNodes().isEmpty()) {
-			graph.addPhase(outputPhase);
-		}
-	}
-
-	private static boolean isFormerPhase(Phase formestPhase, Phase phase) {
-		return !phase.getNodes().isEmpty() && formestPhase.getPhaseNum() > phase.getPhaseNum() && 
-				(phase.getPhaseNum() != Phase.INITIAL_PHASE_ID || phase.getPhaseNum() != Phase.FINAL_PHASE_ID);
-	}
-	
-	/**
-	 * Create REST Job serialization component accordingly to output format configuration (CSV, JSON, XML)
-	 * @param graph
-	 * @throws GraphConfigurationException
-	 */
-	private static void createRestJobOutput(TransformationGraph graph) throws GraphConfigurationException {
-		Node outputComponent = graph.getRestJobOutputComponent();
-		RestJobResponseFormat responseFormat = RestJobResponseFormat.fromString(graph.getOutputFormat());
-		if (responseFormat != null && outputComponent.getInPorts().size() > 0
-				&& outputComponent.getOutPorts().size() == 0) {
-			String writerType = null;
-			boolean mappingRequired = false;
-			switch (responseFormat) {
-			case JSON:
-				writerType = "JSON_WRITER";
-				mappingRequired = true;
-				break;
-			case XML:
-				writerType = "EXT_XML_WRITER";
-				mappingRequired = true;
-				break;
-			case CSV:
-				writerType = "FLAT_FILE_WRITER";
-				break;
-			default:
-				break;
-			}
-			if (writerType != null) {
-				String writerComponentId = graph.getUniqueNodeId(writerType);
-				Properties properties = new Properties();
-				properties.setProperty(FILE_URL_ATTRIBUTE, HttpPartUrlUtils.RESPONSE_PROTOCOL_URL_BODY);
-				if (mappingRequired) {
-					properties.setProperty(MAPPING_ATTRIBUTE, RestJobMappingProvider.createMapping(outputComponent, responseFormat));
-				}
-				Node responseWriter = ComponentFactory.createComponent(graph, writerType, writerComponentId, properties);
-				if (responseWriter != null) {
-					responseWriter.setName(REST_JOB_RESPONSE_WRITER_NAME);
-					responseWriter.setPartOfRestOutput(true);
-					outputComponent.getPhase().addNode(responseWriter);
-					for(Integer portNum : outputComponent.getInputPorts().keySet()) {
-						Edge edge = EdgeFactory.newEdge(graph.getUniqueEdgeId(), (DataRecordMetadata) null);
-						outputComponent.addOutputPort(portNum, edge);
-						responseWriter.addInputPort(portNum, edge);
-						graph.addEdge(edge);
-					}
-				}
-			}
-		}
 	}
 	
 	/**
@@ -493,6 +327,7 @@ public class TransformationGraphAnalyzer {
 		private static final long serialVersionUID = -8502212649423859074L;
 	}
 	
+	@SuppressWarnings("unused")
 	private static class SubgraphAnalysisResult {
 		private TransformationGraph subgraph;
 		private Node subgraphInput;
