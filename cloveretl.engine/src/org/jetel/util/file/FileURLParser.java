@@ -110,10 +110,13 @@ public class FileURLParser {
 	public static String getMostInnerAddress(String input, boolean extractProxy) {
         // get inner input
         String innerInput = getInnerAddress(input);
+        if (innerInput == null) {
+        	return input;
+        }
         if (!extractProxy && FileUtils.isProxy(innerInput)) {
         	return input;
         }
-        return innerInput == null ? input : getMostInnerAddress(innerInput);
+        return getMostInnerAddress(innerInput, extractProxy);
 	}
 	
 	/**
