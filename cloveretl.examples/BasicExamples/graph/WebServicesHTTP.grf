@@ -25,7 +25,7 @@
 <RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="189" id="Note5" textColor="000000" width="716" x="47" y="96">
 <attr name="text"><![CDATA[h3. Web Service Call
  
-This graph shows a Caluclator web service being called.
+This graph shows a Calculator web service being called.
 
 * XML Data is loaded as an XML SOAP request
 * This data is then passed to the Web Service
