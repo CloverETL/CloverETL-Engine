@@ -46,6 +46,10 @@ if( runTests ) {
 	}   
 	scenarios = testName + ".ts"
 }
+
+def jobIdent = generateJobIdent(testName ? testName : jobGoal)
+new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
+new File(baseD, "cloveretl.examples/ExtExamples/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
  
 def startTime = new Date();
 println "======================= " + startTime
@@ -61,6 +65,7 @@ if( runTests ){
 println "versionSuffix = " + versionSuffix 
 println "buildNumber   = " + buildNumber 
 println "javaVersion   = " + javaVersion 
+println "jobIdent      = " + jobIdent
 println "====================================================="
 
 println "Environment variables:"
@@ -70,10 +75,6 @@ baseD = new File( new File('').absolutePath )
 engineD = new File( baseD, "cloveretl.engine" ) 
 testEnvironmentD = new File( baseD, "cloveretl.test.environment" ) 
 trustStoreF = new File(baseD, "cloveretl.test.scenarios/truststore/certs") //set default truststore - some tests might use different one
-
-jobIdent = generateJobIdent(testName ? testName : jobGoal)
-new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
-new File(baseD, "cloveretl.examples/ExtExamples/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 
 getBouncyPath()
 
