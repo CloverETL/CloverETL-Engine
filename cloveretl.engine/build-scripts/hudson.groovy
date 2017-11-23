@@ -47,6 +47,11 @@ if( runTests ) {
 	scenarios = testName + ".ts"
 }
 
+baseD = new File( new File('').absolutePath )
+engineD = new File( baseD, "cloveretl.engine" )
+testEnvironmentD = new File( baseD, "cloveretl.test.environment" )
+trustStoreF = new File(baseD, "cloveretl.test.scenarios/truststore/certs") //set default truststore - some tests might use different one
+
 def jobIdent = generateJobIdent(testName ? testName : jobGoal)
 new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 new File(baseD, "cloveretl.examples/ExtExamples/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
@@ -70,11 +75,6 @@ println "====================================================="
 
 println "Environment variables:"
 System.getenv().each{ println "\t${it}" }
-
-baseD = new File( new File('').absolutePath )
-engineD = new File( baseD, "cloveretl.engine" ) 
-testEnvironmentD = new File( baseD, "cloveretl.test.environment" ) 
-trustStoreF = new File(baseD, "cloveretl.test.scenarios/truststore/certs") //set default truststore - some tests might use different one
 
 getBouncyPath()
 
