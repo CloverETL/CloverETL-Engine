@@ -245,7 +245,8 @@ public class ProxyConfiguration {
 				case SOCKS:
 					type = ProxyProtocolEnum.PROXY_SOCKS;
 					break;
-				default: throw new IllegalArgumentException("Unknown proxy type: " + proxy.type());
+				default: 
+					throw new IllegalArgumentException("Unknown proxy type: " + proxy.type());
 			}
 			StringBuilder sb = new StringBuilder();
 			sb.append(type.toString()).append("://");
