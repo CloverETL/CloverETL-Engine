@@ -66,7 +66,7 @@
 	
 			.action-panel {
 				background-color: #B1D356;
-				margin: 0px 3px 10px 3px;
+				margin: 5px 3px 10px 3px;
 				border-radius: 8px;
 				padding-bottom: 5px;
 				padding-top: 0px;
@@ -155,6 +155,18 @@
 				padding-top: 10px;
 				line-height: 40px;
 			}
+			
+			.text {
+				position: relative;
+				bottom: 0px;
+				left: 10px;
+				visibility: hidden;
+			}
+			
+			#log-panel:hover .text {
+				visibility: visible;
+			}
+						
 		</style>
 	
 		<script>
@@ -276,7 +288,7 @@
 							"<td style='width:100px'>First name:</td>" +
 							"<td><strong>" + firstName + "</strong></td>" +
 							"<td class='contact-action-column'>" +
-								"<button class='contact-action-button' type='button' onclick='deleteContact(" + id + ");'>" +
+								"<button class='contact-action-button' title='Delete contact by calling endpoint at /example/contact/{id} with the contacts ID as the parameter' type='button' onclick='deleteContact(" + id + ");'>" +
 									"<span class='glyphicon glyphicon-trash' aria-hidden='true' style='margin-right:5px;'></span>" +
 									"Delete" +
 								"</button>" +
@@ -285,7 +297,7 @@
 						"<tr class='contact-row'>" +
 							"<td>Last name:</td><td><strong>" + lastName + "</strong></td>" +
 							"<td class='contact-action-column'>" +
-								"<button class='contact-action-button' type='button' onclick='logGet(\"" + getUrlPrefix() + "/example/contact/vcard/" + id + "\"); window.location.href=\"" + getUrlPrefix() + "/example/contact/vcard/" + id + "\"'>" +
+								"<button class='contact-action-button' title='Get contact in VCARD from by calling the /example/contact/vcard/{id} endpoint with the contacts ID as the parameter' type='button' onclick='logGet(\"" + getUrlPrefix() + "/example/contact/vcard/" + id + "\"); window.location.href=\"" + getUrlPrefix() + "/example/contact/vcard/" + id + "\"'>" +
 									"<span class='glyphicon glyphicon-download' aria-hidden='true' style='margin-right:5px;'></span>" +
 									"VCARD" +
 								"</button>" +
@@ -373,57 +385,87 @@
 		</div>
 		<div class="content">
 			<div class="container">
+
 				<div class="row">
-					<div id="contacts-list" class="col-md-6">
-					</div>
-					<div class="col-md-6">
-						<div class="action-panel">
-							<div class="action-panel-header">
-								Add contact
+					<div class="col-md-12">
+						<span class="contact" style="display: inline-block;">
+							<img src="img/info.png" style="margin: 10px; float: left; height:24px;"/>
+							<span style="margin: 15px 0;" >This application is a simple contact database. Its complete functionality is provided by published Data Service jobs. On the left-hand side, Data Service job gets data from the database and web page creates the list of contacts. Web forms on the right-hand side send data to the Data Service jobs which save contacts to the database.</span>
+						</span>
+						<div class="row">
+							<div id="contacts-list" class="col-md-6">
 							</div>
-							<div>
-								<form id="contact-form">
-									<table>
-										<tr>
-											<td class="contact-form-label">First Name</td><td class="contact-form-field"><input type="text" id="first-name" name="first-name" tabindex="1"/></td>
-											<td class="contact-form-label">Phone*</td><td class="contact-form-field"><input type="text" id="phone" name="phone" tabindex="3"/></td>
-										</tr>
-										<tr>	
-											<td class="contact-form-label">Last Name</td><td class="contact-form-field"><input type="text" id="last-name" name="last-name" tabindex="2"/></td>
-											<td class="contact-form-label">E-mail*</td><td class="contact-form-field"><input type="text" id="email" name="email" tabindex="4"/></td>
-										</tr>
-									</table>
-								</form>
-								<div style="text-align:center">
-									<input type="button" value="Add contact" onclick="createContact();"/>
+							<div class="col-md-6">
+								<div class="action-panel">
+									<div class="action-panel-header">
+										Add contact
+									</div>
+									<div>
+										<form id="contact-form">
+											<table>
+												<tr>
+													<td class="contact-form-label">First Name</td>
+													<td class="contact-form-field">
+														<input type="text" id="first-name" placeholder="First Name" name="first-name" tabindex="1"/>
+													</td>
+													<td class="contact-form-label">Phone*</td>
+													<td class="contact-form-field">
+														<input type="text" id="phone" placeholder="999-999-999" name="phone" tabindex="3"/>
+													</td>
+												</tr>
+												<tr>	
+													<td class="contact-form-label">Last Name</td>
+													<td class="contact-form-field">
+														<input type="text" id="last-name" placeholder="Last Name" name="last-name" tabindex="2"/>
+													</td>
+													<td class="contact-form-label">E-mail*</td>
+													<td class="contact-form-field">
+														<input type="text" id="email" placeholder="someone@example.com" name="email" tabindex="4"/>
+													</td>
+												</tr>
+											</table>
+										</form>
+										<div style="text-align:center">
+											<input type="button" title="Create new contact sending a POST request to /example/contact with the input data as form parameters in the request body" value="Add contact" onclick="createContact();"/>
+										</div>
+									</div>
 								</div>
-							</div>
-						</div>
-						<div class="action-panel">
-							<div class="action-panel-header">
-								Import VCARD
-							</div>
-							<div style="padding:10px 10px 5px 10px;">
-								<textarea id="vcard-content" rows="8"></textarea>
-							</div>
-							<div style="text-align:center">
-								<input type="button" value="Import contact" onclick="importVcard();"/>
-							</div>
-						</div>
-						<div id="log-panel" class="action-panel">
-							<div id="log-header" class="action-panel-header">
-								<a href="#log-body" data-toggle="collapse" class="collapsed">Log</a>
-							</div>
-							<div id="log-body" class="collapse">
-								<textarea id="http-log" rows="8" readonly></textarea>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
+								<div class="action-panel">
+									<div class="action-panel-header">
+										Import VCARD
+									</div>
+									<div style="padding:10px 10px 5px 10px;">
+										<textarea id="vcard-content" rows="8" 
+										placeholder=
+										"BEGIN:VCARD
+VERSION:3.0
+FN:John Green
+TEL;TYPE=WORK,VOICE:555-555-757
+EMAIL:john.green@example.com
+END:VCARD"></textarea>
+									</div>
+									<div style="text-align:center">
+										<input type="button" title="Send a PUT request to /example/contact/vcard with VCARD in plaintext format as the request body" value="Import contact" onclick="importVcard();"/>
+									</div>
+									
+								</div>
+								<div id="log-panel" class="action-panel">
+									<div id="log-header" class="action-panel-header">
+										<a href="#log-body" data-toggle="collapse" class="collapsed">Log</a>
+										<span class="text">Show log of all requests being sent by this page</span>
+									</div>
+									<div id="log-body" class="collapse">
+										<textarea id="http-log" rows="8" readonly></textarea>
+									</div>
+								</div>
+							</div><!--column-->
+						</div><!--row-->
+					</div><!--column-->	
+				</div><!--row-->
+			</div><!--container-->
+		</div><!--content-->
 		<div class="footer">
-			<div class="container">
+			<div class="container" style="text-align: center;">
 				<span class="text-muted">CloverETL created by <a href="http://www.javlin.eu" target="_blank">Javlin</a> All rights reserved.</span>
 			</div>
 		</div>

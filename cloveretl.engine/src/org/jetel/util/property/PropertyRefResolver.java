@@ -21,6 +21,7 @@ package org.jetel.util.property;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -77,6 +78,9 @@ public class PropertyRefResolver {
 	
 	/** the regex pattern used to find property references */
 	private static final Pattern PROPERTY_PATTERN = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX + "|" + Defaults.RequestParameters.REQUEST_PARAMETER_PLACEHOLDER_REGEX);
+	
+	/** the regex pattern to match property references that are not valid C identifiers */
+	private static final Pattern FREE_FORM_PROPERTY_PATTERN = Pattern.compile(Defaults.RequestParameters.FREE_FORM_PARAMETER_REGEX);
 	
 	/** the set (same errors need to be listed once only) of errors that occurred during evaluation of a single string */
 	private final Set<String> errorMessages = new HashSet<String>();
@@ -313,6 +317,9 @@ public class PropertyRefResolver {
 	 * @return <code>true</code> if at least one property reference was found and resolved, <code>false</code> otherwise
 	 */
 	private void resolveReferences(StringBuilder value, RefResFlag flag) {
+		
+		IAuthorityProxy proxy = getAuthorityProxy();
+		
 		Matcher propertyMatcher = PROPERTY_PATTERN.matcher(value);
 		int nextStart = 0;
 		
@@ -333,7 +340,7 @@ public class PropertyRefResolver {
 				canBeParamaterResolved = param.canBeResolved();
 				if (param.isSecure()) {
 					try {
-						resolvedReference = getAuthorityProxy().getSecureParamater(param.getName(), param.getValue());
+						resolvedReference = proxy.getSecureParamater(param.getName(), param.getValue());
 					} catch (Exception e) {
 						JetelRuntimeException ee = new JetelRuntimeException("Secure graph parameter '" + param.getName() + "' has invalid value.", e);
 						if (ContextProvider.getRuntimeContext() == null || ContextProvider.getRuntimeContext().isStrictGraphFactorization()) {
@@ -346,9 +353,9 @@ public class PropertyRefResolver {
 					resolvedReference = param.getValue();
 				}
 			} else {
-				if (getAuthorityProxy().isHttpContextAvailable()) {
+				if (proxy.isHttpContextAvailable()) {
 					try {
-						resolvedReference = getAuthorityProxy().getHttpContext().
+						resolvedReference = proxy.getHttpContext().
 								getRequestParameter(reference.replaceFirst("(?i)" + PREFIX_REQUEST_PARAMETERS, ""));
 					} catch (HttpContextNotAvailableException e) {
 						// HTTP context is available during runtime
@@ -361,11 +368,11 @@ public class PropertyRefResolver {
 					// find properties with '.' and '_' among system properties. If both found, use '.' for backwards compatibility
 					if (resolvedReference == null) {
 						String preferredReference = reference.replace('_', '.');
-						resolvedReference = System.getProperty(preferredReference);
+						resolvedReference = MiscUtils.getSystemPropertySafe(preferredReference);
 						if (resolvedReference == null) {
-							resolvedReference = System.getProperty(reference);
+							resolvedReference = MiscUtils.getSystemPropertySafe(reference);
 						} else {
-							if (!reference.equals(preferredReference) && System.getProperty(reference) != null) {
+							if (!reference.equals(preferredReference) && MiscUtils.getSystemPropertySafe(reference) != null) {
 								logger.warn(new String(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_preferred_substitution_warning"), reference))); //$NON-NLS-1$
 							}
 						}
@@ -389,6 +396,32 @@ public class PropertyRefResolver {
 				//and no warning are desired
 				//for detail error reporting PropertyRefResolver.getErrorMessages() method should be used
 				//logger.warn("Cannot resolve reference to property: " + reference);
+			}
+		}
+		
+		if (proxy.isHttpContextAvailable()) {
+			/*
+			 * Allow "invalid" parameter names if accessing HTTP parameters
+			 */
+			nextStart = 0;
+			Matcher matcher = FREE_FORM_PROPERTY_PATTERN.matcher(value);
+			while (matcher.find(nextStart)) {
+				String paramName = matcher.group(1);
+				String resolved = null;
+				try {
+					resolved = proxy.getHttpContext().getRequestParameter(paramName);
+				} catch (HttpContextNotAvailableException e) {
+					logger.debug("HTTP context should be available", e);
+				}
+				if (resolved != null) {
+					value.replace(matcher.start(), matcher.end(), resolved);
+					if (!FREE_FORM_PROPERTY_PATTERN.matcher(resolved).find()) {
+						nextStart = matcher.start() + resolved.length();
+					}
+				} else {
+					nextStart = matcher.end();
+					errorMessages.add(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_property_not_defined_warning"), paramName)); //$NON-NLS-1$
+				}
 			}
 		}
 	}
@@ -472,9 +505,7 @@ public class PropertyRefResolver {
 	public String getResolvedPropertyValue(String propertyName, RefResFlag refResFlag) {
 		if (!StringUtils.isEmpty(propertyName)) {
 			try {
-				if (parameters.hasGraphParameter(propertyName) || 
-						(getAuthorityProxy().isHttpContextAvailable() &&
-						getAuthorityProxy().getHttpContext().getRequestParameterNames().contains(propertyName))) {
+				if (parameters.hasGraphParameter(propertyName) || hasHttpRequestParameter(propertyName)) {
 					StringBuilder propertyReference = new StringBuilder();
 					propertyReference.append("${").append(propertyName).append('}');
 					String propertyReferenceStr = propertyReference.toString();
@@ -583,12 +614,30 @@ public class PropertyRefResolver {
 	
 	 
 	/**
-	 * Returns property name from marcher
+	 * Returns property name from matcher
 	 */
 	private static String getPropertyName(Matcher matcher){
-		//group(1) for graph parameter, graph(2) for HTTP Request parameter
+		//group(1) for graph parameter, graph(2) for HTTP request parameter
 		return matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
 	}
 	
+	
+	private boolean hasHttpRequestParameter(String paramName) throws HttpContextNotAvailableException {
+		IAuthorityProxy proxy = getAuthorityProxy();
+		if (!proxy.isHttpContextAvailable()) {
+			return false;
+		}
+		Collection<String> names = proxy.getHttpContext().getRequestParameterNames();
+		if (names.contains(paramName)) {
+			return true;
+		}
+		if (paramName.toLowerCase().startsWith(Defaults.RequestParameters.REQUEST_PARAMETER_PREFIX)) {
+			paramName = paramName.substring(Defaults.RequestParameters.REQUEST_PARAMETER_PREFIX.length());
+			if (names.contains(paramName)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }
 
