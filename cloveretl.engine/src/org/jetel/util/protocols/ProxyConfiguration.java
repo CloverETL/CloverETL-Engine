@@ -234,17 +234,18 @@ public class ProxyConfiguration {
 		if (proxy == null) {
 			return null;
 		} else {
-			ProxyProtocolEnum type = null;
+			ProxyProtocolEnum type;
 			switch (proxy.type()) {
-			case DIRECT:
-				type = ProxyProtocolEnum.NO_PROXY;
-				break;
-			case HTTP:
-				type = ProxyProtocolEnum.PROXY_HTTP;
-				break;
-			case SOCKS:
-				type = ProxyProtocolEnum.PROXY_SOCKS;
-				break;
+				case DIRECT:
+					type = ProxyProtocolEnum.NO_PROXY;
+					break;
+				case HTTP:
+					type = ProxyProtocolEnum.PROXY_HTTP;
+					break;
+				case SOCKS:
+					type = ProxyProtocolEnum.PROXY_SOCKS;
+					break;
+				default: throw new IllegalArgumentException("Unknown proxy type: " + proxy.type());
 			}
 			StringBuilder sb = new StringBuilder();
 			sb.append(type.toString()).append("://");
