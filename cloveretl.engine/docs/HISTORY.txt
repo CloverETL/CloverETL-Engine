@@ -2,6 +2,20 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-7-1
+---------
+
+* Fixes:
+  * CLO-12010 XMLWriter Skips Nested Records when Cache in Memory = True
+  * CLO-11239 Synced Server projects - ClassCastException after waking up
+  * CLO-11793 Fixed: Possible memory leak in Groovy shell
+  * CLO-11902 Data service: output data are replaced if multiple output ports are used
+  * CLO-11893 Improve context menu actions - Publish and Unpublish
+  * CLO-11886 Action to uninstall DataServices Example installed in server UI
+  * CLO-11876 DataServices: Testing page requires re-login
+  * CLO-11826 DataServices: Documentation URL page requires re-login
+
+  
 REL-4-7-0
 ---------
 
