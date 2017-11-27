@@ -71,6 +71,14 @@ public class DefaultAuthority extends AbstractAuthority implements Authority {
 			Pair<String, String> parts = FileUtils.extractProxyString(uri.toString());
 			return new ProxyHelper(URI.create(parts.getFirst()), parts.getSecond());
 		}
+	
+		public static ProxyHelper getInstance(URI uri, String proxyString) {
+			Pair<String, String> parts = FileUtils.extractProxyString(uri.toString());
+			if (parts.getSecond() != null) {
+				proxyString = parts.getSecond();
+			}
+			return new ProxyHelper(URI.create(parts.getFirst()), proxyString);
+		}
 	}
 	
 	/**

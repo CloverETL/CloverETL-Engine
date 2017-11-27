@@ -21,7 +21,6 @@ package org.jetel.component.fileoperation.pool;
 import java.net.Proxy;
 import java.net.URI;
 
-import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.protocols.ProxyConfiguration;
 import org.jetel.util.protocols.UserInfo;
@@ -54,13 +53,11 @@ public class S3Authority extends DefaultAuthority {
 	}
 
 	/**
-	 * @param noProxyUri URI that must not contain proxy configuration
+	 * @param uri URI that may contain embedded proxy configuration (has higher priority that proxyString parameter)
 	 * @param proxyString proxy configuration string
 	 */
-	public S3Authority(URI noProxyUri, String proxyString) {
-		super(noProxyUri, proxyString);
-		this.noProxyUri = noProxyUri;
-		this.proxyUri = URIUtils.insertProxyString(noProxyUri, proxyString);
+	public S3Authority(URI uri, String proxyString) {
+		this(uri, ProxyHelper.getInstance(uri, proxyString));
 	}
 	
 	/**
