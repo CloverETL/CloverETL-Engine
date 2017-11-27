@@ -355,7 +355,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("SetTrustStore.grf") // env set-up graph
 							&& !file.getName().equals("check-logs.grf") // graph for checking logs from server tests
 							&& !file.getName().equals("UDR_zip_nonExistingEntry_CLO-11350.grf") // negative test
-							&& !file.getName().equals("XMLWriter_cacheInMemory.grf ") // working on solution
+							&& !file.getName().equals("XMLWriter_cacheInMemory.grf") // working on solution
 							;
 				}
 			};
