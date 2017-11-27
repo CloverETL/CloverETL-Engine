@@ -22,6 +22,8 @@ import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 
 /**
+ * Extension point for analyse graph phase
+ * 
  * @author adamekl (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
@@ -29,6 +31,14 @@ import org.jetel.graph.runtime.GraphRuntimeContext;
  */
 public interface GraphAnalyzerParticipant {
 	
+	/**
+	 * Method realize custom analyze of graph. Method is called from GraphAnalyzer after metadata propagate
+	 *
+	 * @param graph the graph
+	 * @param runtimeContext the runtime context
+	 * @param propagateMetadata the propagate metadata
+	 * @throws GraphConfigurationException the graph configuration exception
+	 */
 	void afterPropagate(TransformationGraph graph, GraphRuntimeContext runtimeContext, boolean propagateMetadata)
 			throws GraphConfigurationException;
 
