@@ -194,19 +194,22 @@ public class URIUtils {
 	 * Just like {@link URI#resolve(URI)}, but it can handle proxy configuration strings.
 	 * 
 	 * @param baseUri
-	 * @param pathUri
+	 * @param child
 	 * @return
 	 * @throws URISyntaxException
 	 */
-	public static URI resolve(URI baseUri, URI pathUri) {
+	public static URI resolve(URI baseUri, URI child) {
 		Pair<String, String> parts = FileUtils.extractProxyString(baseUri.toString());
 		String proxyString = parts.getSecond();
 		if (proxyString != null) {
+			if (child.isAbsolute()) {
+				return child;
+			}
 			URI base = URI.create(parts.getFirst());
-			URI resolved = base.resolve(pathUri);
+	        URI resolved = base.resolve(child);
 			return insertProxyString(resolved, proxyString);
 		} else {
-			return baseUri.resolve(pathUri);
+			return baseUri.resolve(child);
 		}
 	}
 
@@ -234,7 +237,7 @@ public class URIUtils {
 	 * @param uri
 	 * @return URI without proxy configuration.
 	 */
-	private static URI removeProxyString(URI uri) {
+	static URI removeProxyString(URI uri) {
 		Pair<String, String> parts = FileUtils.extractProxyString(uri.toString());
 		return (parts.getSecond() != null) ? URI.create(parts.getFirst()) : uri;
 	}

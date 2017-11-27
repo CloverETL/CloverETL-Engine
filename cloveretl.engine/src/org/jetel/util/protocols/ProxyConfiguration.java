@@ -33,6 +33,7 @@ import java.util.Objects;
 
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.protocols.proxy.ProxyProtocolEnum;
+import org.jetel.util.string.StringUtils;
 
 public class ProxyConfiguration {
 	
@@ -168,18 +169,35 @@ public class ProxyConfiguration {
 		return getProxy(url);
 	}
 
+    /**
+     * Returns proxy URL, if <code>fileURL</code> has one of the supported
+     * proxy protocols, or <code>null</code>.
+     * 
+     * @param fileURL
+     * @return proxy URL or <code>null</code>
+     */
 	public static URL getProxyUrl(String fileURL) {
+		if (StringUtils.isEmpty(fileURL)) {
+			return null;
+		}
 		try {
-			return FileUtils.getFileURL(fileURL);
+			// create an URL
+			URL url = FileUtils.getFileURL(fileURL);
+			// detect proxy protocol
+			return (getProxyType(url) != null) ? url : null;
 		} catch (MalformedURLException e) {
 			return null;
 		}
 	}
     
+	/**
+	 * Returns <code>true</code> if fileURL has one of the supported proxy protocols.
+	 * 
+	 * @param fileURL
+	 * @return <code>true</code> if fileURL is a proxy URL
+	 */
     public static boolean isProxy(String fileURL) {
-		// create an url
-		URL url = getProxyUrl(fileURL);
-		return (getProxyType(url) != null);
+		return (getProxyUrl(fileURL) != null);
     }
     
     public static Proxy getProxy(URL proxyUrl) {
@@ -249,9 +267,10 @@ public class ProxyConfiguration {
 					throw new IllegalArgumentException("Unknown proxy type: " + proxy.type());
 			}
 			StringBuilder sb = new StringBuilder();
-			sb.append(type.toString()).append("://");
+			sb.append(type.toString()).append(":");
 			if (proxy.type() != Proxy.Type.DIRECT) {
-				if ((proxyCredentials != null) && (proxyCredentials.getUserInfo() != null)) {
+				sb.append("//");
+				if ((proxyCredentials != null) && !StringUtils.isEmpty(proxyCredentials.getUserInfo())) {
 					sb.append(proxyCredentials.getUserInfo()).append('@');
 				}
 				InetSocketAddress address = (InetSocketAddress) proxy.address();
