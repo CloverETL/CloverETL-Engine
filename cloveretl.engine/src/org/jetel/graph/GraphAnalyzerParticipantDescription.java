@@ -20,7 +20,7 @@ package org.jetel.graph;
 
 import org.jetel.data.GraphElementDescriptionImpl;
 import org.jetel.plugin.Extension;
-
+ 
 /**
  * @author adamekl (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -38,7 +38,7 @@ public class GraphAnalyzerParticipantDescription extends GraphElementDescription
     public GraphAnalyzerParticipantDescription(Extension compilerExtension) {
         super(EXTENSION_POINT_ID, compilerExtension);
         
-        this.priority = Integer.valueOf(compilerExtension.getParameter(PRIORITY, "0").getString());
+        this.priority = Integer.parseInt(compilerExtension.getParameter(PRIORITY, "0").getString());
     }
 
 	public int getPriority() {
