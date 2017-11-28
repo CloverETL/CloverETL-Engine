@@ -53,6 +53,7 @@ import org.jetel.util.string.StringUtils;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Logger;
 import com.jcraft.jsch.Proxy;
 import com.jcraft.jsch.ProxyHTTP;
 import com.jcraft.jsch.ProxySOCKS4;
@@ -70,6 +71,21 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 	private static final int DEFAULT_PORT = 22;
 
 	private static final Log log = LogFactory.getLog(PooledSFTPConnection.class);
+	
+	static {
+		JSch.setLogger(new Logger() {
+			
+			@Override
+			public void log(int level, String message) {
+				log.debug(message); // log everything as DEBUG to keep normal logs clear
+			}
+			
+			@Override
+			public boolean isEnabled(int level) {
+				return log.isDebugEnabled(); // log everything as DEBUG to keep normal logs clear
+			}
+		});
+	}
 
 	// standard encoding for URLDecoder
 	// see http://www.w3.org/TR/html40/appendix/notes.html#non-ascii-chars
