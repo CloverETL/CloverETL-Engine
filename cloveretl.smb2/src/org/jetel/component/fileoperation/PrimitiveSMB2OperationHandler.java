@@ -30,7 +30,6 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -237,10 +236,6 @@ public class PrimitiveSMB2OperationHandler implements RecursiveDeleteHandler, Wi
     	try (PooledSMB2Connection connection = getConnection(base)) {
     		children = connection.getShare().list(path, FileDirectoryInformation.class, mask);
     	} catch (SMBApiException ex) {
-    		// this error is thrown if there are no files that match the mask
-    		if ((mask != null) && (ex.getStatus() == NtStatus.STATUS_NO_SUCH_FILE)) {
-    			return Collections.emptyList();
-    		}
     		throw ExceptionUtils.getIOException(ex);
     	} catch (Exception ex) {
     		throw ExceptionUtils.getIOException(ex);
