@@ -686,7 +686,7 @@ public class GraphRuntimeContext implements Serializable {
 
     public void setContextURL(URL contextURL) {
     	this.contextURL = contextURL;
-    	this.contextURLString = contextURL.toString();
+    	this.contextURLString = contextURL != null ? contextURL.toString() : null;
     }
 
     public void setContextURL(String contextURLString) {
