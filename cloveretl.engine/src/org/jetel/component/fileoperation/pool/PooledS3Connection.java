@@ -21,6 +21,7 @@ package org.jetel.component.fileoperation.pool;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -200,6 +201,8 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 			}
 			properties.setProxyUsername(proxyConfiguration.getProxyUser());
 			properties.setProxyPassword(proxyConfiguration.getProxyPassword());
+		} else if (proxyConfiguration.getProxy() == Proxy.NO_PROXY) {
+			properties.setNonProxyHosts("*"); // disable proxies for all hostnames, see http.nonProxyHosts system property
 		}
 		
 //		properties.setSignerOverride("AWSS3V4SignerType");
