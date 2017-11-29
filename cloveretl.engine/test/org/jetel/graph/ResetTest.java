@@ -285,6 +285,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("KeyValuesToRecord_WrongSortOrder.grf") // negative test
 							&& !file.getName().equals("ListFiles_emptyUrl_CLO-5114.grf") // negative test
 							&& !file.getName().equals("ListFiles_unsupported_protocols_checkConfig_CLO-4491.grf") // negative test
+							&& !file.getName().equals("ListFiles_UNC_CLO-12042.grf") // windows only test
 							&& !file.getName().equals("LoopInGraph3.grf") // negative test
 							&& !file.getName().startsWith("LoopWithSubgraph_") // negative and server tests
 							&& !file.getName().equals("MoveFiles_emptyUrl_CLO-5114.grf") // negative test
