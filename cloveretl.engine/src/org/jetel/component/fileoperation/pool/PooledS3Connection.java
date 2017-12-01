@@ -21,15 +21,18 @@ package org.jetel.component.fileoperation.pool;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.jetel.component.fileoperation.PrimitiveS3OperationHandler;
 import org.jetel.component.fileoperation.URIUtils;
+import org.jetel.util.protocols.ProxyConfiguration;
 import org.jetel.util.protocols.URLValidator;
 import org.jetel.util.protocols.Validable;
 import org.jetel.util.protocols.amazon.S3Utils;
+import org.jetel.util.string.StringUtils;
 
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.PredefinedClientConfigurations;
@@ -72,10 +75,14 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 	protected PooledS3Connection(S3Authority authority) {
 		super(authority);
 		
-		URI uri = authority.getUri();
+		URI uri = authority.getPlainUri();
 		StringBuilder sb = new StringBuilder();
-		sb.append(uri.getScheme()).append("://");
-		sb.append(uri.getRawAuthority()).append('/'); // do not decode escape sequences
+		sb.append(uri.getScheme()).append(":");
+		String proxyString = authority.getProxyString();
+		if (!StringUtils.isEmpty(proxyString)) {
+			sb.append('(').append(proxyString).append(')');
+		}
+		sb.append("//").append(uri.getRawAuthority()).append('/'); // do not decode escape sequences
 		this.baseUri = URI.create(sb.toString());
 	}
 	
@@ -150,7 +157,7 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 	}
 
 	public static String getAccessKey(S3Authority authority) {
-		String userinfo = authority.getUri().getRawUserInfo();
+		String userinfo = authority.getPlainUri().getRawUserInfo();
 		if (userinfo == null) {
 			return "";
 		}
@@ -162,7 +169,7 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 	}
 	
 	public static String getSecretKey(S3Authority authority) {
-		String userinfo = authority.getUri().getRawUserInfo();
+		String userinfo = authority.getPlainUri().getRawUserInfo();
 		if (userinfo == null) {
 			return "";
 		}
@@ -183,6 +190,21 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 		AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
 		
 		ClientConfiguration properties = new ClientConfiguration(DEFAULTS);
+		
+		// CLO-10185: proxy support
+		ProxyConfiguration proxyConfiguration = new ProxyConfiguration(authority.getProxyString());
+		if (proxyConfiguration.isProxyUsed()) {
+			properties.setProxyHost(proxyConfiguration.getHost());
+			int port = proxyConfiguration.getPort();
+			if (port > -1) {
+				properties.setProxyPort(port);
+			}
+			properties.setProxyUsername(proxyConfiguration.getProxyUser());
+			properties.setProxyPassword(proxyConfiguration.getProxyPassword());
+		} else if (proxyConfiguration.getProxy() == Proxy.NO_PROXY) {
+			properties.setNonProxyHosts("*"); // disable proxies for all hostnames, see http.nonProxyHosts system property
+		}
+		
 //		properties.setSignerOverride("AWSS3V4SignerType");
 		AmazonS3Client amazonS3Client = new AmazonS3Client(credentials, properties);
 		amazonS3Client.setEndpoint(authority.getHost());

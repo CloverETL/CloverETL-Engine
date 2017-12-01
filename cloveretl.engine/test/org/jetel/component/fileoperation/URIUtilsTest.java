@@ -24,163 +24,183 @@ import junit.framework.TestCase;
 
 public class URIUtilsTest extends TestCase {
 
-	public void testGetChildURI() throws Exception {
-		URI parent;
-		String child;
-		URI childUri;
-		URI result;
-		URI expected;
+	private void testGetChildURI(String parent, String child, String expected) {
+		URI parentUri = URI.create(parent);
+		URI childUri = URI.create(URIUtils.urlEncode(child));
+		assertEqualUris(expected, URIUtils.getChildURI(parentUri, child));
+		assertEqualUris(expected, URIUtils.getChildURI(parentUri, childUri));
+	}
 
-		parent = URI.create("ftp://hostname/dir/");
-		child = "fileName";
-		childUri = new URI(null, child, null);
-		expected = URI.create("ftp://hostname/dir/fileName");
-		result = URIUtils.getChildURI(parent, child);
-		assertEquals(expected, result);
-		result = URIUtils.getChildURI(parent, childUri);
-		assertEquals(expected, result);
+	private static void assertEqualUris(String expectedUri, URI actualUri) {
+		assertEquals(URI.create(expectedUri), actualUri);
+		assertEquals(expectedUri, actualUri.toString()); // URI.equals() compares individual fields - compare the whole strings in addition
+	}
+	
+	public void testGetChildURI() {
+		testGetChildURI("ftp://hostname/dir/", "fileName", "ftp://hostname/dir/fileName");
+		String parent = "ftp://hostname/dir";
+		testGetChildURI(parent, "fileName", "ftp://hostname/dir/fileName");
+		testGetChildURI(parent, "file name", "ftp://hostname/dir/file%20name");
 
-		parent = URI.create("ftp://hostname/dir");
-		result = URIUtils.getChildURI(parent, child);
-		assertEquals(expected, result);
-		result = URIUtils.getChildURI(parent, childUri);
-		assertEquals(expected, result);
-
-		child = "file name";
-		childUri = new URI(null, child, null);
-		expected = URI.create("ftp://hostname/dir/file%20name");
-		result = URIUtils.getChildURI(parent, child);
-		result = URIUtils.getChildURI(parent, childUri);
-		assertEquals(expected, result);
-
-		child = "file/name";
-		childUri = new URI("file%2Fname");
-		expected = URI.create("ftp://hostname/dir/file%2Fname");
-		result = URIUtils.getChildURI(parent, child);
-		result = URIUtils.getChildURI(parent, childUri);
-		assertEquals(expected, result);
-
-		parent = URI.create("ftp://hostname/.");
-		expected = URI.create("ftp://hostname/file%2Fname");
-		result = URIUtils.getChildURI(parent, child);
-		assertEquals(expected, result);
-		result = URIUtils.getChildURI(parent, childUri);
-		assertEquals(expected, result);
-
-		parent = URI.create("ftp://hostname/dir/..");
-		expected = URI.create("ftp://hostname/file%2Fname");
-		result = URIUtils.getChildURI(parent, child);
-		assertEquals(expected, result);
-		result = URIUtils.getChildURI(parent, childUri);
-		assertEquals(expected, result);
-
-		parent = URI.create("ftp://hostname/dir/../");
-		expected = URI.create("ftp://hostname/file%2Fname");
-		result = URIUtils.getChildURI(parent, child);
-		assertEquals(expected, result);
-		result = URIUtils.getChildURI(parent, childUri);
-		assertEquals(expected, result);
-
-		parent = URI.create("ftp://hostname/dir/file.txt");
-		expected = URI.create("ftp://hostname/dir/file.txt/file%2Fname");
-		result = URIUtils.getChildURI(parent, child);
-		assertEquals(expected, result);
-		result = URIUtils.getChildURI(parent, childUri);
-		assertEquals(expected, result);
+		String child = "file/name";
+		testGetChildURI(parent, child, "ftp://hostname/dir/file%2Fname");
+		testGetChildURI("ftp://hostname/.", child, "ftp://hostname/file%2Fname");
+		testGetChildURI("ftp://hostname/dir/..", child, "ftp://hostname/file%2Fname");
+		testGetChildURI("ftp://hostname/dir/../", child, "ftp://hostname/file%2Fname");
+		testGetChildURI("ftp://hostname/dir/file.txt", child, "ftp://hostname/dir/file.txt/file%2Fname");
 		
-		child = "";
-		childUri = URI.create(child);
-		parent = URI.create("ftp://hostname/dir");
 		// the trailing slash is not required, but should not break anything
 		// we assume the context URL is a directory
-		expected = URI.create("ftp://hostname/dir/");
-		result = URIUtils.getChildURI(parent, child);
-		assertEquals(expected, result);
-		result = URIUtils.getChildURI(parent, childUri);
-		assertEquals(expected, result);
-		parent = URI.create("ftp://hostname/dir/");
-		result = URIUtils.getChildURI(parent, child);
-		assertEquals(expected, result);
-		result = URIUtils.getChildURI(parent, childUri);
-		assertEquals(expected, result);
+		child = "";
+		testGetChildURI("ftp://hostname/dir", child, "ftp://hostname/dir/");
+		testGetChildURI("ftp://hostname/dir/", child, "ftp://hostname/dir/");
 	}
 
+	private void testGetFileName(String uri, String expectedFileName) {
+		assertEquals(expectedFileName, URIUtils.getFileName(URI.create(uri)));
+	}
+	
 	public void testGetFileName() {
-		URI uri;
-		
-		uri = URI.create("ftp://hostname/dir/subdir/../file.txt");
-		assertEquals("file.txt", URIUtils.getFileName(uri));
-
-		uri = URI.create("ftp://hostname/dir/subdir/./file.txt");
-		assertEquals("file.txt", URIUtils.getFileName(uri));
-
-		uri = URI.create("ftp://hostname/dir/subdir/..");
-		assertEquals("dir", URIUtils.getFileName(uri));
-
-		uri = URI.create("ftp://hostname/dir/.");
-		assertEquals("dir", URIUtils.getFileName(uri));
-
-		uri = URI.create("ftp://hostname/file%20name");
-		assertEquals("file name", URIUtils.getFileName(uri));
-
-		uri = URI.create("ftp://hostname/file%2Fname");
-		assertEquals("file/name", URIUtils.getFileName(uri));
-
-		uri = URI.create("ftp://hostname/");
-		assertTrue(URIUtils.getFileName(uri).isEmpty());
-
-		uri = URI.create("ftp://hostname");
-		assertTrue(URIUtils.getFileName(uri).isEmpty());
-
-		uri = URI.create("relative/path");
-		assertEquals("path", URIUtils.getFileName(uri));
-
-		uri = URI.create("relative/file%2Fname");
-		assertEquals("file/name", URIUtils.getFileName(uri));
-
-		uri = URI.create("relative/../../../file%20name");
-		assertEquals("file name", URIUtils.getFileName(uri));
-
-		uri = URI.create("relative/./././file%20name");
-		assertEquals("file name", URIUtils.getFileName(uri));
-
-		uri = URI.create("relative/../../../");
-		assertEquals("", URIUtils.getFileName(uri));
-
+		testGetFileName("ftp://hostname/dir/subdir/../file.txt", "file.txt");
+		testGetFileName("ftp://hostname/dir/subdir/./file.txt", "file.txt");
+		testGetFileName("ftp://hostname/dir/subdir/..", "dir");
+		testGetFileName("ftp://hostname/dir/.", "dir");
+		testGetFileName("ftp://hostname/file%20name", "file name");
+		testGetFileName("ftp://hostname/file%2Fname", "file/name");
+		testGetFileName("ftp://hostname/", "");
+		testGetFileName("ftp://hostname", "");
+		testGetFileName("relative/path", "path");
+		testGetFileName("relative/file%2Fname", "file/name");
+		testGetFileName("relative/../../../file%20name", "file name");
+		testGetFileName("relative/./././file%20name", "file name");
+		testGetFileName("relative/../../../", "");
 	}
 
+	private void testUrlEncode(String expected, String input) {
+		assertEquals(expected, URIUtils.urlEncode(input));
+	}
+	
 	public void testUrlEncode() {
-		assertEquals("file%20name", URIUtils.urlEncode("file name"));
-		assertEquals("file%2Fname", URIUtils.urlEncode("file/name"));
-		assertEquals("milan.krivanek%40javlin.eu", URIUtils.urlEncode("milan.krivanek@javlin.eu"));
-		assertEquals("path%3Fquery", URIUtils.urlEncode("path?query"));
-		assertEquals("path%23fragment", URIUtils.urlEncode("path#fragment"));
-		assertEquals("file%25name", URIUtils.urlEncode("file%name")); // escape % sign
-		assertTrue(URIUtils.urlEncode("").isEmpty());
+		testUrlEncode("file%20name", "file name");
+		testUrlEncode("file%2Fname", "file/name");
+		testUrlEncode("milan.krivanek%40javlin.eu", "milan.krivanek@javlin.eu");
+		testUrlEncode("path%3Fquery", "path?query");
+		testUrlEncode("path%23fragment", "path#fragment");
+		testUrlEncode("file%25name", "file%name"); // escape % sign
+		testUrlEncode("", "");
+	}
+	
+	private void testUrlDecode(String expected, String input) {
+		assertEquals(expected, URIUtils.urlDecode(input));
 	}
 
 	public void testUrlDecode() {
-		assertEquals("file name", URIUtils.urlDecode("file%20name"));
-		assertEquals("file+name", URIUtils.urlDecode("file+name")); // preserve + sign
-		assertEquals("file/name", URIUtils.urlDecode("file%2Fname"));
-		assertEquals("milan.krivanek@javlin.eu", URIUtils.urlDecode("milan.krivanek%40javlin.eu"));
-		assertEquals("path?query", URIUtils.urlDecode("path%3Fquery"));
-		assertEquals("path#fragment", URIUtils.urlDecode("path%23fragment"));
-		assertEquals("path%23fragment", URIUtils.urlDecode("path%2523fragment")); // no double unescaping
-		assertTrue(URIUtils.urlDecode("").isEmpty());
+		testUrlDecode("file name", "file%20name");
+		testUrlDecode("file+name", "file+name"); // preserve + sign
+		testUrlDecode("file/name", "file%2Fname");
+		testUrlDecode("milan.krivanek@javlin.eu", "milan.krivanek%40javlin.eu");
+		testUrlDecode("path?query", "path%3Fquery");
+		testUrlDecode("path#fragment", "path%23fragment");
+		testUrlDecode("path%23fragment", "path%2523fragment"); // no double unescaping
+		testUrlDecode("", "");
 
-		assertEquals("file name", URIUtils.urlDecode("file name"));
-		assertEquals("file name", URIUtils.urlDecode("file name"));
-		assertEquals("file/name", URIUtils.urlDecode("file/name"));
-		assertEquals("milan.krivanek@javlin.eu", URIUtils.urlDecode("milan.krivanek@javlin.eu"));
-		assertEquals("path?query", URIUtils.urlDecode("path?query"));
-		assertEquals("path#fragment", URIUtils.urlDecode("path#fragment"));
+		testUrlDecode("file name", "file name");
+		testUrlDecode("file name", "file name");
+		testUrlDecode("file/name", "file/name");
+		testUrlDecode("milan.krivanek@javlin.eu", "milan.krivanek@javlin.eu");
+		testUrlDecode("path?query", "path?query");
+		testUrlDecode("path#fragment", "path#fragment");
 		
 		// CLO-9981: URIUtils.urlDecode() should be consistent with java.net.URI
 		URI uri = URI.create("s3://AKIAIG6EFMJBH6F7WYZQ:A+B%2FC@s3.eu-central-1.amazonaws.com/cloveretl.test.eu/test+fo/?a+b+b");
-		assertEquals(uri.getUserInfo(), URIUtils.urlDecode(uri.getRawUserInfo()));
-		assertEquals(uri.getPath(), URIUtils.urlDecode(uri.getRawPath()));
-		assertEquals(uri.getQuery(), URIUtils.urlDecode(uri.getRawQuery()));
+		testUrlDecode(uri.getUserInfo(), uri.getRawUserInfo());
+		testUrlDecode(uri.getPath(), uri.getRawPath());
+		testUrlDecode(uri.getQuery(), uri.getRawQuery());
+	}
+	
+	private void testResolve(String base, String pathUri, String expected) {
+		URI baseUri = URI.create(base);
+		assertEqualUris(expected, URIUtils.resolve(baseUri, pathUri));
+		assertEqualUris(expected, URIUtils.resolve(baseUri, URI.create(pathUri)));
 	}
 
+	public void testResolve() {
+		testResolve(
+				"s3:(proxy://user:password@hostname.com:8080)//s3.amazonaws.com/cloveretl.engine.test/",
+				"file.txt",
+				"s3:(proxy://user:password@hostname.com:8080)//s3.amazonaws.com/cloveretl.engine.test/file.txt"
+		);
+
+		testResolve(
+				"s3://s3.amazonaws.com/cloveretl.engine.test/",
+				"file.txt",
+				"s3://s3.amazonaws.com/cloveretl.engine.test/file.txt"
+		);
+
+		testResolve(
+				"s3://s3.amazonaws.com/cloveretl.engine.test/",
+				"http://seznam.cz",
+				"http://seznam.cz"
+		);
+
+		testResolve(
+				"s3:(proxy://user:password@hostname.com:8080)//s3.amazonaws.com/cloveretl.engine.test/",
+				"http://seznam.cz",
+				"http://seznam.cz"
+		);
+
+		testResolve(
+				"http://seznam.cz",
+				"s3:(proxy://user:password@hostname.com:8080)//s3.amazonaws.com/cloveretl.engine.test/",
+				"s3:(proxy://user:password@hostname.com:8080)//s3.amazonaws.com/cloveretl.engine.test/"
+		);
+	}
+	
+	private void testInsertProxyString(String uri, String proxyString, String expected) {
+		assertEqualUris(expected, URIUtils.insertProxyString(URI.create(uri), proxyString));
+	}
+	
+	public void testInsertProxyString() {
+		testInsertProxyString("sftp://hostname/path", "proxy://user:password@proxyhost:8080", "sftp:(proxy://user:password@proxyhost:8080)//hostname/path");
+		testInsertProxyString("sftp://hostname/path", "proxy://user:p%3A%20%3B%23%25%26*%2B%24ssword@proxyhost:8080", "sftp:(proxy://user:p%3A%20%3B%23%25%26*%2B%24ssword@proxyhost:8080)//hostname/path");
+		testInsertProxyString("s3://s3.eu-central-1.amazonaws.com/cloveretl.test.eu/test-fo/*.csv", "proxy://user:p%3A%20%3B%23%25%26*%2B%24ssword@proxyhost:8080", "s3:(proxy://user:p%3A%20%3B%23%25%26*%2B%24ssword@proxyhost:8080)//s3.eu-central-1.amazonaws.com/cloveretl.test.eu/test-fo/*.csv");
+		testInsertProxyString("sftp://hostname/path", "proxy://proxyhost:8080", "sftp:(proxy://proxyhost:8080)//hostname/path");
+		testInsertProxyString("sftp://hostname/path", "proxy://proxyhost", "sftp:(proxy://proxyhost)//hostname/path");
+		testInsertProxyString("sftp://hostname/path", "proxysocks://user:password@proxyhost:8080", "sftp:(proxysocks://user:password@proxyhost:8080)//hostname/path");
+		testInsertProxyString("sftp://hostname/path", "direct:", "sftp:(direct:)//hostname/path");
+		testInsertProxyString("sftp://hostname/path", null, "sftp://hostname/path");
+	}
+	
+	private void testRemoveProxyString(String expected, String uri) {
+		assertEqualUris(expected, URIUtils.removeProxyString(URI.create(uri)));
+	}
+
+	public void testRemoveProxyString() {
+		testRemoveProxyString("sftp://hostname/path", "sftp:(proxy://user:password@proxyhost:8080)//hostname/path");
+		testRemoveProxyString("sftp://hostname/path", "sftp:(proxy://user:p%3A%20%3B%23%25%26*%2B%24ssword@proxyhost:8080)//hostname/path");
+		testRemoveProxyString("s3://s3.eu-central-1.amazonaws.com/cloveretl.test.eu/test-fo/*.csv", "s3:(proxy://user:p%3A%20%3B%23%25%26*%2B%24ssword@proxyhost:8080)//s3.eu-central-1.amazonaws.com/cloveretl.test.eu/test-fo/*.csv");
+		testRemoveProxyString("sftp://hostname/path", "sftp:(proxy://proxyhost:8080)//hostname/path");
+		testRemoveProxyString("sftp://hostname/path", "sftp:(proxy://proxyhost)//hostname/path");
+		testRemoveProxyString("sftp://hostname/path", "sftp:(proxysocks://user:password@proxyhost:8080)//hostname/path");
+		testRemoveProxyString("sftp://hostname/path", "sftp:(direct:)//hostname/path");
+		testRemoveProxyString("sftp://hostname/path", "sftp://hostname/path");
+		testRemoveProxyString("ftp://test:p%40ssword@hostname", "ftp://test:p%40ssword@hostname");
+	}
+	
+	private void testGetPath(String expected, String uri) {
+		assertEquals(expected, URIUtils.getPath(URI.create(uri)));
+	}
+	
+	public void testGetPath() {
+		testGetPath("/path", "sftp:(proxy://user:password@proxyhost:8080)//hostname/path");
+		testGetPath("/path", "sftp:(proxy://user:p%3A%20%3B%23%25%26*%2B%24ssword@proxyhost:8080)//hostname/path");
+		testGetPath("/cloveretl.test.eu/test-fo/*.csv", "s3:(proxy://user:p%3A%20%3B%23%25%26*%2B%24ssword@proxyhost:8080)//s3.eu-central-1.amazonaws.com/cloveretl.test.eu/test-fo/*.csv");
+		testGetPath("/path", "sftp:(proxy://proxyhost:8080)//hostname/path");
+		testGetPath("/path", "sftp:(proxy://proxyhost)//hostname/path");
+		testGetPath("/path", "sftp:(proxysocks://user:password@proxyhost:8080)//hostname/path");
+		testGetPath("/path", "sftp:(direct:)//hostname/path");
+		testGetPath("/path", "sftp://hostname/path");
+		testGetPath("", "ftp://test:p%40ssword@hostname");
+	}
+	
 }

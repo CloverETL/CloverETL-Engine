@@ -40,12 +40,12 @@ public class S3StreamHandler extends URLStreamHandler {
 
 	@Override
 	protected URLConnection openConnection(URL u) throws IOException {
-		return new S3URLConnection(u);
+		return openConnection(u, null);
 	}
 
 	@Override
 	protected URLConnection openConnection(URL u, Proxy p) throws IOException {
-		return openConnection(u);
+		return new S3URLConnection(u, p);
 	}
 
 	@Override

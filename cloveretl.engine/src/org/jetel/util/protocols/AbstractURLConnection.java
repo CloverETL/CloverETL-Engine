@@ -37,15 +37,15 @@ import org.jetel.component.fileoperation.pool.PoolableConnection;
  *
  * @created 20. 3. 2015
  */
-public abstract class AbstractURLConnection extends URLConnection implements Validable {
+public abstract class AbstractURLConnection<T extends Authority> extends URLConnection implements Validable {
 
 	private static final ConnectionPool pool = ConnectionPool.getInstance();
 
 	private static final Log logger = LogFactory.getLog(AbstractURLConnection.class);
 	
-	protected final Authority authority;
+	protected T authority;
 
-	protected AbstractURLConnection(URL url, Authority authority) {
+	protected AbstractURLConnection(URL url, T authority) {
 		super(url);
 		this.authority = authority;
 	}
@@ -100,7 +100,7 @@ public abstract class AbstractURLConnection extends URLConnection implements Val
 		}
 	}
 	
-	protected Authority getAuthority() {
+	protected T getAuthority() {
 		return authority;
 	}
 

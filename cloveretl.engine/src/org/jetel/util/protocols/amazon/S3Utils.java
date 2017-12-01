@@ -32,6 +32,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
+import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.component.fileoperation.pool.PooledS3Connection;
 import org.jetel.util.ExceptionUtils;
 
@@ -113,7 +114,7 @@ public class S3Utils {
 	 * @return [bucketName, key] or [bucketName]
 	 */
 	public static String[] getPath(URI uri) {
-		String path = uri.getPath();
+		String path = URIUtils.getPath(uri);
 		if (path.startsWith(FORWARD_SLASH)) {
 			path = path.substring(1);
 		}
