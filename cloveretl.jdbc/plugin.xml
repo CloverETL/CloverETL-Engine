@@ -225,11 +225,10 @@
 		<parameter id="database" value="MSACCESSJAVA"/>
 		<parameter id="name" value="Microsoft Access"/>
 		<parameter id="dbDriver" value="net.ucanaccess.jdbc.UcanaccessDriver"/>
-		<parameter id="driverLibrary" value="lib/msaccess/ucanaccess-2.0.9.5.jar;lib/msaccess/jackcess-2.1.0.jar;lib/msaccess/hsqldb.jar;lib/msaccess/commons-lang-2.6.jar"/>
+		<parameter id="driverLibrary" value="lib/msaccess/ucanaccess-4.0.2.jar;lib/msaccess/jackcess-2.1.6.jar;lib/msaccess/hsqldb.jar"/>
 		<parameter id="urlHint">
 			<value>jdbc:ucanaccess://database_file</value>
 			<value>jdbc:ucanaccess://database_file;newdatabaseversion=V2010</value>
-			<value>jdbc:ucanaccess://database_file;newdatabaseversion=V2010;singleconnection=true</value>
 		</parameter>
 		<parameter id="jdbcSpecific" value="MSACCESSJAVA"/>
 	</extension>
