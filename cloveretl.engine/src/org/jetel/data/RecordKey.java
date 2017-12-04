@@ -751,11 +751,14 @@ public class RecordKey {
 	 * @see Dedup component
 	 */
 	public RecordKey getReducedRecordKey() {
-		int[] key = new int[getLength()];
-		for (int i = 0; i < key.length; i++) {
-			key[i] = i;
+		//create reduced index of key fields, for example from [3, 4, 2] is created [1, 2, 0]
+		int[] reducedIndexes = new int[keyFields.length];
+		for (int i = 0; i < reducedIndexes.length; i++) {
+			reducedIndexes[i] = keyMetadata.getField(metadata.getField(keyFields[i]).getName()).getNumber();
 		}
-		RecordKey reducedRecordKey = new RecordKey(key, getKeyRecordMetadata());
+		
+		//create new key with reduced index
+		RecordKey reducedRecordKey = new RecordKey(reducedIndexes, getKeyRecordMetadata());
 		reducedRecordKey.setEqualNULLs(equalNULLs);
 		return reducedRecordKey;
 	}
