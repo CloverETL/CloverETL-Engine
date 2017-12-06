@@ -11,6 +11,10 @@
 	<groupId>com.cloveretl</groupId>
 	<artifactId>cloveretl.engine</artifactId>
 	<packaging>jar</packaging>
+	
+	<properties>
+		<proguardVersion>5.3.3</proguardVersion>
+	</properties>	
 
 	<dependencies>
 		<dependency>
@@ -355,6 +359,126 @@
 		</plugins>
 	</pluginManagement>
 	</build>
+	
+	<profiles>
+		<profile>
+			<id>obfuscate</id>
+		    <activation>
+				<property>
+        			<name>obfuscate.build</name>
+      			</property>
+    		</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<version>3.0.1</version>
+						<executions>
+							<execution>
+								<id>proguard-classpath</id>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>build-classpath</goal>
+								</goals>
+								<configuration>
+									<outputProperty>obfuscate.classpath</outputProperty>
+									<excludeArtifactIds>xml-apis</excludeArtifactIds>
+								</configuration>
+							</execution>		
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>1.8</version>
+						<executions>
+							<execution>
+								<id>obfuscate</id>
+								<phase>package</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<target>
+										<taskdef resource="proguard/ant/task.properties"/>
+				
+										<pathconvert property="proguard-libs.classpath">
+											<path path="${obfuscate.classpath}"/> 
+										</pathconvert>
+										
+										<mkdir dir="${project.build.directory}/build-tmp"/>
+			
+										<proguard configuration="${project.basedir}/proguard.txt"
+											shrink="false"
+											optimize="false"
+											obfuscate="true"
+											verbose="false"
+											usemixedcaseclassnames="false"
+											skipnonpubliclibraryclasses="false"
+											skipnonpubliclibraryclassmembers="false"
+											renamesourcefileattribute="Main"
+											useuniqueclassmembernames="true"
+											
+											printmapping="${project.build.directory}/build-tmp/proGuard-mapping-main.txt"
+											printseeds="${project.build.directory}/build-tmp/proGuard-seeds-main.txt"
+											dump="${project.build.directory}/build-tmp/proGuard-dump-main.txt">
+											
+											<injar file="${project.build.directory}/${project.artifactId}.jar"/>
+											<outjar file="${project.build.directory}/${project.artifactId}-obfuscated.jar"/>
+	    		
+											<libraryjar location="${java.home}/lib/rt.jar" />
+											<libraryjar location="${java.home}/lib/jce.jar" />
+											<libraryjar path="${proguard-libs.classpath}"/>
+										</proguard>
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+						<dependencies>
+							<dependency>
+								<groupId>net.sf.proguard</groupId>
+								<artifactId>proguard-base</artifactId>
+								<version>${proguardVersion}</version>
+							</dependency>
+							<dependency>
+								<groupId>net.sf.proguard</groupId>
+								<artifactId>proguard-anttask</artifactId>
+								<version>${proguardVersion}</version>
+							</dependency>							
+						</dependencies>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<version>3.0.0</version>      
+						<executions>
+							<execution>
+								<id>attach-artifacts-obfuscate</id>
+								<phase>package</phase>
+								<goals>
+									<goal>attach-artifact</goal>
+								</goals>
+								<configuration>
+									<artifacts>
+										<artifact>
+											<file>${project.build.directory}/${project.artifactId}-obfuscated.jar</file>
+											<type>jar</type>
+											<classifier>obfuscated</classifier>
+										</artifact>
+										<artifact>
+											<file>${project.build.directory}/build-tmp/proGuard-mapping-main.txt</file>
+											<type>txt</type>
+											<classifier>mapping</classifier>
+										</artifact>
+									</artifacts>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>					
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 	<repositories>
 		<repository>
