@@ -21,6 +21,7 @@ package org.jetel.component.fileoperation;
 import static java.text.MessageFormat.format;
 
 import java.io.File;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
@@ -32,8 +33,10 @@ import org.jetel.data.Defaults;
  * The FileManager and related classes
  * are considered internal and may change in the future.
  */
-public abstract class CloverURI {
+public abstract class CloverURI implements Serializable {
 	
+	private static final long serialVersionUID = -6835691054654957465L;
+
 	public static final String SEPARATOR = Defaults.DEFAULT_PATH_SEPARATOR_REGEX;
 	
 	public static final String PATH_SEPARATOR = "/"; //$NON-NLS-1$

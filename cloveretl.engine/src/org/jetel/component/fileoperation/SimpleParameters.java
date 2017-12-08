@@ -18,6 +18,8 @@
  */
 package org.jetel.component.fileoperation;
 
+import java.io.IOException;
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Date;
@@ -25,7 +27,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class SimpleParameters implements Parameters, Cloneable {
+import org.jetel.exception.JetelRuntimeException;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+public class SimpleParameters implements Serializable, Parameters, Cloneable {
+	
+	private static final long serialVersionUID = -1597353175731941561L;
 	
 	// so far, no subclass supports more than 3 parameters, use initial size of 5
 	private Map<String, Object> map = new HashMap<String, Object>(5);
@@ -63,7 +72,9 @@ public class SimpleParameters implements Parameters, Cloneable {
 		return map.toString();
 	}
 
-	public static class ListParameters extends SimpleParameters {
+	public static class ListParameters extends SimpleParameters implements Serializable {
+		private static final long serialVersionUID = 7287530644468245893L;
+		
 		public static final String RECURSIVE = "recursive"; //$NON-NLS-1$
 		public static final String LIST_DIRECTORY_CONTENTS = "listDirectoryContents"; //$NON-NLS-1$
 		
@@ -89,7 +100,9 @@ public class SimpleParameters implements Parameters, Cloneable {
 		}
 	}
 
-	public static class DeleteParameters extends SimpleParameters {
+	public static class DeleteParameters extends SimpleParameters implements Serializable {
+		private static final long serialVersionUID = -8115947854087985478L;
+		
 		public static final String RECURSIVE = "recursive"; //$NON-NLS-1$
 		
 		public DeleteParameters() {
@@ -105,7 +118,9 @@ public class SimpleParameters implements Parameters, Cloneable {
 		}
 	}
 
-	public static class MoveParameters extends SimpleParameters {
+	public static class MoveParameters extends SimpleParameters implements Serializable {
+		private static final long serialVersionUID = 3337277685618520468L;
+		
 		public static final String OVERWRITE = "overwrite"; //$NON-NLS-1$
 		public static final String MAKE_PARENT_DIRS = "makeParentDirs"; //$NON-NLS-1$
 		
@@ -167,7 +182,9 @@ public class SimpleParameters implements Parameters, Cloneable {
 		}
 	}
 
-	public static class CopyParameters extends SimpleParameters {
+	public static class CopyParameters extends SimpleParameters implements Serializable {
+		private static final long serialVersionUID = 1L;
+		
 		public static final String RECURSIVE = "recursive"; //$NON-NLS-1$
 		public static final String OVERWRITE = "overwrite"; //$NON-NLS-1$
 		public static final String MAKE_PARENT_DIRS = "makeParentDirs"; //$NON-NLS-1$
@@ -228,7 +245,8 @@ public class SimpleParameters implements Parameters, Cloneable {
 		}
 	}
 
-	public static class CreateParameters extends SimpleParameters {
+	public static class CreateParameters extends SimpleParameters implements Serializable {
+		private static final long serialVersionUID = 1L;
 
 		@Override
 		public CreateParameters clone() {
@@ -269,7 +287,8 @@ public class SimpleParameters implements Parameters, Cloneable {
 		}
 	}
 
-	public static class InfoParameters extends SimpleParameters {
+	public static class InfoParameters extends SimpleParameters implements Serializable {
+		private static final long serialVersionUID = 228106520703846942L;
 
 		@Override
 		public InfoParameters clone() {
@@ -278,7 +297,8 @@ public class SimpleParameters implements Parameters, Cloneable {
 
 	}
 
-	public static class ResolveParameters extends SimpleParameters {
+	public static class ResolveParameters extends SimpleParameters implements Serializable {
+		private static final long serialVersionUID = 361471721261204946L;
 
 		@Override
 		public ResolveParameters clone() {
@@ -287,7 +307,8 @@ public class SimpleParameters implements Parameters, Cloneable {
 
 	}
 
-	public static class ReadParameters extends SimpleParameters {
+	public static class ReadParameters extends SimpleParameters implements Serializable {
+		private static final long serialVersionUID = -1499640681705748118L;
 
 		@Override
 		public ReadParameters clone() {
@@ -296,7 +317,8 @@ public class SimpleParameters implements Parameters, Cloneable {
 
 	}
 
-	public static class WriteParameters extends SimpleParameters {
+	public static class WriteParameters extends SimpleParameters implements Serializable {
+		private static final long serialVersionUID = 5978094017352252524L;
 
 		@Override
 		public WriteParameters clone() {
@@ -305,7 +327,8 @@ public class SimpleParameters implements Parameters, Cloneable {
 
 	}
 
-	public static class FileParameters extends SimpleParameters {
+	public static class FileParameters extends SimpleParameters implements Serializable {
+		private static final long serialVersionUID = 1257715659014888845L;
 
 		@Override
 		public WriteParameters clone() {
