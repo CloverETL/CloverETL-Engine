@@ -43,10 +43,6 @@
 		<DeleteFile file="data-out/sortedByTotalTax.xlsx"/>
 	</FunctionalTest>
 	
-	<FunctionalTest ident="WebServicesHTTP" graphFile="graph/WebServicesHTTP.grf" />
-	
-	<FunctionalTest ident="WebServicesWSClient" graphFile="graph/WebServicesWSClient.grf" />
-	
 	<FunctionalTest ident="WritingTextData" graphFile="graph/WritingTextData.grf">
 		<FlatFile outputFile="data-out/customers/AK.txt" supposedFile="supposed-out/AK.txt"/>
 		<FlatFile outputFile="data-out/customers/WY.txt" supposedFile="supposed-out/WY.txt"/>
