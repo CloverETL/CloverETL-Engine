@@ -1185,6 +1185,10 @@ public class FileUtils {
 		return input.startsWith("zip:");
 	}
 	
+	public static boolean isProxy(String input) {
+		return ProxyConfiguration.isProxy(input);
+	}
+	
 	public static boolean isRemoteFile(String input) {
 		if (input == null) {
 			return false;
@@ -1695,7 +1699,7 @@ public class FileUtils {
 	 */
 	public static void createParentDirs(URL contextURL, String fileURL) throws ComponentNotReadyException {
 		try {
-			URL innerMostURL = FileUtils.getFileURL(contextURL, FileURLParser.getMostInnerAddress(fileURL));
+			URL innerMostURL = FileUtils.getFileURL(contextURL, FileURLParser.getMostInnerAddress(fileURL, false));
 	    	String innerMostURLString = innerMostURL.toString();
 			boolean isFile = !innerMostURLString.endsWith("/") && !innerMostURLString.endsWith("\\");
         	if (FileUtils.isLocalFile(contextURL, innerMostURLString)) {
@@ -1708,9 +1712,9 @@ public class FileUtils {
         	} else {
         		Operation operation = Operation.create(innerMostURL.getProtocol());
         		FileManager manager = FileManager.getInstance();
-        		String sFile = isFile ? URIUtils.getParentURI(URI.create(innerMostURLString)).toString() : innerMostURLString;
+        		String sDirectory = isFile ? URIUtils.getParentURI(URI.create(innerMostURLString)).toString() : innerMostURLString;
         		if (manager.canPerform(operation)) {
-        			manager.create(CloverURI.createURI(sFile), new CreateParameters().setDirectory(true).setMakeParents(true));
+        			manager.create(CloverURI.createURI(sDirectory), new CreateParameters().setDirectory(true).setMakeParents(true));
         			// ignore the result
         		}
         	}

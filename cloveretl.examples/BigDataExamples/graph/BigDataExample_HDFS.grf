@@ -81,7 +81,7 @@ Demonstrates how CloverETL reads and writes key/value pairs in Hadoop HDFS]]></a
 
 - the packaged public data file is a sample. please download the full version (+500MB) here:
  
-[https://explore.data.gov/dataset/White-House-Visitor-Records-Requests/644b-gaut]]]></attr>
+[https://obamawhitehouse.archives.gov/goodgovernment/tools/visitor-records]]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="429" id="Note1" textColor="000000" width="267" x="682" y="547">
 <attr name="text"><![CDATA[h3. IMPORTANT NOTE
@@ -144,7 +144,7 @@ The bundled data file is only a sample.
 
 For performance testing you can download the full version (+500MB) here: 
 
-[https://explore.data.gov/dataset/White-House-Visitor-Records-Requests/644b-gaut]]]></attr>
+[https://obamawhitehouse.archives.gov/goodgovernment/tools/visitor-records]]]></attr>
 </RichTextNote>
 <Dictionary/>
 </Global>

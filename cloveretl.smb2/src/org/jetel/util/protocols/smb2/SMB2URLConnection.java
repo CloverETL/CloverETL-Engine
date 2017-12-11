@@ -28,7 +28,7 @@ import org.jetel.component.fileoperation.pool.PooledSMB2Connection;
 import org.jetel.component.fileoperation.pool.SMB2Authority;
 import org.jetel.util.protocols.AbstractURLConnection;
 
-public class SMB2URLConnection extends AbstractURLConnection {
+public class SMB2URLConnection extends AbstractURLConnection<SMB2Authority> {
 	
 	/**
 	 * @param url

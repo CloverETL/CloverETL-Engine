@@ -91,6 +91,12 @@ public class FileURLParserTest extends CloverTestCase {
 		}
 	}
 
+	public void testMostInnerAddress2() {
+		assertEquals("proxy://user:password@hostname", FileURLParser.getMostInnerAddress("sftp:(proxy://user:password@hostname)//sftp.sftphost.com/path/to/file.txt", true));
+		assertEquals("sftp:(proxy://user:password@hostname)//sftp.sftphost.com/path/to/file.txt", FileURLParser.getMostInnerAddress("sftp:(proxy://user:password@hostname)//sftp.sftphost.com/path/to/file.txt", false));
+		assertEquals("/path/name.g?", FileURLParser.getMostInnerAddress("tar:(gzip:(/path/name.g?)#filename.zi*)#name.???", true));
+	}
+
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#tearDown()
 	 */

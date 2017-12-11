@@ -20,7 +20,6 @@ package org.jetel.component.fileoperation.pool;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URI;
@@ -37,8 +36,8 @@ import org.jetel.component.fileoperation.result.InfoResult;
 import org.jetel.component.fileoperation.result.ListResult;
 import org.jetel.graph.ContextProvider;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.protocols.ProxyConfiguration;
 import org.jetel.util.protocols.UserInfo;
-import org.jetel.util.protocols.proxy.ProxyProtocolEnum;
 import org.jetel.util.string.StringUtils;
 
 public class SFTPAuthority extends AbstractAuthority implements Authority {
@@ -168,28 +167,7 @@ public class SFTPAuthority extends AbstractAuthority implements Authority {
 		if (proxy == null) {
 			return null;
 		} else if (proxyString == null) {
-			ProxyProtocolEnum type = null;
-			switch (this.proxy.type()) {
-			case DIRECT:
-				type = ProxyProtocolEnum.NO_PROXY;
-				break;
-			case HTTP:
-				type = ProxyProtocolEnum.PROXY_HTTP;
-				break;
-			case SOCKS:
-				type = ProxyProtocolEnum.PROXY_SOCKS;
-				break;
-			}
-			StringBuilder sb = new StringBuilder();
-			sb.append(type.toString()).append("://");
-			if (proxy.type() != Proxy.Type.DIRECT) {
-				if ((proxyCredentials != null) && (proxyCredentials.getUserInfo() != null)) {
-					sb.append(proxyCredentials.getUserInfo()).append('@');
-				}
-				InetSocketAddress address = (InetSocketAddress) proxy.address();
-				sb.append(address.getHostName()).append(':').append(address.getPort());
-			}
-			proxyString = sb.toString();
+			proxyString = ProxyConfiguration.toString(proxy, proxyCredentials);
 		}
 		
 		return proxyString;

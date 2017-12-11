@@ -319,13 +319,13 @@ public class TrackingMetadataToolkit {
 	}
 	
 	private static void populateGraph(GraphTracking graphTracking, DataRecord record) {
-		populateField(record, composeFieldName(graphTracking, Attribute.START_TIME), graphTracking.getStartTime());
-		populateField(record, composeFieldName(graphTracking, Attribute.END_TIME), graphTracking.getEndTime());
-		populateField(record, composeFieldName(graphTracking, Attribute.EXECUTION_TIME), graphTracking.getExecutionTime());
-		populateField(record, composeFieldName(graphTracking, Attribute.GRAPH_NAME), graphTracking.getGraphName());
-		populateField(record, composeFieldName(graphTracking, Attribute.RESULT), graphTracking.getResult().message());
+		populateField(record, composeFieldName(graphTracking, Attribute.START_TIME), graphTracking.getStartTime(), Long.class);
+		populateField(record, composeFieldName(graphTracking, Attribute.END_TIME), graphTracking.getEndTime(), Long.class);
+		populateField(record, composeFieldName(graphTracking, Attribute.EXECUTION_TIME), graphTracking.getExecutionTime(), Long.class);
+		populateField(record, composeFieldName(graphTracking, Attribute.GRAPH_NAME), graphTracking.getGraphName(), String.class);
+		populateField(record, composeFieldName(graphTracking, Attribute.RESULT), graphTracking.getResult().message(), String.class);
 		PhaseTracking runningPhase = graphTracking.getRunningPhaseTracking();
-		populateField(record, composeFieldName(graphTracking, Attribute.RUNNING_PHASE), ((runningPhase==null) ? null : runningPhase.getPhaseLabel()) );
+		populateField(record, composeFieldName(graphTracking, Attribute.RUNNING_PHASE), ((runningPhase==null) ? null : runningPhase.getPhaseNum()), Integer.class);
 
 		PhaseTracking[] phases = graphTracking.getPhaseTracking();
 		if (phases != null) { //it is not probably necessary, just for sure
@@ -336,11 +336,11 @@ public class TrackingMetadataToolkit {
 	}
 	
 	private static void populatePhase(PhaseTracking phaseTracking, DataRecord record) {
-		populateField(record, composeFieldName(phaseTracking, Attribute.START_TIME), phaseTracking.getStartTime());
-		populateField(record, composeFieldName(phaseTracking, Attribute.END_TIME), phaseTracking.getEndTime());
-		populateField(record, composeFieldName(phaseTracking, Attribute.EXECUTION_TIME), phaseTracking.getExecutionTime());
-		populateField(record, composeFieldName(phaseTracking, Attribute.MEMORY_UTILIZATION), phaseTracking.getMemoryUtilization());
-		populateField(record, composeFieldName(phaseTracking, Attribute.RESULT), phaseTracking.getResult().message());
+		populateField(record, composeFieldName(phaseTracking, Attribute.START_TIME), phaseTracking.getStartTime(), Long.class);
+		populateField(record, composeFieldName(phaseTracking, Attribute.END_TIME), phaseTracking.getEndTime(), Long.class);
+		populateField(record, composeFieldName(phaseTracking, Attribute.EXECUTION_TIME), phaseTracking.getExecutionTime(), Long.class);
+		populateField(record, composeFieldName(phaseTracking, Attribute.MEMORY_UTILIZATION), phaseTracking.getMemoryUtilization(), Long.class);
+		populateField(record, composeFieldName(phaseTracking, Attribute.RESULT), phaseTracking.getResult().message(), String.class);
 
 		NodeTracking[] nodes = phaseTracking.getNodeTracking();
 		if (nodes != null) {
@@ -351,14 +351,14 @@ public class TrackingMetadataToolkit {
 	}
 	
 	private static void populateNode(NodeTracking nodeTracking, DataRecord record) {
-		populateField(record, composeFieldName(nodeTracking, Attribute.NAME), nodeTracking.getNodeName());
-		populateField(record, composeFieldName(nodeTracking, Attribute.USAGE_CPU), nodeTracking.getUsageCPU());
-		populateField(record, composeFieldName(nodeTracking, Attribute.USAGE_USER), nodeTracking.getUsageUser());
-		populateField(record, composeFieldName(nodeTracking, Attribute.PEAK_USAGE_CPU), nodeTracking.getPeakUsageCPU());
-		populateField(record, composeFieldName(nodeTracking, Attribute.PEAK_USAGE_USER), nodeTracking.getPeakUsageUser());
-		populateField(record, composeFieldName(nodeTracking, Attribute.TOTAL_CPU_TIME), nodeTracking.getTotalCPUTime());
-		populateField(record, composeFieldName(nodeTracking, Attribute.TOTAL_USER_TIME), nodeTracking.getTotalUserTime());
-		populateField(record, composeFieldName(nodeTracking, Attribute.RESULT), nodeTracking.getResult().message());
+		populateField(record, composeFieldName(nodeTracking, Attribute.NAME), nodeTracking.getNodeName(), String.class);
+		populateField(record, composeFieldName(nodeTracking, Attribute.USAGE_CPU), nodeTracking.getUsageCPU(), Float.class);
+		populateField(record, composeFieldName(nodeTracking, Attribute.USAGE_USER), nodeTracking.getUsageUser(), Float.class);
+		populateField(record, composeFieldName(nodeTracking, Attribute.PEAK_USAGE_CPU), nodeTracking.getPeakUsageCPU(), Float.class);
+		populateField(record, composeFieldName(nodeTracking, Attribute.PEAK_USAGE_USER), nodeTracking.getPeakUsageUser(), Float.class);
+		populateField(record, composeFieldName(nodeTracking, Attribute.TOTAL_CPU_TIME), nodeTracking.getTotalCPUTime(), Long.class);
+		populateField(record, composeFieldName(nodeTracking, Attribute.TOTAL_USER_TIME), nodeTracking.getTotalUserTime(), Long.class);
+		populateField(record, composeFieldName(nodeTracking, Attribute.RESULT), nodeTracking.getResult().message(), String.class);
 
 		InputPortTracking[] inputPorts = nodeTracking.getInputPortTracking();
 		if (inputPorts != null) {
@@ -376,17 +376,17 @@ public class TrackingMetadataToolkit {
 	}
 
 	private static void populatePort(PortTracking portTracking, DataRecord record, boolean isInput) {
-		populateField(record, composeFieldName(portTracking, Attribute.BYTE_FLOW, isInput), portTracking.getByteFlow());
-		populateField(record, composeFieldName(portTracking, Attribute.BYTE_PEAK, isInput), portTracking.getBytePeak());
-		populateField(record, composeFieldName(portTracking, Attribute.TOTAL_BYTES, isInput), portTracking.getTotalBytes());
-		populateField(record, composeFieldName(portTracking, Attribute.RECORD_FLOW, isInput), portTracking.getRecordFlow());
-		populateField(record, composeFieldName(portTracking, Attribute.RECORD_PEAK, isInput), portTracking.getRecordPeak());
-		populateField(record, composeFieldName(portTracking, Attribute.TOTAL_RECORDS, isInput), portTracking.getTotalRecords());
-		populateField(record, composeFieldName(portTracking, Attribute.WAITING_RECORDS, isInput), portTracking.getWaitingRecords());
-		populateField(record, composeFieldName(portTracking, Attribute.AVERAGE_WAITING_RECORDS, isInput), portTracking.getAverageWaitingRecords());
+		populateField(record, composeFieldName(portTracking, Attribute.BYTE_FLOW, isInput), portTracking.getByteFlow(), Integer.class);
+		populateField(record, composeFieldName(portTracking, Attribute.BYTE_PEAK, isInput), portTracking.getBytePeak(), Integer.class);
+		populateField(record, composeFieldName(portTracking, Attribute.TOTAL_BYTES, isInput), portTracking.getTotalBytes(), Long.class);
+		populateField(record, composeFieldName(portTracking, Attribute.RECORD_FLOW, isInput), portTracking.getRecordFlow(), Integer.class);
+		populateField(record, composeFieldName(portTracking, Attribute.RECORD_PEAK, isInput), portTracking.getRecordPeak(), Integer.class);
+		populateField(record, composeFieldName(portTracking, Attribute.TOTAL_RECORDS, isInput), portTracking.getTotalRecords(), Long.class);
+		populateField(record, composeFieldName(portTracking, Attribute.WAITING_RECORDS, isInput), portTracking.getWaitingRecords(), Integer.class);
+		populateField(record, composeFieldName(portTracking, Attribute.AVERAGE_WAITING_RECORDS, isInput), portTracking.getAverageWaitingRecords(), Integer.class);
 	}
 
-	private static void populateField(DataRecord trackingRecord, String fieldName, Object value) {
+	private static <T> void populateField(DataRecord trackingRecord, String fieldName, T value, Class<T> clazz) {
 		if (trackingRecord.hasField(fieldName)) {
 			trackingRecord.getField(fieldName).setValue(value);
 		}

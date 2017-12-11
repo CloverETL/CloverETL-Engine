@@ -2,6 +2,31 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-8-0
+------------
+
+* Data Services:
+  * CLO-12145	Allow to send payload using testing page
+  * CLO-12077	Allow to turn-off failure indication of DataService
+  * CLO-12075	More precise failure detection - allow to specify what is failure
+  * CLO-12045	Save runRecord if the endpoint is invoked from Swagger testing page
+  * CLO-12040	Show the cause of Data Service failure at State & History
+  * CLO-11884	Import DataServices configuration from DataServices section in UI
+  * CLO-11786	Export DataServices configuration from DataServices tab
+  *
+* Changes:
+  * CLO-12162	Using Up-to-date UCanAccess driver to version 4.0.2
+  * CLO-12091	Add search field into users and groups tables
+  * CLO-12064	Kerberos support in HadoopReader/Writer
+  * CLO-10185	Support of proxy in S3 URLs
+  * CLO-12123	SMB2: update smbj from 0.3.0 to 0.5.1
+  * CLO-12059	MongoDBWriter: Add batch number to output mappings
+* Fixes:
+  * CLO-11399	REST Job fails if there are both enabled and disabled components connected to RestJobOutput
+  * CLO-10347	Improved performance of filtering of Execution History
+  * CLO-12110	Event listener manual task execution params are not passed
+
+
 REL-4-8-0-M1
 ------------
 
@@ -21,6 +46,20 @@ REL-4-8-0-M1
   * CLO-11637	New version of bulk operations in MongoDBWriter
 * Fixes:
   * CLO-11936	Throw error when multiple inputs are connected and response format is CSV
+
+
+REL-4-7-1
+---------
+
+* Fixes:
+  * CLO-12010 XMLWriter Skips Nested Records when Cache in Memory = True
+  * CLO-11239 Synced Server projects - ClassCastException after waking up
+  * CLO-11793 Fixed: Possible memory leak in Groovy shell
+  * CLO-11902 Data service: output data are replaced if multiple output ports are used
+  * CLO-11893 Improve context menu actions - Publish and Unpublish
+  * CLO-11886 Action to uninstall DataServices Example installed in server UI
+  * CLO-11876 DataServices: Testing page requires re-login
+  * CLO-11826 DataServices: Documentation URL page requires re-login
 
 
 REL-4-7-0

@@ -111,7 +111,7 @@ class InternalComplexPortData extends InternalPortData {
 			DataRecordKey key = new DataRecordKey();
 			key.fields = new DataField[keyIndices.length];
 			for (int i = 0; i < keyIndices.length; ++i) {
-				key.fields[i] = record.getField(keyIndices[i]);
+				key.fields[i] = record.getField(keyIndices[i]).duplicate();
 			}
 			return key;
 		}

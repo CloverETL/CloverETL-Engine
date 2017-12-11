@@ -515,7 +515,7 @@ public class PrimitiveS3OperationHandler implements RecursiveDeleteHandler {
 		try {
 			// escape special characters in the path
 			URI pathUri = new URI(null, null, path, null);
-			return baseUri.resolve(pathUri);
+			return URIUtils.resolve(baseUri, pathUri);
 		} catch (URISyntaxException e) {
 			throw new IOException(e);
 		}

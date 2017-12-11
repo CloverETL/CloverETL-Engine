@@ -18,11 +18,10 @@
  */
 package org.jetel.util.protocols;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLDecoder;
 
+import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.component.fileoperation.pool.Authority;
 import org.jetel.exception.JetelRuntimeException;
 
@@ -76,9 +75,21 @@ public class UserInfo {
 	public String getUserInfo() {
 		return userInfo;
 	}
+	
+	/**
+	 * Returns the decoded user name.
+	 * 
+	 * @return decoded user name
+	 */
 	public String getUser() {
 		return user;
 	}
+	
+	/**
+	 * Returns the decoded password.
+	 * 
+	 * @return decoded password
+	 */
 	public String getPassword() {
 		return password;
 	}
@@ -138,11 +149,7 @@ public class UserInfo {
 	}
 	
 	private static String decodeUserInfoPart(String s) {
-		try {
-			return URLDecoder.decode(s, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			return s;
-		}
+		return URIUtils.urlDecode(s);
 	}
 	
 }

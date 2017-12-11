@@ -21,6 +21,7 @@ package org.jetel.util.protocols.amazon;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -30,6 +31,9 @@ import org.jetel.component.fileoperation.pool.Authority;
 import org.jetel.component.fileoperation.pool.PooledS3Connection;
 import org.jetel.component.fileoperation.pool.S3Authority;
 import org.jetel.util.protocols.AbstractURLConnection;
+import org.jetel.util.protocols.ProxyAuthenticable;
+import org.jetel.util.protocols.ProxyConfiguration;
+import org.jetel.util.protocols.UserInfo;
 
 /**
  * S3 {@link URLConnection} that uses connection pooling.
@@ -39,7 +43,7 @@ import org.jetel.util.protocols.AbstractURLConnection;
  *
  * @created 19. 3. 2015
  */
-public class S3URLConnection extends AbstractURLConnection {
+public class S3URLConnection extends AbstractURLConnection<S3Authority> implements ProxyAuthenticable {
 	
 	private static URI toURI(URL url) throws IOException {
 		try {
@@ -50,10 +54,11 @@ public class S3URLConnection extends AbstractURLConnection {
 	}
 	
 	/**
-	 * @param url
+	 * @param url - plain URL without proxy
+	 * @param proxy - {@link Proxy} instance
 	 */
-	public S3URLConnection(URL url) throws IOException {
-		super(url, new S3Authority(toURI(url)));
+	public S3URLConnection(URL url, Proxy proxy) throws IOException {
+		super(url, new S3Authority(toURI(url), ProxyConfiguration.toString(proxy, null)));
 	}
 
 	@Override
@@ -74,8 +79,8 @@ public class S3URLConnection extends AbstractURLConnection {
 	}
 
 	@Override
-	protected S3Authority getAuthority() {
-		return (S3Authority) super.getAuthority();
+	public void setProxyCredentials(UserInfo userInfo) {
+		authority = authority.setProxyCredentials(userInfo);
 	}
 
 	

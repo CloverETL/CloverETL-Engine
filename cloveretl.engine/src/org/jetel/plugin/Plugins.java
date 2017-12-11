@@ -39,6 +39,7 @@ import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.database.ConnectionFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.GraphAnalyzerParticipantFactory;
 import org.jetel.graph.dictionary.DictionaryTypeFactory;
 import org.jetel.graph.runtime.AuthorityProxyFactory;
 import org.jetel.metadata.MetadataRepository;
@@ -187,6 +188,7 @@ public class Plugins {
         CustomPathResolverFactory.init();
         AuthorityProxyFactory.init();
         MetadataRepository.init();
+        GraphAnalyzerParticipantFactory.init();
     }
     
 	/**

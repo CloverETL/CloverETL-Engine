@@ -46,6 +46,15 @@ if( runTests ) {
 	}   
 	scenarios = testName + ".ts"
 }
+
+baseD = new File( new File('').absolutePath )
+engineD = new File( baseD, "cloveretl.engine" )
+testEnvironmentD = new File( baseD, "cloveretl.test.environment" )
+trustStoreF = new File(baseD, "cloveretl.test.scenarios/truststore/certs") //set default truststore - some tests might use different one
+
+def jobIdent = generateJobIdent(testName ? testName : jobGoal)
+new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
+new File(baseD, "cloveretl.examples/ExtExamples/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
  
 def startTime = new Date();
 println "======================= " + startTime
@@ -61,21 +70,11 @@ if( runTests ){
 println "versionSuffix = " + versionSuffix 
 println "buildNumber   = " + buildNumber 
 println "javaVersion   = " + javaVersion 
+println "jobIdent      = " + jobIdent
 println "====================================================="
 
 println "Environment variables:"
 System.getenv().each{ println "\t${it}" }
-
-baseD = new File( new File('').absolutePath )
-engineD = new File( baseD, "cloveretl.engine" ) 
-testEnvironmentD = new File( baseD, "cloveretl.test.environment" ) 
-trustStoreF = new File(baseD, "cloveretl.test.scenarios/truststore/certs") //set default truststore - some tests might use different one
-
-jobIdent = testName ? testName : jobGoal
-jobIdent += "-${versionSuffix}"
-jobIdent = jobIdent.replaceAll('-', '_').toLowerCase().replaceAll("after_commit", "a_c")
-new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
-new File(baseD, "cloveretl.examples/ExtExamples/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 
 getBouncyPath()
 
@@ -286,4 +285,14 @@ def String[] subEnv(m) {
 	n.collect { k, v -> "$k=$v" }
 }
 
-
+String generateJobIdent(String name) {
+	String jobIdent = '';
+	if (name ==~ /^.+-.+$/) {
+		name.split('-').each {
+			jobIdent += it.take(1)
+		}
+	} else {
+		jobIdent = name.take(3)
+	}
+	return jobIdent + String.format('%05d', Math.abs(new Random().nextInt(100000)))
+}

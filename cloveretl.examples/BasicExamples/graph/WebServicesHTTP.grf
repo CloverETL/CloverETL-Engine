@@ -25,7 +25,7 @@
 <RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="189" id="Note5" textColor="000000" width="716" x="47" y="96">
 <attr name="text"><![CDATA[h3. Web Service Call
  
-This graph shows a Caluclator web service being called.
+This graph shows a Calculator web service being called.
 
 * XML Data is loaded as an XML SOAP request
 * This data is then passed to the Web Service
@@ -104,13 +104,13 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Simple POST" guiX="236" guiY="490" id="HTTP_CONNECTOR2" outFileUrl="${DATAOUT_DIR}/PostResult.xml" password="clover" requestMethod="POST" type="HTTP_CONNECTOR" url="http://clover-4-7.server-demo-ec2.cloveretl.com/clover/request_processor/sandbox_content" username="clover">
+<Node enabled="enabled" guiName="Simple POST" guiX="236" guiY="490" id="HTTP_CONNECTOR2" outFileUrl="${DATAOUT_DIR}/PostResult.xml" password="clover" requestMethod="POST" type="HTTP_CONNECTOR" url="http://localhost:8083/clover/request_processor/sandbox_content" username="clover">
 <attr name="requestContent"><![CDATA[sandbox=default]]></attr>
 <attr name="headerProperties"><![CDATA[Content-Type=application/x-www-form-urlencoded
 ]]></attr>
 <attr name="guiDescription"><![CDATA[A simple POST can also be executed.  This is only shown for illustrative  purposes  and is deliberetely not connected within the graph]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Simple GET" guiX="47" guiY="496" id="SIMPLE_GET" outFileUrl="${DATAOUT_DIR}/GetResult.xml" password="clover" requestMethod="GET" type="HTTP_CONNECTOR" url="http://clover-4-7.server-demo-ec2.cloveretl.com/clover/request_processor/sandbox_content?sandbox=default" username="clover">
+<Node enabled="enabled" guiName="Simple GET" guiX="47" guiY="496" id="SIMPLE_GET" outFileUrl="${DATAOUT_DIR}/GetResult.xml" password="clover" requestMethod="GET" type="HTTP_CONNECTOR" url="http://localhost:8083/clover/request_processor/sandbox_content?sandbox=default" username="clover">
 <attr name="guiDescription"><![CDATA[A simple GET can also be executed.  This is only shown for illustrative  purposes  and is deliberetely not connected within the graph]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Trash" guiX="635" guiY="295" id="TRASH0" type="TRASH"/>

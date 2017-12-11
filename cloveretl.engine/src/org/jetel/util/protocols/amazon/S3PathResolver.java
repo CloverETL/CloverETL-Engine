@@ -46,14 +46,14 @@ public class S3PathResolver implements CustomPathResolver {
 	
 	private final FileManager manager = FileManager.getInstance();
 	
-	public static final String S3_PROTOCOL_URL_PREFIX = S3OperationHandler.S3_SCHEME + "://"; //$NON-NLS-1$
+	private static final String S3_PROTOCOL_URL_PREFIX = S3OperationHandler.S3_SCHEME + ":"; //$NON-NLS-1$
 
 	/**
 	 * Returns {@code true} if the input string is not null
-	 * and starts with "s3://".
+	 * and starts with "s3:".
 	 * 
 	 * @param url
-	 * @return {@code true} if {@code url} starts with "s3://"
+	 * @return {@code true} if {@code url} starts with "s3:"
 	 */
 	private static boolean isS3(String url) {
 		return (url != null) && url.startsWith(S3_PROTOCOL_URL_PREFIX);

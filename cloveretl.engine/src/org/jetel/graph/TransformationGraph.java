@@ -1788,7 +1788,7 @@ public final class TransformationGraph extends GraphElement {
 				return component;
 			}
 		}
-		throw new JetelRuntimeException("RestJobOutput component is not available.");
+		return null;
 	}
 
 	public String getUniqueNodeId(String nodeType) {
