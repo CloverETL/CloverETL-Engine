@@ -91,7 +91,7 @@
 </GraphParameters>
 <RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="118" id="Note0" textColor="000000" width="978" x="5" y="8">
 <attr name="text"><![CDATA[h3. Using Web Service tools
-Example demonstrates a functional Web service providing a list of *.grf files from the demo CloverETL server called by the WebServiceClient component. Example shows cascade of SOAP API calls. The results are returned in XML format which are then parsed, consolidated and written to an Excel file.
+Example demonstrates a functional Web service providing a list of *.grf files from the demo CloverETL server called by the WebServiceClient component. Example shows cascade of SOAP API calls. The results are returned in XML format which are then parsed, consolidated and written to an Excel file. This example requires CloverETL Server running locally on port 8083.
 ]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="DEF4AB" enabled="true" folded="false" fontSize="medium" height="99" id="Note3" textColor="000000" width="980" x="5" y="403">
@@ -119,7 +119,7 @@ Example demonstrates a functional Web service providing a list of *.grf files fr
 <attr name="filterExpression"><![CDATA[//#CTL2
 endsWith($in.0.name,".grf")]]></attr>
 </Node>
-<Node guiName="List files in graph directory" guiX="421" guiY="297" id="LIST_FILES_IN_GRAPH_DIRECTORY" operationName="{http://server.cloveretl.com/CloverServerWS/}CloverServerWS_service#CloverServerWS_port#ListFiles" type="WEB_SERVICE_CLIENT" wsdlURL="http://clover-4-7.server-demo-ec2.cloveretl.com/clover/webservice?wsdl">
+<Node guiName="List files in graph directory" guiX="421" guiY="297" id="LIST_FILES_IN_GRAPH_DIRECTORY" operationName="{http://server.cloveretl.com/CloverServerWS/}CloverServerWS_service#CloverServerWS_port#ListFiles" type="WEB_SERVICE_CLIENT" wsdlURL="http://localhost:8083/clover/webservice?wsdl">
 <attr name="namespaceBindings"><![CDATA[Clov=http://server.cloveretl.com/CloverServerWS/
 incl=http://www.w3.org/2004/08/xop/include
 XMLS=http://www.w3.org/2001/XMLSchema]]></attr>
@@ -142,7 +142,7 @@ XMLS=http://www.w3.org/2001/XMLSchema]]></attr>
 </Mappings>
 ]]></attr>
 </Node>
-<Node guiName="List sandboxes" guiX="222" guiY="297" id="LIST_SANDBOXES" operationName="{http://server.cloveretl.com/CloverServerWS/}CloverServerWS_service#CloverServerWS_port#GetSandboxes" type="WEB_SERVICE_CLIENT" wsdlURL="http://clover-4-7.server-demo-ec2.cloveretl.com/clover/webservice?wsdl">
+<Node guiName="List sandboxes" guiX="222" guiY="297" id="LIST_SANDBOXES" operationName="{http://server.cloveretl.com/CloverServerWS/}CloverServerWS_service#CloverServerWS_port#GetSandboxes" type="WEB_SERVICE_CLIENT" wsdlURL="http://localhost:8083/clover/webservice?wsdl">
 <attr name="namespaceBindings"><![CDATA[Clov=http://server.cloveretl.com/CloverServerWS/
 incl=http://www.w3.org/2004/08/xop/include
 XMLS=http://www.w3.org/2001/XMLSchema]]></attr>
@@ -162,7 +162,7 @@ XMLS=http://www.w3.org/2001/XMLSchema]]></attr>
 </Mappings>
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Login" guiX="23" guiY="297" id="LOGIN" operationName="{http://server.cloveretl.com/CloverServerWS/}CloverServerWS_service#CloverServerWS_port#Login" type="WEB_SERVICE_CLIENT" wsdlURL="http://clover-4-7.server-demo-ec2.cloveretl.com/clover/webservice?wsdl">
+<Node enabled="enabled" guiName="Login" guiX="23" guiY="297" id="LOGIN" operationName="{http://server.cloveretl.com/CloverServerWS/}CloverServerWS_service#CloverServerWS_port#Login" type="WEB_SERVICE_CLIENT" wsdlURL="http://localhost:8083/clover/webservice?wsdl">
 <attr name="namespaceBindings"><![CDATA[Clov=http\://server.cloveretl.com/CloverServerWS/
 
 incl=http://www.w3.org/2004/08/xop/include
