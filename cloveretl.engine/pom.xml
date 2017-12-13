@@ -360,7 +360,7 @@
 	</pluginManagement>
 	</build>
 	
-	<profiles>
+	<!--profiles>
 		<profile>
 			<id>obfuscate</id>
 		    <activation>
@@ -478,7 +478,7 @@
 				</plugins>
 			</build>
 		</profile>
-	</profiles>
+	</profiles-->
 
 	<repositories>
 		<repository>
