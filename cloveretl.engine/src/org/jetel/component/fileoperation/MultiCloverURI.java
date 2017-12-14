@@ -112,7 +112,7 @@ public class MultiCloverURI extends CloverURI {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < paths.length; i++) {
 			String path = paths[i];
-			sb.append(quoted[i] ? quote(path) : path).append(SEPARATOR);
+			sb.append(quoted[i] ? quote(path) : path).append(getSeparator());
 		}
 		if (sb.length() > 0) {
 			sb.deleteCharAt(sb.length() - 1);
