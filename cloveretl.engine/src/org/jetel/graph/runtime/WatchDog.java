@@ -80,7 +80,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	private final Object abortMonitor = new Object();
 	private boolean abortFinished = false;
 	
-    public final static String MBEAN_NAME_PREFIX = "CLOVERJMX_";
     public final static long WAITTIME_FOR_STOP_SIGNAL = 5000; //miliseconds
 
 	private static final long ABORT_TIMEOUT = 5000L;
@@ -103,7 +102,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
     private MultiValueMap<IGraphElement, Message<?>> outMsgMap;
     private volatile Throwable causeException;
     private volatile IGraphElement causeGraphElement;
-    protected CloverJMX cloverJMX;
 //    private volatile boolean runIt;
     private boolean provideJMX = true;
     private boolean finishJMX = true; //whether the JMX mbean should be unregistered on the graph finish 
@@ -111,8 +109,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
     
     //lazy initialised in getMBeanServer() method
     private static MBeanServer mbs;
-    
-    private ObjectName jmxObjectName;
+
+    protected CloverJMX cloverJMX;
+    private ObjectName cloverJmxObjectName;
 
     private TokenTracker tokenTracker;
 
@@ -160,10 +159,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			tokenTracker = new TokenTracker(graph);
 		}
 		
-		//start up JMX
+		//start CloverJMX
 		cloverJMX = new CloverJMX(this);
-		if(provideJMX) {
-			registerTrackingMBean(cloverJMX);
+		if (provideJMX) {
+			registerCloverJMX(cloverJMX);
 		}
 
        	//watchdog is now ready to use
@@ -171,11 +170,11 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	}
 	
 	private synchronized void finishJMX() {
-		if (provideJMX && finishJMX && jmxObjectName != null) {
+		if (provideJMX && finishJMX && cloverJmxObjectName != null) {
 			try {
-				getMBeanServer().unregisterMBean(jmxObjectName);
-	            logger.debug("unregister MBean with name: " + jmxObjectName.getCanonicalName());
-				jmxObjectName = null;
+				ManagementFactory.getPlatformMBeanServer().unregisterMBean(cloverJmxObjectName);
+	            logger.debug("unregister MBean with name: " + cloverJmxObjectName.getCanonicalName());
+	            cloverJmxObjectName = null;
 			} catch (InstanceNotFoundException e) {
 				if (logger.isDebugEnabled()) {
 					logger.info("JMX notification listener not found", e);
@@ -448,42 +447,23 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	}
 	
     /**
-     * Register given jmx mbean.
+     * Register given CloverJMX mbean.
      */
-    private void registerTrackingMBean(CloverJMX cloverJMX) {
+    private void registerCloverJMX(CloverJMX cloverJMX) {
         String mbeanId = graph.getId();
         
         // Construct the ObjectName for the MBean we will register
         try {
-        	String name = createMBeanName(mbeanId != null ? mbeanId : graph.getName(), this.getGraphRuntimeContext().getRunId());
-            jmxObjectName = new ObjectName( name );
+        	String name = CloverJMX.createMBeanName(mbeanId != null ? mbeanId : graph.getName(), this.getGraphRuntimeContext().getRunId());
+            cloverJmxObjectName = new ObjectName(name);
             logger.debug("register MBean with name:"+name);
             // Register the  MBean
-            getMBeanServer().registerMBean(cloverJMX, jmxObjectName);
+            ManagementFactory.getPlatformMBeanServer().registerMBean(cloverJMX, cloverJmxObjectName);
         } catch (Exception e) {
         	ExceptionUtils.logException(logger, null, e);
         }
     }
 
-    /**
-     * Creates identifier for shared JMX mbean.
-     * @param defaultMBeanName
-     * @return
-     */
-    public static String createMBeanName(String mbeanIdentifier) {
-    	return createMBeanName(mbeanIdentifier, 0);
-    }
-
-    /**
-     * Creates identifier for shared JMX mbean.
-     * @param mbeanIdentifier
-     * @param runId
-     * @return
-     */
-    public static String createMBeanName(String mbeanIdentifier, long runId) {
-        return "org.jetel.graph.runtime:type=" + MBEAN_NAME_PREFIX + (mbeanIdentifier != null ? mbeanIdentifier : "") + "_" + runId;
-    }
-    
 	/**
 	 * Execute transformation - start-up all Nodes & watch them running
 	 *
@@ -853,7 +833,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	}
 	
 	public ObjectName getCloverJmxName() {
-		return jmxObjectName;
+		return cloverJmxObjectName;
 	}
 
 	public boolean isFinishJMX() {
@@ -884,13 +864,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
     	return tokenTracker;
     }
     
-    private static MBeanServer getMBeanServer() {
-    	if (mbs == null) {
-    		mbs = ManagementFactory.getPlatformMBeanServer();
-    	}
-    	return mbs;
-    }
-
     /**
      * This method can be used to free all resources allocated by {@link #init()} method.
      * By default, all resources are deallocated automatically by {@link #call()} method, but

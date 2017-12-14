@@ -70,6 +70,17 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
     
     private volatile int approvedPhaseNumber = Integer.MIN_VALUE;
     
+    
+    /**
+     * Creates identifier for CloverJMX mbean.
+     * @param mbeanIdentifier
+     * @param runId
+     * @return
+     */
+    public static String createMBeanName(String mBeanId, long runId) {
+        return "org.jetel.graph.runtime:type=CLOVERJMX_" + (mBeanId != null ? mBeanId : "") + "_" + runId;
+    }
+
     /**
 	 * Constructor.
      * @param watchDog 
