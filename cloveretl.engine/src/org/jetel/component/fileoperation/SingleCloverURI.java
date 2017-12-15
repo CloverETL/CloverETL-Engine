@@ -18,7 +18,6 @@
  */
 package org.jetel.component.fileoperation;
 
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -31,7 +30,7 @@ import java.util.List;
  *
  * @created 8.3.2012
  */
-public class SingleCloverURI extends CloverURI implements Serializable {
+public class SingleCloverURI extends CloverURI {
 	
 	private static final long serialVersionUID = -2007497747271435842L;
 

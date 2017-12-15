@@ -32,6 +32,8 @@ import java.util.Date;
  */
 public class SingleCloverURIInfo extends SingleCloverURI implements Info {
 	
+	private static final long serialVersionUID = -4437625814433568689L;
+	
 	private final Info info;
 
 	public SingleCloverURIInfo(Info info) {

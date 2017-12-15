@@ -29,6 +29,8 @@ import java.net.URISyntaxException;
  */
 public class SandboxCloverURI extends SingleCloverURI {
 
+	private static final long serialVersionUID = 8861010132124219998L;
+
 	/**
 	 * @param uri
 	 */
