@@ -47,7 +47,7 @@ import org.jetel.graph.runtime.GraphRuntimeContext;
  */
 public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMXMBean {
 
-	public static String MBEAN_NAME = "org.jetel.ctl:type=DebugJMX";
+	public static final String MBEAN_NAME = "org.jetel.ctl:type=DebugJMX";
 
 	private int notificationSequence;
 
