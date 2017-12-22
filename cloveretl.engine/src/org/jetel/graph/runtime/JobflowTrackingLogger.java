@@ -22,7 +22,6 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import org.jetel.graph.runtime.jmx.CloverJMX;
 import org.jetel.graph.runtime.jmx.NodeTracking;
 import org.jetel.graph.runtime.jmx.PortTracking;
 import org.jetel.util.string.StringUtils;
@@ -40,8 +39,8 @@ public class JobflowTrackingLogger extends TrackingLogger {
 
     private static final int[] ARG_SIZES_WITHOUT_CPU = { 38, -5, 9, 12, 7, 8 };
 
-    JobflowTrackingLogger(CloverJMX cloverJMX) {
-    	super(cloverJMX);
+    JobflowTrackingLogger(WatchDog watchDog) {
+    	super(watchDog);
     }
     
     @Override
@@ -60,9 +59,9 @@ public class JobflowTrackingLogger extends TrackingLogger {
 	protected void printProcessingStatus(boolean finalTracking) {
         //StringBuilder strBuf=new StringBuilder(120);
         if (finalTracking)
-            logger.info("----------------------** Final tracking Log for phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseLabel() + "] **---------------------");
+            logger.info("----------------------** Final tracking Log for phase [" + getGraphTracking().getRunningPhaseTracking().getPhaseLabel() + "] **---------------------");
         else 
-            logger.info("---------------------** Start of tracking Log for phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseLabel() + "] **-------------------");
+            logger.info("---------------------** Start of tracking Log for phase [" + getGraphTracking().getRunningPhaseTracking().getPhaseLabel() + "] **-------------------");
         // France is here just to get 24hour time format
         logger.info("Time: "
             + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, Locale.FRANCE).
@@ -73,7 +72,7 @@ public class JobflowTrackingLogger extends TrackingLogger {
         	logger.info("Node                   ID         Port      #Records");
         }
         logger.info("---------------------------------------------------------------------------------");
-        for (NodeTracking nodeDetail : cloverJMX.getGraphTracking().getRunningPhaseTracking().getNodeTracking()) {
+        for (NodeTracking nodeDetail : getGraphTracking().getRunningPhaseTracking().getNodeTracking()) {
             Object nodeInfo[] = {nodeDetail.getNodeName(), nodeDetail.getNodeID(), nodeDetail.getResult().message()};
             int nodeSizes[] = {-23, -41, 15};
             logger.info(StringUtils.formatString(nodeInfo, nodeSizes));

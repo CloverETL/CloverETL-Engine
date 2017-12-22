@@ -172,7 +172,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
     		rr.endTime = new Date(System.currentTimeMillis());
         	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
             rr.dictionaryOut = DictionaryValuesContainer.getInstance(graph.getDictionary());
-            rr.tracking = graph.getWatchDog().getCloverJmx().getGraphTracking();
+            rr.tracking = graph.getWatchDog().getGraphTracking();
             rr.status = result;
     		rr.errMessage = graph.getWatchDog().getErrorMessage();            
         	rr.errException = ExceptionUtils.stackTraceToString(graph.getWatchDog().getCauseException());

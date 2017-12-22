@@ -18,7 +18,6 @@
  */
 package org.jetel.ctl.debug;
 
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,13 +32,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 
-import javax.management.InstanceNotFoundException;
 import javax.management.ListenerNotFoundException;
-import javax.management.MBeanServer;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
-import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
 import org.jetel.ctl.DebugTransformLangExecutor;
@@ -47,11 +43,11 @@ import org.jetel.ctl.debug.DebugCommand.CommandType;
 import org.jetel.ctl.debug.condition.BooleanExpressionCondition;
 import org.jetel.ctl.debug.condition.HitCountCondition;
 import org.jetel.ctl.debug.condition.ValueChangeCondition;
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.graph.runtime.jmx.CloverJMX;
 import org.jetel.graph.runtime.jmx.CloverJMXMBean;
 import org.jetel.util.CompareUtils;
 import org.jetel.util.string.UnicodeBlanks;
@@ -78,7 +74,6 @@ public class GraphDebugger implements IdSequence {
 	private Set<DebugTransformLangExecutor> executors;
 	private Map<Long, NodeThread> nodeThreads;
 	
-	private ObjectName jmxBeanName;
 	private volatile NotificationListener finishListener;
 	private final Object finishListenerLock = new Object();
 	
@@ -349,12 +344,9 @@ public class GraphDebugger implements IdSequence {
 		synchronized (finishListenerLock) {
 			if (finishListener != null) {
 				try {
-					MBeanServer server = ManagementFactory.getPlatformMBeanServer();
-					if (server.isRegistered(jmxBeanName)) {
-						server.removeNotificationListener(jmxBeanName, finishListener);
-					}
+					CloverJMX.getInstance().removeNotificationListener(finishListener);
 					finishListener = null;
-				} catch (ListenerNotFoundException | InstanceNotFoundException e) {
+				} catch (ListenerNotFoundException e) {
 					logger.warn("Could not remove node finish listener.", e);
 				}
 			}
@@ -381,15 +373,10 @@ public class GraphDebugger implements IdSequence {
 	private void ensureJmxListenerPresent(Node node) {
 		synchronized (finishListenerLock) {
 			if (finishListener == null) {
-				try {
-					FinishNotificationListener listener = new FinishNotificationListener();
-					jmxBeanName = node.getGraph().getWatchDog().getCloverJmxName();
-					ManagementFactory.getPlatformMBeanServer().addNotificationListener(
-						jmxBeanName, listener, new FinishNotificationFilter(), Long.valueOf(runtimeContext.getRunId()));
-					finishListener = listener;
-				} catch (InstanceNotFoundException e) {
-					throw new JetelRuntimeException(e);
-				}
+				FinishNotificationListener listener = new FinishNotificationListener();
+				Long runId = Long.valueOf(runtimeContext.getRunId());
+				CloverJMX.getInstance().addNotificationListener(listener, new FinishNotificationFilter(), runId);
+				finishListener = listener;
 			}
 		}
 	}

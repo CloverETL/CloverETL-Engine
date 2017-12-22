@@ -78,23 +78,16 @@ public interface CloverJMXMBean {
      */
     public static final String NODE_FINISHED = "clover.node.finished";
 
-    
-    /**
-     * (Not implemented)
-     * @return clover engine version in text form
-     */
-    public String getCloverVersion();
-    
     /**
      * @return comprehensive graph tracking information
      */
-    public GraphTracking getGraphTracking();
+    public GraphTracking getGraphTracking(long runId);
 
     /**
      * Event for clients to stop graph processing.
      * This operation is blocking until the graph is really aborted.
      */
-    public void abortGraphExecution();
+    public void abortGraphExecution(long runId);
 
     /**
      * Event for clients to stop graph processing.
@@ -106,21 +99,13 @@ public interface CloverJMXMBean {
      * which tries to abort the graph and the current thread is 
      * immediately returned.
      */
-    public void abortGraphExecution(boolean waitForAbort);
+    public void abortGraphExecution(long runId, boolean waitForAbort);
 
     /**
      * Client should call this method immediately after all tracking information have been received.
      */
-    public void closeServer();
+    public void relaseJob(long runId);
     
-    //TODO is it possible to move this method from CloverJMX to CloverJMXMBean?
-	public void setApprovedPhaseNumber(int approvedPhaseNumber);
+	public void setApprovedPhaseNumber(long runId, int approvedPhaseNumber);
 
-//    Thread[] getCtlThreads();
-//    
-//    StackFrame[] getStackFrames(long threadId);
-//    
-//    void resume(long threadId);
-//    
-//    void resumeAll();
 }

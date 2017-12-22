@@ -28,7 +28,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.jmx.CloverJMX;
+import org.jetel.graph.runtime.jmx.GraphTrackingDetail;
 import org.jetel.graph.runtime.jmx.PhaseTracking;
+import org.jetel.graph.runtime.jmx.RunIdNotificationFilter;
 import org.jetel.graph.runtime.jmx.TrackingUtils;
 import org.jetel.util.string.StringUtils;
 
@@ -48,23 +50,24 @@ import org.jetel.util.string.StringUtils;
  */
 public abstract class TrackingLogger implements NotificationListener {
 	
-    public final static String TRACKING_LOGGER_NAME = "Tracking";
+    public static final String TRACKING_LOGGER_NAME = "Tracking";
+    
     protected static final Log logger = LogFactory.getLog(TRACKING_LOGGER_NAME);
 
-    protected final CloverJMX cloverJMX;
+    private WatchDog watchDog;
     
-    public static void track(CloverJMX cloverJMX) {
+    public static void track(WatchDog watchDog) {
     	TrackingLogger trackingLogger = null;
     	if (ContextProvider.getRuntimeJobType().isGraph()) {
-    		trackingLogger = new GraphTrackingLogger(cloverJMX);
+    		trackingLogger = new GraphTrackingLogger(watchDog);
     	} else {
-    		trackingLogger = new JobflowTrackingLogger(cloverJMX);
+    		trackingLogger = new JobflowTrackingLogger(watchDog);
     	}
-		cloverJMX.addNotificationListener(trackingLogger, null, null);
+		CloverJMX.getInstance().addNotificationListener(trackingLogger, new RunIdNotificationFilter(watchDog.getGraphRuntimeContext().getRunId()), null);
     }
-
-    TrackingLogger(CloverJMX cloverJMX) {
-    	this.cloverJMX = cloverJMX;
+    
+    protected TrackingLogger(WatchDog watchDog) {
+    	this.watchDog = watchDog;
     }
 
 	@Override
@@ -84,7 +87,7 @@ public abstract class TrackingLogger implements NotificationListener {
 				|| notification.getType().equals(CloverJMX.GRAPH_ERROR)) {
 			graphFinished();
 			try {
-				cloverJMX.removeNotificationListener(this);
+				CloverJMX.getInstance().removeNotificationListener(this);
 			} catch (ListenerNotFoundException e) {
 				logger.warn("Unexpected error while graph logging will be ignored.");
 			}
@@ -101,28 +104,28 @@ public abstract class TrackingLogger implements NotificationListener {
 
 	protected void phaseFinished() {
 		printProcessingStatus(true);
-		logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseLabel()
+		logger.info("Execution of phase [" + getGraphTracking().getRunningPhaseTracking().getPhaseLabel()
 				+ "] successfully finished - elapsed time(sec): "
-				+ TrackingUtils.convertTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
+				+ TrackingUtils.convertTime(getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
 	}
 
 	protected void phaseAborted() {
-		logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseLabel()
+		logger.info("Execution of phase [" + getGraphTracking().getRunningPhaseTracking().getPhaseLabel()
 				+ "] was aborted - elapsed time(sec): "
-				+ TrackingUtils.convertTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
+				+ TrackingUtils.convertTime(getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
 	}
 
 	protected void phaseError() {
-		logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseLabel()
+		logger.info("Execution of phase [" + getGraphTracking().getRunningPhaseTracking().getPhaseLabel()
 				+ "] finished with error - elapsed time(sec): "
-				+ TrackingUtils.convertTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
+				+ TrackingUtils.convertTime(getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
 	}
 	
 	protected void graphFinished() {
-		if (cloverJMX.getGraphTracking().getPhaseTracking().length > 0) {
+		if (getGraphTracking().getPhaseTracking().length > 0) {
 			logger.info("-----------------------** Summary of Phases execution **---------------------");
 			logger.info("Phase#            Finished Status         RunTime(sec)    MemoryAllocation(KB)");
-			for (PhaseTracking phaseDetail : cloverJMX.getGraphTracking().getPhaseTracking()) {
+			for (PhaseTracking phaseDetail : getGraphTracking().getPhaseTracking()) {
 				if(phaseDetail != null) {
 	    			Object nodeInfo[] = { phaseDetail.getPhaseLabel(), 
 	    					phaseDetail.getResult().message(),
@@ -138,4 +141,8 @@ public abstract class TrackingLogger implements NotificationListener {
 
 	protected abstract void printProcessingStatus(boolean finalTracking);
 
+	protected GraphTrackingDetail getGraphTracking() {
+		return watchDog.getGraphTracking();
+	}
+	
 }

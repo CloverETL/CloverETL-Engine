@@ -17,7 +17,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jetel.graph.runtime;
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,10 +35,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.MDC;
@@ -55,7 +50,10 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.graph.runtime.jmx.CloverJMX;
+import org.jetel.graph.runtime.jmx.CloverJMXMBean;
+import org.jetel.graph.runtime.jmx.GraphTrackingDetail;
 import org.jetel.graph.runtime.tracker.TokenTracker;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.primitive.MultiValueMap;
@@ -107,12 +105,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
     private boolean finishJMX = true; //whether the JMX mbean should be unregistered on the graph finish 
     private final GraphRuntimeContext runtimeContext;
     
-    //lazy initialised in getMBeanServer() method
-    private static MBeanServer mbs;
-
-    protected CloverJMX cloverJMX;
-    private ObjectName cloverJmxObjectName;
-
     private TokenTracker tokenTracker;
 
     /**
@@ -121,6 +113,20 @@ public class WatchDog implements Callable<Result>, CloverPost {
      */
     private volatile boolean isReleased = false;
     
+    
+	/**
+	 * Tracking information about the running graph. The tracking information
+	 * are available for clients using {@link CloverJMX} mBean.
+	 */
+	private GraphTrackingDetail graphTracking;
+
+    /**
+     * Synchronized indication of phase number, which can be executed.
+     * This mechanism is used in clustered graphs, where all graphs (partitions)
+     * must be synchronized on phases.
+     */
+    private volatile int approvedPhaseNumber = Integer.MIN_VALUE;
+
 	/**
 	 *Constructor for the WatchDog object
 	 *
@@ -159,32 +165,16 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			tokenTracker = new TokenTracker(graph);
 		}
 		
+		//initialize graph tracking
+		graphTracking = new GraphTrackingDetail(graph);
+		
 		//start CloverJMX
-		cloverJMX = new CloverJMX(this);
 		if (provideJMX) {
-			registerCloverJMX(cloverJMX);
+			CloverJMX.getInstance().registerWatchDog(this);
 		}
 
        	//watchdog is now ready to use
 		watchDogStatus = Result.READY;
-	}
-	
-	private synchronized void finishJMX() {
-		if (provideJMX && finishJMX && cloverJmxObjectName != null) {
-			try {
-				ManagementFactory.getPlatformMBeanServer().unregisterMBean(cloverJmxObjectName);
-	            logger.debug("unregister MBean with name: " + cloverJmxObjectName.getCanonicalName());
-	            cloverJmxObjectName = null;
-			} catch (InstanceNotFoundException e) {
-				if (logger.isDebugEnabled()) {
-					logger.info("JMX notification listener not found", e);
-				} else {
-					logger.info("JMX notification listener not found");
-				}
-			} catch (Exception e) {
-				ExceptionUtils.logException(logger, "JMX error - ObjectName cannot be unregistered.", e);
-			}
-		}
 	}
 	
 	/**  Main processing method for the WatchDog object */
@@ -252,9 +242,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	    		watchDogStatus = Result.RUNNING;
 	
 	    		//creates tracking logger for cloverJMX mbean
-	            TrackingLogger.track(cloverJMX);
+	            TrackingLogger.track(this);
 	          	
-	           	cloverJMX.graphStarted();
+	           	graphStarted();
 	
 	           	//pre-execute initialization of graph
 	           	try {
@@ -279,11 +269,11 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			           			logger.info("Waiting for phase " + phases[currentPhaseNum] + " approval...");
 		           				watchDogStatus = Result.WAITING;
 		           				currentPhaseLock.unlock();
-			           			synchronized (cloverJMX) {
-				           			while (cloverJMX.getApprovedPhaseNumber() < phases[currentPhaseNum].getPhaseNum() 
+			           			synchronized (CloverJMX.getInstance()) {
+				           			while (approvedPhaseNumber < phases[currentPhaseNum].getPhaseNum() 
 				           					&& watchDogStatus == Result.WAITING) { //graph was maybe aborted
 				           				try {
-				           					cloverJMX.wait();
+				           					CloverJMX.getInstance().wait();
 				           				} catch (InterruptedException e) {
 				           					throw new RuntimeException("WatchDog was interrupted while was waiting for phase synchronization event.");
 				           				}
@@ -298,21 +288,21 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		           					watchDogStatus = Result.RUNNING;
 		           				}
 			           		}
-			           		cloverJMX.phaseStarted(phases[currentPhaseNum]);
+			           		phaseStarted(phases[currentPhaseNum]);
 			           		//execute phase
 			                phaseResult = executePhase(phases[currentPhaseNum]);
 			                phases[currentPhaseNum].setResult(phaseResult);
 			                
 			                if(phaseResult == Result.ABORTED) {
-			                	cloverJMX.phaseAborted();
+			                	phaseAborted();
 			                    logger.warn("Phase execution aborted");
 			                    break;
 			                } else if (phaseResult == Result.ERROR) {
-			                	cloverJMX.phaseError(getErrorMessage());
+			                	phaseError(getErrorMessage());
 			                    logger.error("Phase finished with error - stopping job run");
 			                    break;
 			                }
-			           		cloverJMX.phaseFinished();
+			           		phaseFinished();
 			            }
 		           	} else {
 		           		//empty graph execution is successful 
@@ -379,8 +369,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
             //we have to unregister current watchdog's thread from context provider
 			ContextProvider.unregister(c);
 
-			finishJMX();
-            
 			currentPhaseLock.unlock();
 			
 			if (originalThreadName != null) {
@@ -395,34 +383,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	private void sendFinalJmxNotification() {
 		sendFinalJmxNotification0();
 		
-		//is there anyone who is really interested in to be informed about the graph is really finished? - at least our clover designer runs graphs with this option
-       	if (runtimeContext.isWaitForJMXClient()) {
-       		//wait for a JMX client (GUI) to download all tracking information
-       		long startWaitingTime = System.currentTimeMillis();
-       		synchronized (cloverJMX) {
-	           	while (WAITTIME_FOR_STOP_SIGNAL > (System.currentTimeMillis() - startWaitingTime) 
-	           			&& !cloverJMX.canCloseServer()) {
-	           		try {
-	    				cloverJMX.wait(10);
-	    	           	sendFinalJmxNotification0();
-	    			} catch (InterruptedException e) {
-						throw new RuntimeException("WatchDog was interrupted while was waiting for close signal.");
-	    			}
-	           	}
-	           	if (!cloverJMX.canCloseServer()) {
-		           	// give client one last chance to react to final notification and to send close signal before cloverJMX is unregistering
-	           		try {
-	    				cloverJMX.wait(100);
-	    			} catch (InterruptedException e) {
-						throw new RuntimeException("WatchDog was interrupted while was waiting for close signal.");
-	    			}
-		           	if (!cloverJMX.canCloseServer()) {
-		           		logger.debug("JMX server close signal timeout; client may have missed final notification");
-		           	}
-	           	}
-       		}
-       	}
-		
 		//if the graph was aborted, now the aborting thread is waiting for final notification - this is the way how to send him notice about the graph finished right now
 		synchronized (abortMonitor) {
 			abortFinished = true;
@@ -433,37 +393,19 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	private void sendFinalJmxNotification0() {
 		switch (watchDogStatus) {
 		case FINISHED_OK:
-			cloverJMX.graphFinished();
+			graphFinished();
 			break;
 		case ABORTED:
-			cloverJMX.graphAborted();
+			graphAborted();
 			break;
 		case ERROR:
-			cloverJMX.graphError(getErrorMessage());
+			graphError(getErrorMessage());
 			break;
 		default:
 			break;
 		}
 	}
 	
-    /**
-     * Register given CloverJMX mbean.
-     */
-    private void registerCloverJMX(CloverJMX cloverJMX) {
-        String mbeanId = graph.getId();
-        
-        // Construct the ObjectName for the MBean we will register
-        try {
-        	String name = CloverJMX.createMBeanName(mbeanId != null ? mbeanId : graph.getName(), this.getGraphRuntimeContext().getRunId());
-            cloverJmxObjectName = new ObjectName(name);
-            logger.debug("register MBean with name:"+name);
-            // Register the  MBean
-            ManagementFactory.getPlatformMBeanServer().registerMBean(cloverJMX, cloverJmxObjectName);
-        } catch (Exception e) {
-        	ExceptionUtils.logException(logger, null, e);
-        }
-    }
-
 	/**
 	 * Execute transformation - start-up all Nodes & watch them running
 	 *
@@ -514,7 +456,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					break;
 				case NODE_FINISHED:
 					phaseNodes.remove(message.getSender());
-					cloverJMX.nodeFinished(message.getSender().getId());
+					nodeFinished(message.getSender().getId());
 					break;
 				default:
 					// do nothing, just wake up
@@ -537,7 +479,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			// gather graph tracking
 			//ETL graphs are tracked only in regular intervals, jobflows are tracked more precise, whenever something happens
 			if (message == null || ContextProvider.getRuntimeJobType().isJobflow()) {
-				cloverJMX.gatherTrackingDetails();
+				gatherTrackingDetails();
 			}
 		}
 	}
@@ -591,8 +533,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			//if the graph is waiting on a phase synchronization point the watchdog is woken up with current status ABORTED 
 			if (watchDogStatus == Result.WAITING) {
 		        watchDogStatus = Result.ABORTED;
-				synchronized (cloverJMX) {
-					cloverJMX.notifyAll();
+				synchronized (CloverJMX.getInstance()) {
+					CloverJMX.getInstance().notifyAll();
 				}
 			}
 		} catch (RuntimeException e) {
@@ -827,15 +769,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		return runtimeContext;
 	}
 
-	@SuppressFBWarnings("IS2_INCONSISTENT_SYNC")
-	public CloverJMX getCloverJmx() {
-		return cloverJMX;
-	}
-	
-	public ObjectName getCloverJmxName() {
-		return cloverJmxObjectName;
-	}
-
 	public boolean isFinishJMX() {
 		return finishJMX;
 	}
@@ -864,21 +797,15 @@ public class WatchDog implements Callable<Result>, CloverPost {
     	return tokenTracker;
     }
     
-    /**
-     * This method can be used to free all resources allocated by {@link #init()} method.
-     * By default, all resources are deallocated automatically by {@link #call()} method, but
-     * if the {@link #call()} method is not invoked or cannot be invoked due some error or exception,
-     * this method should be used to clean up. See CLO-5764.
-     */
-    public void freeJMX() {
-    	finishJMX();
-    }
-    
+	public GraphTrackingDetail getGraphTracking() {
+		return graphTracking;
+	}
+
+	public void setApprovedPhaseNumber(int approvedPhaseNumber) {
+		this.approvedPhaseNumber = approvedPhaseNumber;
+	}
+
     public void free() {
-    	//the JMX bean should be already released, but if the graph has been aborted
-    	//earlier than call() method, JMX bean can be still registered
-    	//so try to release the JMX bean again
-    	freeJMX();
     	isReleased = true;
     }
     
@@ -976,6 +903,113 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			}
 		}
 		logger.info(sb);
+	}
+	
+	//******************* Tracking events ********************/
+	
+	public synchronized void graphStarted() {
+		try {
+			graphTracking.graphStarted();
+		} catch (Exception e) {
+			logger.error("Unexpected error during job tracking", e);
+		}
+
+		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.GRAPH_STARTED);
+	}
+
+	public synchronized void phaseStarted(Phase phase) {
+		try {
+			graphTracking.phaseStarted(phase);
+		} catch (Exception e) {
+			logger.error("Unexpected error during job tracking", e);
+		}
+		
+		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_STARTED);
+	}
+
+	public synchronized void gatherTrackingDetails() {
+		try {
+			graphTracking.gatherTrackingDetails();
+		} catch (Exception e) {
+			logger.error("Unexpected error during job tracking", e);
+		}
+		
+		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.TRACKING_UPDATED);
+	}
+
+	public synchronized void phaseFinished() {
+		try {
+			graphTracking.phaseFinished();
+		} catch (Exception e) {
+			logger.error("Unexpected error during job tracking", e);
+		}
+		
+		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_FINISHED);
+	}
+
+	public synchronized void phaseAborted() {
+		try {
+			graphTracking.phaseFinished();
+		} catch (Exception e) {
+			logger.error("Unexpected error during job tracking", e);
+		}
+		
+		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_ABORTED);
+	}
+
+	public synchronized void phaseError(String message) {
+		try {
+			graphTracking.phaseFinished();
+		} catch (Exception e) {
+			logger.error("Unexpected error during job tracking", e);
+		}
+		
+		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_ERROR);
+	}
+
+	public synchronized void graphFinished() {
+		try {
+			graphTracking.graphFinished();
+		} catch (Exception e) {
+			logger.error("Unexpected error during job tracking", e);
+		}
+
+		DictionaryValuesContainer dictionary = DictionaryValuesContainer.getDictionaryValuesContainer(graph.getDictionary(), false, true, false);
+		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.GRAPH_FINISHED, null, dictionary);
+	}
+
+	/**
+	 * Graph was aborted. Only send a notification.
+	 */
+	public synchronized void graphAborted() {
+		try {
+			graphTracking.gatherTrackingDetails();
+			graphTracking.graphFinished();
+		} catch (Exception e) {
+			logger.error("Unexpected error during job tracking", e);
+		}
+
+		DictionaryValuesContainer dictionary = DictionaryValuesContainer.getDictionaryValuesContainer(graph.getDictionary(), false, true, false);
+		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.GRAPH_ABORTED, null, dictionary);
+	}
+
+	/**
+	 * Graph ends with an error. Only send a notification.
+	 */
+	public synchronized void graphError(String message) {
+		try {
+			graphTracking.gatherTrackingDetails();
+			graphTracking.graphFinished();
+		} catch (Exception e) {
+			logger.error("Unexpected error during job tracking", e);
+		}
+
+		DictionaryValuesContainer dictionary = DictionaryValuesContainer.getDictionaryValuesContainer(graph.getDictionary(), false, true, false);
+		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.GRAPH_ERROR, null, dictionary);
+	}
+	
+	public synchronized void nodeFinished(String message) {
+		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.NODE_FINISHED);
 	}
 	
 }

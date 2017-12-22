@@ -18,7 +18,6 @@
  */
 package org.jetel.ctl.debug;
 
-import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +31,7 @@ import org.jetel.ctl.debug.DebugCommand.CommandType;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.graph.runtime.JMXNotificationMessage;
 
 /**
  * A JMX bean for CTL debugging. It manages debugging of CTL threads - passes debugging
@@ -53,9 +53,13 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 
 	private static Map<Long, GraphDebugger> graphDebuggerCache = new ConcurrentHashMap<>();
 
-	private static DebugJMX debugJMX;
+	/** The only instance of DebugJMX	 */
+	private static volatile DebugJMX debugJMX;
 	
-	public static synchronized DebugJMX getInstance() {
+	/**
+	 * Creates the singleton DebugJMX and registers it as JMX mBean.
+	 */
+	public static synchronized void registerMBean() {
 		if (debugJMX == null) {
 			debugJMX = new DebugJMX();
 			//register JMX mBean
@@ -66,9 +70,18 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	        	throw new JetelRuntimeException("DebugJMX mBean cannot be published.", e);
 	        }
 		}
-		return debugJMX;
 	}
 	
+	/**
+	 * @return the only instance of DebugJMX
+	 */
+	public static DebugJMX getInstance() {
+		if (debugJMX == null) {
+			throw new IllegalStateException("CloverJMX mBean is not published yet. Use CloverJMX.registerMBean() first.");
+		}
+		return debugJMX;
+	}
+
 	public static synchronized GraphDebugger getGraphDebugger(TransformationGraph graph) {
 		GraphRuntimeContext runtimeContext = graph.getRuntimeContext();
 		long runId = runtimeContext.getRunId();
@@ -159,28 +172,8 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 
 	public synchronized void sendNotification(GraphDebugger sender, String type, Object userData) {
 		Notification suspendNotification = new Notification(type, this, ++notificationSequence);
-		suspendNotification.setUserData(new NotificationMessage(sender.getRunId(), userData));
+		suspendNotification.setUserData(new JMXNotificationMessage(sender.getRunId(), userData));
 		sendNotification(suspendNotification);
 	}
 
-	public static class NotificationMessage implements Serializable {
-		private static final long serialVersionUID = 2445808779831669767L;
-		
-		private long runId;
-		private Object userData;
-		
-		public NotificationMessage(long runId, Object userData) {
-			this.runId = runId;
-			this.userData = userData;
-		}
-		
-		public long getRunId() {
-			return runId;
-		}
-
-		public Object getUserData() {
-			return userData;
-		}
-	}
-	
 }

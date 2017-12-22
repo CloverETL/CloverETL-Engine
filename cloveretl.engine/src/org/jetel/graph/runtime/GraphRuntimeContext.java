@@ -57,7 +57,6 @@ public class GraphRuntimeContext implements Serializable {
 	private static final long serialVersionUID = 2613877772912214702L;
 	
 	public static final boolean DEFAULT_VERBOSE_MODE = false;
-	public static final boolean DEFAULT_WAIT_FOR_JMX_CLIENT = false;
 	public static final boolean DEFAULT_USE_JMX = true;
 	public static final boolean DEFAULT_EDGE_DEBUGGING = true;
 	public static final boolean DEFAULT_SKIP_CHECK_CONFIG = false;
@@ -78,7 +77,6 @@ public class GraphRuntimeContext implements Serializable {
 	private int trackingInterval;
 //	private int trackingFlushInterval;
 	private boolean useJMX;
-	private boolean waitForJMXClient;
 	private boolean verboseMode;
 	private Properties additionalProperties;
 	private boolean skipCheckConfig;
@@ -184,7 +182,6 @@ public class GraphRuntimeContext implements Serializable {
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
 		useJMX = DEFAULT_USE_JMX;
-		waitForJMXClient = DEFAULT_WAIT_FOR_JMX_CLIENT;
 		verboseMode = DEFAULT_VERBOSE_MODE;
 		additionalProperties = new Properties();
 		skipCheckConfig = DEFAULT_SKIP_CHECK_CONFIG;
@@ -229,7 +226,6 @@ public class GraphRuntimeContext implements Serializable {
 		ret.workerExecution = isWorkerExecution();
 		ret.forceParentJvm = isForceParentJvm();
 		ret.useJMX = useJMX();
-		ret.waitForJMXClient = isWaitForJMXClient();
 		ret.password = getPassword();
 		ret.edgeDebugging = isEdgeDebugging();
 		ret.debugDirectory = getDebugDirectory();
@@ -279,7 +275,6 @@ public class GraphRuntimeContext implements Serializable {
 		prop.setProperty("workerExecution", String.valueOf(isWorkerExecution()));
 		prop.setProperty("forceParentJvm", Boolean.toString(isForceParentJvm()));
 		prop.setProperty("useJMX", Boolean.toString(useJMX()));
-		prop.setProperty("waitForJMXClient", Boolean.toString(isWaitForJMXClient()));
 		prop.setProperty("password", String.valueOf(getPassword()));
 		prop.setProperty("edgeDebugging", Boolean.toString(isEdgeDebugging()));
 		prop.setProperty("debugDirectory", String.valueOf(getDebugDirectory()));
@@ -388,21 +383,6 @@ public class GraphRuntimeContext implements Serializable {
         this.debugDirectory = debugDirectory;
     }
 
-    /**
-     * @return whether watchdog should wait for a JMX client; it is necessary for short running graphs
-     */
-    public boolean isWaitForJMXClient() {
-    	return waitForJMXClient;
-    }
-    
-    /**
-     * Sets whether watchdog should wait for a JMX client. It is necessary for short running graphs.
-     * @param waitForJMXClient
-     */
-    public void setWaitForJMXClient(boolean waitForJMXClient) {
-    	this.waitForJMXClient = waitForJMXClient;
-    }
-    
     /**
      * Sets whether should be checked graph configuration. (TransformationGraph.checkConfig())
      * @param checkConfig

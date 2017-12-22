@@ -236,7 +236,7 @@ public class GraphTrackingDetail implements GraphTracking {
 	}
 
 	//******************* EVENTS ********************/
-	void graphStarted() {
+	public void graphStarted() {
 		startTime = System.currentTimeMillis();
 		
 		result = Result.RUNNING;
@@ -244,31 +244,35 @@ public class GraphTrackingDetail implements GraphTracking {
 	}
 
 
-	void phaseStarted(Phase phase) {
+	public void phaseStarted(Phase phase) {
 		setRunningPhaseDetail(getPhaseDetail(phase.getPhaseNum()));
 		
 		runningPhaseDetail.phaseStarted();
 	}
 
-	void gatherTrackingDetails() {
+	public void gatherTrackingDetails() {
 		if (runningPhaseDetail != null)
 			runningPhaseDetail.gatherTrackingDetails();
 	}
 
-	void phaseFinished() {
+	public void phaseFinished() {
 		gatherTrackingDetails();
 		runningPhaseDetail.phaseFinished();
 		
 		lastPhaseResult = runningPhaseDetail.getResult();
 	}
 
-	void graphFinished() {
-		result = graph.getWatchDog().getStatus();
-		
-		//populate graph error
-		graphError = GraphErrorDetail.createInstance(graph.getWatchDog());
-		
-		endTime = System.currentTimeMillis();
+	public void graphFinished() {
+		if (!result.isStop()) {
+			result = graph.getWatchDog().getStatus();
+			
+			//populate graph error
+			graphError = GraphErrorDetail.createInstance(graph.getWatchDog());
+			
+			endTime = System.currentTimeMillis();
+			
+			runningPhaseDetail = null;
+		}
 	}
 
 }

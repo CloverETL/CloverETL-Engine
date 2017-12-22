@@ -22,16 +22,17 @@ import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.ThreadMXBean;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
+import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
-import org.jetel.graph.Phase;
-import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.dictionary.DictionaryValuesContainer;
+import org.jetel.exception.JetelRuntimeException;
+import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.graph.runtime.JMXNotificationMessage;
 import org.jetel.graph.runtime.WatchDog;
 
 /**
@@ -44,241 +45,122 @@ import org.jetel.graph.runtime.WatchDog;
  */
 public class CloverJMX extends NotificationBroadcasterSupport implements CloverJMXMBean, Serializable {
 
-	/**
-	 * A key to the {@link Notification#getUserData()} map that contains final dictionary values. 
-	 */
-	public static final String USER_DATA_DICTIONARY = "dictionary";
-
 	private static final long serialVersionUID = 7993293097835091585L;
+	
+	public static final String MBEAN_NAME = "org.jetel.graph.runtime:type=CLOVERJMX";
 	
 	private static final Logger log = Logger.getLogger(CloverJMX.class);
 
-	transient static final MemoryMXBean MEMORY_MXBEAN = ManagementFactory.getMemoryMXBean();
-    transient static final ThreadMXBean THREAD_MXBEAN = ManagementFactory.getThreadMXBean();
+	static final transient MemoryMXBean MEMORY_MXBEAN = ManagementFactory.getMemoryMXBean();
+    static final transient ThreadMXBean THREAD_MXBEAN = ManagementFactory.getThreadMXBean();
     
-    transient private static boolean isThreadCpuTimeSupported = THREAD_MXBEAN.isThreadCpuTimeSupported();
+    private static transient boolean isThreadCpuTimeSupported = THREAD_MXBEAN.isThreadCpuTimeSupported();
 
-	private final transient WatchDog watchDog;
-
-	private final GraphTrackingDetail graphDetail;
-
-    private boolean canClose = false;
+    /**
+     * Cache for all currently running WatchDogs.
+     */
+    private static Map<Long, WatchDog> watchDogCache = new ConcurrentHashMap<>();
 
     private int notificationSequence;
     
-    private boolean graphFinished = false;
-    
-    private volatile int approvedPhaseNumber = Integer.MIN_VALUE;
-    
-    
     /**
-     * Creates identifier for CloverJMX mbean.
-     * @param mbeanIdentifier
-     * @param runId
-     * @return
+     * The only instance of CloverJMX mBean.
      */
-    public static String createMBeanName(String mBeanId, long runId) {
-        return "org.jetel.graph.runtime:type=CLOVERJMX_" + (mBeanId != null ? mBeanId : "") + "_" + runId;
-    }
-
-    /**
-	 * Constructor.
-     * @param watchDog 
+    private static volatile CloverJMX cloverJMX;
+    
+	/**
+	 * Registers CloverJMX as JMX mBean.
 	 */
-	public CloverJMX(WatchDog watchDog) {
-		this.watchDog = watchDog;
-		this.graphDetail = new GraphTrackingDetail(watchDog.getGraph());
+	public static synchronized void registerMBean() {
+		if (cloverJMX == null) {
+			cloverJMX = new CloverJMX();
+	    	try {
+				ObjectName objectName = new ObjectName(MBEAN_NAME);
+				ManagementFactory.getPlatformMBeanServer().registerMBean(cloverJMX, objectName);
+	        } catch (Exception e) {
+	        	throw new JetelRuntimeException("CloverJMX mBean cannot be published.", e);
+	        }
+		}
+	}
+
+	/**
+	 * @return the singleton
+	 */
+	public static CloverJMX getInstance() {
+		if (cloverJMX == null) {
+			throw new IllegalStateException("CloverJMX mBean is not published yet. Use CloverJMX.registerMBean() first.");
+		}
+		return cloverJMX;
+	}
+    
+	/**
+	 * Registers a running watchdog. Each watchdog should register yourself to allow be monitored using this mBean.
+	 */
+	public void registerWatchDog(WatchDog watchDog) {
+		GraphRuntimeContext runtimeContext = watchDog.getGraphRuntimeContext();
+		long runId = runtimeContext.getRunId();
+		if (!watchDogCache.containsKey(runId)) {
+			watchDogCache.put(runId, watchDog);
+		} else {
+			throw new IllegalStateException("WatchDog with runId=" + runId + " is already registered.");
+		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.CloverJMXMBean#getCloverVersion()
-	 */
 	@Override
-	public String getCloverVersion() {
-		// TODO Auto-generated method stub
-		return "<unknown clover engine version>";
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.CloverJMXMBean#getGraphTracking()
-	 */
-	@Override
-	public GraphTracking getGraphTracking() {
-		return graphDetail;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.CloverJMXMBean#abortGraphExecution()
-	 */
-	@Override
-	public void abortGraphExecution() {
-		watchDog.abort();
+	public GraphTracking getGraphTracking(long runId) {
+		return getWatchDog(runId).getGraphTracking();
 	}
 
 	@Override
-	public void abortGraphExecution(boolean waitForAbort) {
-		watchDog.abort(waitForAbort);
+	public void abortGraphExecution(long runId) {
+		getWatchDog(runId).abort();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.CloverJMXMBean#closeServer()
-	 */
 	@Override
-	synchronized public void closeServer() {
-    	canClose = true;
-    	this.notifyAll();
+	public void abortGraphExecution(long runId, boolean waitForAbort) {
+		getWatchDog(runId).abort(waitForAbort);
 	}
 
+	@Override
+	public void relaseJob(long runId) {
+		WatchDog watchDog = watchDogCache.remove(runId);
+		if (watchDog == null) {
+			log.error("Unregister WatchDog failed for runId=" + runId);
+		}
+	}
+
+	private WatchDog getWatchDog(long runId) {
+		WatchDog watchDog = watchDogCache.get(runId);
+		if (watchDog != null) {
+			return watchDog;
+		} else {
+			throw new IllegalStateException("WatchDog does not found for runId=" + runId);
+		}
+	}
+	
+	//TODO should move to a utility class
 	public static boolean isThreadCpuTimeSupported() {
 		return isThreadCpuTimeSupported;
 	}
 
-	WatchDog getWatchDog() {
-		return watchDog;
-	}
-
-	synchronized public boolean canCloseServer() {
-		return canClose;
-	}
-	
-	public synchronized int getApprovedPhaseNumber() {
-		return approvedPhaseNumber;
-	}
-	
 	@Override
-	public synchronized void setApprovedPhaseNumber(int approvedPhaseNumber) {
-		this.approvedPhaseNumber = approvedPhaseNumber;
+	public synchronized void setApprovedPhaseNumber(long runId, int approvedPhaseNumber) {
+		getWatchDog(runId).setApprovedPhaseNumber(approvedPhaseNumber);
 		notifyAll();
 	}
+
+	public void sendNotification(long runId, String type) {
+		sendNotification(runId, type, null);
+	}
+
+	public void sendNotification(long runId, String type, String message) {
+		sendNotification(runId, type, message, null);
+	}
 	
-	//******************* EVENTS ********************/
-	
-	synchronized public void graphStarted() {
-		try {
-			graphDetail.graphStarted();
-		} catch (Exception e) {
-			log.error("Unexpected error during job tracking", e);
-		}
-
-		sendNotification(new Notification(GRAPH_STARTED, this/*getGraphDetail()*/, notificationSequence++));
-	}
-
-	synchronized public void phaseStarted(Phase phase) {
-		try {
-			graphDetail.phaseStarted(phase);
-		} catch (Exception e) {
-			log.error("Unexpected error during job tracking", e);
-		}
-		
-		sendNotification(new Notification(PHASE_STARTED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++));
-	}
-
-	synchronized public void gatherTrackingDetails() {
-		try {
-			graphDetail.gatherTrackingDetails();
-		} catch (Exception e) {
-			log.error("Unexpected error during job tracking", e);
-		}
-		
-		sendNotification(new Notification(TRACKING_UPDATED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++));
-	}
-
-	synchronized public void phaseFinished() {
-		try {
-			graphDetail.phaseFinished();
-		} catch (Exception e) {
-			log.error("Unexpected error during job tracking", e);
-		}
-		
-		sendNotification(new Notification(PHASE_FINISHED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++));
-	}
-
-	synchronized public void phaseAborted() {
-		try {
-			graphDetail.phaseFinished();
-		} catch (Exception e) {
-			log.error("Unexpected error during job tracking", e);
-		}
-		
-		sendNotification(new Notification(PHASE_ABORTED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++));
-	}
-
-	synchronized public void phaseError(String message) {
-		try {
-			graphDetail.phaseFinished();
-		} catch (Exception e) {
-			log.error("Unexpected error during job tracking", e);
-		}
-		
-		sendNotification(new Notification(PHASE_ERROR, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++));
-	}
-
-	synchronized public void graphFinished() {
-		if (!graphFinished) { // if graph was already finished, we'll send only a notification
-			try {
-				graphDetail.graphFinished();
-			} catch (Exception e) {
-				log.error("Unexpected error during job tracking", e);
-			}
-			graphFinished = true;
-		}
-
-		Notification notification = new Notification(GRAPH_FINISHED, this/*getGraphDetail()*/, notificationSequence++);
-		addDictionaryValues(notification);
-		sendNotification(notification);
-	}
-
-	private void addDictionaryValues(Notification notification) {
-		TransformationGraph graph = watchDog.getGraph();
-		if (graph != null) {
-			Map<Object, Object> userData = new HashMap<>();
-			DictionaryValuesContainer dictionary = DictionaryValuesContainer.getDictionaryValuesContainer(graph.getDictionary(), false, true, false);
-			userData.put(USER_DATA_DICTIONARY, dictionary); // FIXME
-			notification.setUserData(userData);
-		}
-	}
-
-	/**
-	 * Graph was aborted. Only send a notification.
-	 */
-	synchronized public void graphAborted() {
-		if (!graphFinished) { // if graph was already finished, we'll send only a notification
-			try {
-				graphDetail.gatherTrackingDetails();
-				graphDetail.graphFinished();
-			} catch (Exception e) {
-				log.error("Unexpected error during job tracking", e);
-			}
-			graphFinished = true;
-		}
-
-		Notification notification = new Notification(GRAPH_ABORTED , this/*getGraphDetail()*/, notificationSequence++);
-		addDictionaryValues(notification);
-		sendNotification(notification);
-	}
-
-	/**
-	 * Graph ends with an error. Only send a notification.
-	 */
-	synchronized public void graphError(String message) {
-		if (!graphFinished) { // if graph was already finished, we'll send only a notification
-			try {
-				graphDetail.gatherTrackingDetails();
-				graphDetail.graphFinished();
-			} catch (Exception e) {
-				log.error("Unexpected error during job tracking", e);
-			}
-			graphFinished = true;
-		}
-
-		Notification notification = new Notification(GRAPH_ERROR, this/*getGraphDetail()*/, notificationSequence++, message);
-		addDictionaryValues(notification);
+	public void sendNotification(long runId, String type, String message, Object userData) {
+		Notification notification = new Notification(type, this, notificationSequence++);
+		notification.setUserData(new JMXNotificationMessage(runId, userData));
 		sendNotification(notification);
 	}
 	
-	synchronized public void nodeFinished(String message) {
-		if (!graphFinished) {
-			sendNotification(new Notification(NODE_FINISHED, this, notificationSequence++, message));
-		}
-	}
 }

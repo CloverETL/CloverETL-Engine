@@ -31,12 +31,10 @@ import java.nio.file.Files;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
-import javax.sql.DataSource;
 import javax.tools.ToolProvider;
 
 import org.apache.commons.io.IOUtils;
@@ -144,7 +142,6 @@ public class runGraph {
     public final static String DEBUG_DIRECTORY_SWITCH = "-debugdirectory";
     public final static String CONTEXT_URL_SWITCH = "-contexturl";
     //private command line options
-    public final static String WAIT_FOR_JMX_CLIENT_SWITCH = "-waitForJMXClient";
     public final static String MBEAN_NAME = "-mbean";
     public final static String DICTIONARY_VALUE_DEFINITION_SWITCH = "-V:";
     public final static String CLOVER_CLASS_PATH = "-classpath";
@@ -171,7 +168,6 @@ public class runGraph {
         Properties additionalProperties = new Properties();
         int trackingInterval = 0;
         String password = null;
-        boolean waitForJMXClient = GraphRuntimeContext.DEFAULT_WAIT_FOR_JMX_CLIENT;
         boolean useJMX = GraphRuntimeContext.DEFAULT_USE_JMX;
         boolean edgeDebugging = GraphRuntimeContext.DEFAULT_EDGE_DEBUGGING;
         boolean tokenTracking = GraphRuntimeContext.DEFAULT_TOKEN_TRACKING;
@@ -260,8 +256,6 @@ public class runGraph {
                 logHost = args[i];
             } else if (args[i].startsWith(SKIP_CHECK_CONFIG_SWITCH)) {
                 skipCheckConfig = true;
-            } else if (args[i].startsWith(WAIT_FOR_JMX_CLIENT_SWITCH)) {
-                waitForJMXClient = true;
             } else if (args[i].startsWith(MBEAN_NAME)){
                 i++;
                 //TODO
@@ -353,7 +347,6 @@ public class runGraph {
         runtimeContext.addAdditionalProperties(additionalProperties);
         if (trackingInterval > 0) runtimeContext.setTrackingInterval(trackingInterval);
         runtimeContext.setPassword(password);
-        runtimeContext.setWaitForJMXClient(waitForJMXClient);
         runtimeContext.setSkipCheckConfig(skipCheckConfig);
         runtimeContext.setUseJMX(useJMX);
         runtimeContext.setTokenTracking(tokenTracking);
