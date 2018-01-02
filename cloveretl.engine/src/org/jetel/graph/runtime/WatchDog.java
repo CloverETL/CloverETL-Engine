@@ -855,6 +855,14 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		}
 	}
 
+	@Override
+	public String toString() {
+		if (runtimeContext != null) {
+			return "WatchDog-" + runtimeContext.getRunId();
+		} else {
+			return "WatchDog-???";
+		}
+	}
 	/**
 	 * Prints information about conditionally enabled and all disabled components into log.
 	 */
