@@ -77,7 +77,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	 */
 	public static DebugJMX getInstance() {
 		if (debugJMX == null) {
-			throw new IllegalStateException("CloverJMX mBean is not published yet. Use CloverJMX.registerMBean() first.");
+			throw new IllegalStateException("DebugJMX mBean is not published yet. Use DebugJMX.registerMBean() first.");
 		}
 		return debugJMX;
 	}
