@@ -66,6 +66,7 @@ import org.jetel.graph.runtime.jmx.TrackingEvent;
 import org.jetel.main.runGraph;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.FileConstrains;
+import org.jetel.util.LogUtils;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.file.FileUtils;
@@ -302,7 +303,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 		@Override
 		public int decide(LoggingEvent event) {
-			Object oRunId = event.getMDC("runId");
+			Object oRunId = event.getMDC(LogUtils.MDC_RUNID_KEY);
 			if (!(oRunId instanceof Long))
 				return Filter.DENY;
 			Long rId = (Long)oRunId;

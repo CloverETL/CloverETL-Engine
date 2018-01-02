@@ -56,6 +56,7 @@ import org.jetel.graph.runtime.jmx.CloverJMXMBean;
 import org.jetel.graph.runtime.jmx.GraphTrackingDetail;
 import org.jetel.graph.runtime.tracker.TokenTracker;
 import org.jetel.util.ExceptionUtils;
+import org.jetel.util.LogUtils;
 import org.jetel.util.primitive.MultiValueMap;
 import org.jetel.util.property.PropertyRefResolver;
 
@@ -200,7 +201,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				//this is just for sure, threads are recycled and no body can guarantee which context classloader remains preset
 				Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 	
-	    		MDC.put("runId", runtimeContext.getRunId());
+	    		MDC.put(LogUtils.MDC_RUNID_KEY, runtimeContext.getRunId());
 	    		
 	    		Thread t = Thread.currentThread();
 	    		originalThreadName = t.getName();
@@ -210,9 +211,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				}
 			  	t.setName(newThreadName);
 	    		
-			  	logger.info("Authority proxy: " + getAuthorityProxy().getClass().getName());
+			  	logger.debug("Authority proxy: " + getAuthorityProxy().getClass().getName());
 			  	
-			  	logger.debug("Job execution type: " + getGraphRuntimeContext().getJobType());
+			  	logger.info("Job execution type: " + getGraphRuntimeContext().getJobType());
 			  	
 	    		//print graph properties
 	    		logger.info("Job parameters: \n" + graph.getGraphParameters());
@@ -374,7 +375,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			if (originalThreadName != null) {
 				Thread.currentThread().setName(originalThreadName);
 			}
-            MDC.remove("runId");
+            MDC.remove(LogUtils.MDC_RUNID_KEY);
 		}
 
 		return watchDogStatus;
@@ -505,10 +506,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	}
 
 	public void abort(boolean waitForAbort) {
-		final Object oldMDCRunId = MDC.get("runId");
+		final Object oldMDCRunId = MDC.get(LogUtils.MDC_RUNID_KEY);
 		try {
 			//update MDC for current thread to route logging message to correct logging destination 
-			MDC.put("runId", runtimeContext.getRunId());
+			MDC.put(LogUtils.MDC_RUNID_KEY, runtimeContext.getRunId());
 
 			currentPhaseLock.lock();
 			//only running or waiting graph can be aborted
@@ -559,9 +560,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				}// synchronized
 			} finally {
 				//rollback MDC
-				MDC.remove("runId");
+				MDC.remove(LogUtils.MDC_RUNID_KEY);
 				if (oldMDCRunId != null) {
-					MDC.put("runId", oldMDCRunId);
+					MDC.put(LogUtils.MDC_RUNID_KEY, oldMDCRunId);
 				}
 			}
 		}// finally
@@ -951,8 +952,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		} catch (Exception e) {
 			logger.error("Unexpected error during job tracking", e);
 		}
-		
-		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_FINISHED);
+
+		int runningPhaseNum = graphTracking.getRunningPhaseTracking().getPhaseNum();
+		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_FINISHED, null, runningPhaseNum);
 	}
 
 	public synchronized void phaseAborted() {
@@ -962,7 +964,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			logger.error("Unexpected error during job tracking", e);
 		}
 		
-		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_ABORTED);
+		int runningPhaseNum = graphTracking.getRunningPhaseTracking().getPhaseNum();
+		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_ABORTED, null, runningPhaseNum);
 	}
 
 	public synchronized void phaseError(String message) {
@@ -972,7 +975,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			logger.error("Unexpected error during job tracking", e);
 		}
 		
-		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_ERROR);
+		int runningPhaseNum = graphTracking.getRunningPhaseTracking().getPhaseNum();
+		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_ERROR, null, runningPhaseNum);
 	}
 
 	public synchronized void graphFinished() {

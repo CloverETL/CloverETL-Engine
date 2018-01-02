@@ -56,6 +56,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.ClusterUtils;
 import org.jetel.util.ExceptionUtils;
+import org.jetel.util.LogUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.StringUtils;
@@ -746,7 +747,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 					formerThreadName = nodeThread.getName();
 	    			long runId = getGraph().getRuntimeContext().getRunId();
 		    		nodeThread.setName(getId()+"_"+runId);
-					MDC.put("runId", getGraph().getRuntimeContext().getRunId());
+					MDC.put(LogUtils.MDC_RUNID_KEY, getGraph().getRuntimeContext().getRunId());
 				
 					if (logger.isTraceEnabled()) {
 						logger.trace("set thread name; old:"+formerThreadName+" new:"+ nodeThread.getName());
@@ -754,7 +755,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 					}
 				}
 			} else {
-				MDC.remove("runId");
+				MDC.remove(LogUtils.MDC_RUNID_KEY);
 				long runId = getGraph().getRuntimeContext().getRunId();
 				if (logger.isTraceEnabled()) 
 					logger.trace("reset thread runId; runId:"+runId+" thread name:"+Thread.currentThread().getName());

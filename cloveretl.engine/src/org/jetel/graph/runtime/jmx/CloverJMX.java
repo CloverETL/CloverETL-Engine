@@ -30,10 +30,12 @@ import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.MDC;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.JMXNotificationMessage;
 import org.jetel.graph.runtime.WatchDog;
+import org.jetel.util.LogUtils;
 
 /**
  * JMX managed bean implementation.
@@ -100,6 +102,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 		GraphRuntimeContext runtimeContext = watchDog.getGraphRuntimeContext();
 		long runId = runtimeContext.getRunId();
 		if (!watchDogCache.containsKey(runId)) {
+			log.debug("New running job registered in CloverJMX: " + runId);
 			watchDogCache.put(runId, watchDog);
 		} else {
 			throw new IllegalStateException("WatchDog with runId=" + runId + " is already registered.");
@@ -108,24 +111,46 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	
 	@Override
 	public GraphTracking getGraphTracking(long runId) {
-		return getWatchDog(runId).getGraphTracking();
+		MDC.put(LogUtils.MDC_RUNID_KEY, runId);
+		try {
+			return getWatchDog(runId).getGraphTracking();
+		} finally {
+			MDC.remove(LogUtils.MDC_RUNID_KEY);
+		}
 	}
 
 	@Override
 	public void abortGraphExecution(long runId) {
-		getWatchDog(runId).abort();
+		MDC.put(LogUtils.MDC_RUNID_KEY, runId);
+		try {
+			getWatchDog(runId).abort();
+		} finally {
+			MDC.remove(LogUtils.MDC_RUNID_KEY);
+		}
 	}
 
 	@Override
 	public void abortGraphExecution(long runId, boolean waitForAbort) {
-		getWatchDog(runId).abort(waitForAbort);
+		MDC.put(LogUtils.MDC_RUNID_KEY, runId);
+		try {
+			getWatchDog(runId).abort(waitForAbort);
+		} finally {
+			MDC.remove(LogUtils.MDC_RUNID_KEY);
+		}
 	}
 
 	@Override
 	public void relaseJob(long runId) {
-		WatchDog watchDog = watchDogCache.remove(runId);
-		if (watchDog == null) {
-			log.error("Unregister WatchDog failed for runId=" + runId);
+		MDC.put(LogUtils.MDC_RUNID_KEY, runId);
+		try {
+			WatchDog watchDog = watchDogCache.remove(runId);
+			if (watchDog == null) {
+				log.error("Unregister WatchDog failed for runId=" + runId);
+			} else {
+				log.debug("Finished job unregistered from CloverJMX: " + runId);
+			}
+		} finally {
+			MDC.remove(LogUtils.MDC_RUNID_KEY);
 		}
 	}
 
@@ -145,8 +170,13 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 
 	@Override
 	public synchronized void setApprovedPhaseNumber(long runId, int approvedPhaseNumber) {
-		getWatchDog(runId).setApprovedPhaseNumber(approvedPhaseNumber);
-		notifyAll();
+		MDC.put(LogUtils.MDC_RUNID_KEY, runId);
+		try {
+			getWatchDog(runId).setApprovedPhaseNumber(approvedPhaseNumber);
+			notifyAll();
+		} finally {
+			MDC.remove(LogUtils.MDC_RUNID_KEY);
+		}
 	}
 
 	public void sendNotification(long runId, String type) {
