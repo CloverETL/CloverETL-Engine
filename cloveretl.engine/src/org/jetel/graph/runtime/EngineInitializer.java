@@ -27,10 +27,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
 import org.apache.log4j.net.SocketAppender;
 import org.jetel.component.fileoperation.FileManager;
+import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.jmx.CloverJMX;
 import org.jetel.main.runGraph;
 import org.jetel.plugin.PluginLocation;
 import org.jetel.plugin.PluginRepositoryLocation;
@@ -183,6 +185,12 @@ public class EngineInitializer {
 
         //file manager initialisation
         FileManager.init();
+        
+		// create and register CloverJMX mbean for graph tracking
+		CloverJMX.registerMBean();
+
+		// create and register DebugJMX mbean for CTL debugging
+		DebugJMX.registerMBean();
     }
     
     private static void internalInit(URL defaultPropertiesFile, String logHost) {
