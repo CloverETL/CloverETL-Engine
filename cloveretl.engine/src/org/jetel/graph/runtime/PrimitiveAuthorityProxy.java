@@ -83,7 +83,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	 * Auto-incremented number, which is used in {@link #getUniqueRunId()}
 	 * for generating unique run IDs. 
 	 */
-	private static long runIdSequence = 1;
+	private static long runIdSequence = -1;
 
 	/**
 	 * Suffix of temp files created by standalone engine
@@ -196,7 +196,6 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	@Override
 	public RunStatus executeGraphSync(String graphFileName, GraphRuntimeContext givenRuntimeContext, Long timeout) throws InterruptedException {
 		RunStatus rr = new RunStatus();
-        long runId = (this.runtimeContext == null) ? 0:this.runtimeContext.getRunId();
         
 		InputStream in = null;		
 
@@ -254,10 +253,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 
 	/**
+	 * Negative number are used to avoid conflicts with user-specified runIds.
 	 * @return unique long number, which can be used as run ID of newly executed graphs
 	 */
 	public static synchronized long getUniqueRunId() {
-		return runIdSequence++;
+		return runIdSequence--;
 	}
 	
 	/**
