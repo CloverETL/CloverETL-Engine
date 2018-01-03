@@ -923,8 +923,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		} catch (Exception e) {
 			logger.error("Unexpected error during job tracking", e);
 		}
-
-		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.GRAPH_STARTED);
+		if (provideJMX) {
+			CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.GRAPH_STARTED);
+		}
 	}
 
 	public synchronized void phaseStarted(Phase phase) {
@@ -934,7 +935,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			logger.error("Unexpected error during job tracking", e);
 		}
 		
-		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_STARTED);
+		if (provideJMX) {
+			CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_STARTED);
+		}
 	}
 
 	public synchronized void gatherTrackingDetails() {
@@ -944,7 +947,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			logger.error("Unexpected error during job tracking", e);
 		}
 		
-		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.TRACKING_UPDATED);
+		if (provideJMX) {
+			CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.TRACKING_UPDATED);
+		}
 	}
 
 	public synchronized void phaseFinished() {
@@ -954,8 +959,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			logger.error("Unexpected error during job tracking", e);
 		}
 
-		int runningPhaseNum = graphTracking.getRunningPhaseTracking().getPhaseNum();
-		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_FINISHED, null, runningPhaseNum);
+		if (provideJMX) {
+			int runningPhaseNum = graphTracking.getRunningPhaseTracking().getPhaseNum();
+			CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_FINISHED, null, runningPhaseNum);
+		}
 	}
 
 	public synchronized void phaseAborted() {
@@ -965,8 +972,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			logger.error("Unexpected error during job tracking", e);
 		}
 		
-		int runningPhaseNum = graphTracking.getRunningPhaseTracking().getPhaseNum();
-		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_ABORTED, null, runningPhaseNum);
+		if (provideJMX) {
+			int runningPhaseNum = graphTracking.getRunningPhaseTracking().getPhaseNum();
+			CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_ABORTED, null, runningPhaseNum);
+		}
 	}
 
 	public synchronized void phaseError(String message) {
@@ -976,8 +985,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			logger.error("Unexpected error during job tracking", e);
 		}
 		
-		int runningPhaseNum = graphTracking.getRunningPhaseTracking().getPhaseNum();
-		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_ERROR, null, runningPhaseNum);
+		if (provideJMX) {
+			int runningPhaseNum = graphTracking.getRunningPhaseTracking().getPhaseNum();
+			CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_ERROR, null, runningPhaseNum);
+		}
 	}
 
 	public synchronized void graphFinished() {
@@ -987,8 +998,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			logger.error("Unexpected error during job tracking", e);
 		}
 
-		DictionaryValuesContainer dictionary = DictionaryValuesContainer.getDictionaryValuesContainer(graph.getDictionary(), false, true, false);
-		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.GRAPH_FINISHED, null, dictionary);
+		if (provideJMX) {
+			DictionaryValuesContainer dictionary = DictionaryValuesContainer.getDictionaryValuesContainer(graph.getDictionary(), false, true, false);
+			CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.GRAPH_FINISHED, null, dictionary);
+		}
 	}
 
 	/**
@@ -1002,8 +1015,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			logger.error("Unexpected error during job tracking", e);
 		}
 
-		DictionaryValuesContainer dictionary = DictionaryValuesContainer.getDictionaryValuesContainer(graph.getDictionary(), false, true, false);
-		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.GRAPH_ABORTED, null, dictionary);
+		if (provideJMX) {
+			DictionaryValuesContainer dictionary = DictionaryValuesContainer.getDictionaryValuesContainer(graph.getDictionary(), false, true, false);
+			CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.GRAPH_ABORTED, null, dictionary);
+		}
 	}
 
 	/**
@@ -1017,12 +1032,16 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			logger.error("Unexpected error during job tracking", e);
 		}
 
-		DictionaryValuesContainer dictionary = DictionaryValuesContainer.getDictionaryValuesContainer(graph.getDictionary(), false, true, false);
-		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.GRAPH_ERROR, null, dictionary);
+		if (provideJMX) {
+			DictionaryValuesContainer dictionary = DictionaryValuesContainer.getDictionaryValuesContainer(graph.getDictionary(), false, true, false);
+			CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.GRAPH_ERROR, null, dictionary);
+		}
 	}
 	
 	public synchronized void nodeFinished(String message) {
-		CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.NODE_FINISHED);
+		if (provideJMX) {
+			CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.NODE_FINISHED);
+		}
 	}
 	
 }
