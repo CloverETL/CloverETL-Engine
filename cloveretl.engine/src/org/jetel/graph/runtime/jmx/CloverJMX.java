@@ -22,7 +22,9 @@ import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.ThreadMXBean;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.management.Notification;
@@ -51,6 +53,11 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	
 	public static final String MBEAN_NAME = "org.jetel.graph.runtime:type=CLOVERJMX";
 	
+	/**
+	 * Default time after which a finished job is automatically removed from cache of running jobs. 
+	 */
+	private static final long DEFAULT_OBSOLETE_JOB_TIMEOUT = 10 * 1000; // 10s
+	
 	private static final Logger log = Logger.getLogger(CloverJMX.class);
 
 	static final transient MemoryMXBean MEMORY_MXBEAN = ManagementFactory.getMemoryMXBean();
@@ -64,6 +71,11 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
     private static Map<Long, WatchDog> watchDogCache = new ConcurrentHashMap<>();
 
     private int notificationSequence;
+    
+    /**
+     * Obsolete timeout can be changed due junit tests.
+     */
+    private long obsoleteJobTimeout = DEFAULT_OBSOLETE_JOB_TIMEOUT;
     
     /**
      * The only instance of CloverJMX mBean.
@@ -99,6 +111,9 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	 * Registers a running watchdog. Each watchdog should register yourself to allow be monitored using this mBean.
 	 */
 	public void registerWatchDog(WatchDog watchDog) {
+		//first clean old watchdogs, which seems to be forgot
+		cleanObsoleteWatchDogs();
+		
 		GraphRuntimeContext runtimeContext = watchDog.getGraphRuntimeContext();
 		long runId = runtimeContext.getRunId();
 		if (!watchDogCache.containsKey(runId)) {
@@ -159,7 +174,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 		if (watchDog != null) {
 			return watchDog;
 		} else {
-			throw new IllegalStateException("WatchDog does not found for runId=" + runId);
+			throw new JetelRuntimeException("WatchDog does not found for runId=" + runId);
 		}
 	}
 	
@@ -191,6 +206,30 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 		Notification notification = new Notification(type, this, notificationSequence++);
 		notification.setUserData(new JMXNotificationMessage(runId, userData));
 		sendNotification(notification);
+	}
+	
+	/**
+	 * Removes all finished jobs older than 10s from watchDogCache.
+	 */
+	private void cleanObsoleteWatchDogs() {
+		long currentTime = System.currentTimeMillis();
+		for (Iterator<Map.Entry<Long, WatchDog>> iterator = watchDogCache.entrySet().iterator(); iterator.hasNext(); ) {
+			Entry<Long, WatchDog> entry = iterator.next();
+			WatchDog watchDog = entry.getValue();
+			if (watchDog.getStatus().isStop()
+					&& watchDog.getGraphTracking().getEndTime() + getObsoleteJobTimeout() < currentTime) {
+				iterator.remove();
+				log.warn("Obsolete WatchDog has been removed from CloverJMX cache of running jobs.");
+			}
+		}
+	}
+	
+	public long getObsoleteJobTimeout() {
+		return obsoleteJobTimeout;
+	}
+	
+	public void setObsoleteJobTimeout(long obsoleteJobTimeout) {
+		this.obsoleteJobTimeout = obsoleteJobTimeout;
 	}
 	
 }
