@@ -505,6 +505,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		abort(true);
 	}
 
+    @SuppressFBWarnings("NN_NAKED_NOTIFY")
 	public void abort(boolean waitForAbort) {
 		final Object oldMDCRunId = MDC.get(LogUtils.MDC_RUNID_KEY);
 		try {
