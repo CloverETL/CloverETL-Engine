@@ -43,6 +43,7 @@ public class SingleThreadExecutionTest extends CloverTestCase {
 
 	public void testSync() throws MalformedURLException, FileNotFoundException, XMLConfigurationException, GraphConfigurationException, ComponentNotReadyException {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+		runtimeContext.setUseJMX(false);
 		runtimeContext.setExecutionType(ExecutionType.SINGLE_THREAD_EXECUTION);
 		runtimeContext.setContextURL(FileUtils.getFileURL(FileUtils.appendSlash("data/")));
 		TransformationGraph graph = 
@@ -65,6 +66,7 @@ public class SingleThreadExecutionTest extends CloverTestCase {
 
 	public void testAsync() throws MalformedURLException, FileNotFoundException, XMLConfigurationException, GraphConfigurationException, ComponentNotReadyException, InterruptedException, ExecutionException {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+		runtimeContext.setUseJMX(false);
 		runtimeContext.setContextURL(FileUtils.getFileURL(FileUtils.appendSlash("data/")));
 		TransformationGraph graph = 
 				TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/SingleThreadExecutionTest.grf"), runtimeContext);
@@ -82,6 +84,7 @@ public class SingleThreadExecutionTest extends CloverTestCase {
 
 	public void testJSONReader_allTypes_formatting() throws MalformedURLException, FileNotFoundException, XMLConfigurationException, GraphConfigurationException, ComponentNotReadyException {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+		runtimeContext.setUseJMX(false);
 		runtimeContext.setExecutionType(ExecutionType.SINGLE_THREAD_EXECUTION);
 		runtimeContext.setContextURL(FileUtils.getFileURL(FileUtils.appendSlash("../cloveretl.test.scenarios/")));
 		TransformationGraph graph = 
@@ -102,6 +105,7 @@ public class SingleThreadExecutionTest extends CloverTestCase {
 
 	public void testJSONWriter_AllTypes() throws MalformedURLException, FileNotFoundException, XMLConfigurationException, GraphConfigurationException, ComponentNotReadyException {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+		runtimeContext.setUseJMX(false);
 		runtimeContext.setExecutionType(ExecutionType.SINGLE_THREAD_EXECUTION);
 		runtimeContext.setContextURL(FileUtils.getFileURL(FileUtils.appendSlash("../cloveretl.test.scenarios/")));
 		TransformationGraph graph = 
