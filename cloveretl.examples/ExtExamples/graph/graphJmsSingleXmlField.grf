@@ -25,7 +25,7 @@
 <Field name="ShipCountry" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
-<Connection connectionFactory="ConnectionFactory" destId="dynamicQueues/Clover" id="dest" iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory" libraries="${PROJECT}/lib/activemq-all-5.2.0.jar" name="" password="" providerUrl="vm://localhost" type="JMS" username=""/>
+<Connection connectionFactory="ConnectionFactory" destId="dynamicQueues/Clover" id="dest" iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory" libraries="${PROJECT}/lib/activemq-all-5.2.0.jar" name="" password="" providerUrl="tcp://localhost:61616" type="JMS" username=""/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="49" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of JMS Components (JMSReader and JMSWriter)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="460" x="15" y="-90"/>
 <Dictionary/>

@@ -2,7 +2,7 @@
 <Graph author="avackova" created="Wed Nov 22 11:30:48 CET 2006" description="This graph ilustrates usage of JMS Reader/Writer Components. It reuires ACtiveMQ JMS server to be running on localhost!" guiVersion="0.0.0.devel" id="1204546356214" licenseType="Evaluation Devel" modified="Fri Jun 10 11:19:36 CEST 2011" modifiedBy="avackova" name="graphSystemExecute" revision="1.61" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
-<Connection connectionFactory="ConnectionFactory" destId="dynamicQueues/Clover" id="dest" iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory" libraries="${PROJECT}/lib/activemq-all-5.2.0.jar" name="" password="" providerUrl="vm://localhost" type="JMS" username=""/>
+<Connection connectionFactory="ConnectionFactory" destId="dynamicQueues/Clover" id="dest" iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory" libraries="${PROJECT}/lib/activemq-all-5.2.0.jar" name="" password="" providerUrl="tcp://localhost:61616" type="JMS" username=""/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Dictionary/>
 </Global>
