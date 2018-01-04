@@ -67,19 +67,14 @@ System.getenv().each{ println "\t${it}" }
 
 antCustomEnv = ["ANT_OPTS":"-Xmx2048m -XX:MaxPermSize=256m"]
 antBaseD = engineD
-if( !runTests ){
+if( jobGoal == "engine" ){
 	// only compile engine, do not run tests
 	antArgs = [
 		"-Dadditional.plugin.list=cloveretl.license.engine,cloveretl.component.hadoop,cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial,cloveretl.profiler.commercial,cloveretl.mongodb.commercial,cloveretl.validator.commercial,cloveretl.initiate.engine,cloveretl.spreadsheet.commercial,cloveretl.oem.example.component,cloveretl.subgraph.commercial,cloveretl.smb2,cloveretl.tableau",
 		"-Djavaversion=${javaVersion}",
 		"-Ddir.examples=../cloveretl.examples"
 	]
-	if( jobGoal == "engine" ) {
-		antTarget = "dist"
-	} else {
-		println "ERROR: Unknown goal '${jobGoal}'"
-		exit 1
-	}
+	antTarget = "dist"
 } else {
 	// download engine and run tests only
 	testEnvironmentD = new File( baseD, "cloveretl.test.environment" )
@@ -87,7 +82,6 @@ if( !runTests ){
 	new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 	new File(baseD, "cloveretl.examples/ExtExamples/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 	getBouncyPath()
-	antBaseD = testEnvironmentD
 
 	engineJobName = "cloveretl.engine-" + versionSuffix
 	engineBuildNumber = new URL( env['JENKINS_URL'] + "job/${engineJobName}/lastSuccessfulBuild/buildNumber").text
@@ -106,8 +100,6 @@ if( !runTests ){
 	antArgs = [
 		"-Ddir.engine.build=../cloverETL/lib",
 		"-Ddir.plugins=../cloverETL/plugins",
-		"-Dscenarios=${scenarios}",
-		"-Denvironment.config=${testConfiguration}",
 		"-Dlogpath=${workspace}/cte-logs",
 		"-Dcteguiloglink=${jenkinsBuildUrl}/artifact/cte-logs/",
 		"-Dhudson.link=job/${jobName}/${buildNumber}",
@@ -120,58 +112,64 @@ if( !runTests ){
 	]
 
 	antTarget = "run-scenarios-with-engine-build-with-testdb"
-	if( jobGoal == "after-commit" ){
-		antTarget = "runtests-with-testdb"
-		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun"
-		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java,org/jetel/component/fileoperation/FTPOperationHandlerTest.java,com/opensys/cloveretl/component/EmailFilterTest.java,org/jetel/component/fileoperation/hadoop/Hadoop511OperationHandlerTest.java"
-		antArgs += "-Druntests-target=runtests-scenario-after-commit"
-	} else if( jobGoal == "detail"){
-		antTarget = "reports-hudson-detail"
-		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun_detail"
-		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/hadoop/Hadoop511OperationHandlerTest.java"
-		antArgs += "-Drun.coverage=true"
-		antArgs += "-Druntests-target=runtests-scenario-after-commit"
-	} else if( jobGoal == "tests-reset"){
-		antTarget = "runtests-tests-reset"
-		antArgs += "-Druntests-plugins-dontrun=true"
-		antArgs += "-Dtest.include=org/jetel/graph/ResetTest.java"
-		antArgs += "-Druntests.engine.Xmx=-Xmx3072m"
-		antArgs += "-Dadditional.jvmargs=-Djavax.net.ssl.trustStore=${trustStoreF}"
-		//antArgs += "-Dadditional.jvmargs=-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=33333 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=172.22.2.28"
-	}
-	if( testOption == "profile" ){
-		antTarget = "run-scenarios-with-profiler"
-		antArgs += "-Dprofiler.settings=CPURecording;MonitorRecording;ThreadProfiling;VMTelemetryRecording"
-	}
-	if( testName == "after-commit-koule" ){
-		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
-		antCustomEnv["PATH"]="${env['PATH']}:/home/db2inst/sqllib/bin:/home/db2inst/sqllib/adm:/home/db2inst/sqllib/misc"
-		antCustomEnv["DB2DIR"]="/opt/ibm/db2/V9.7"
-		antCustomEnv["DB2INSTANCE"]="db2inst"
-	}
-	if( testName == "after-commit-windows" ){
-		//testing derby database is not available under windows platform, so target is changed
-		antTarget = "run-scenarios-with-engine-build"
-		antArgs += "-Drunscenarios.Xmx=-Xmx512m"
-		trustStoreF = trustStoreF.getCanonicalPath().replaceAll("\\\\", "/") // use forward slashes in path on windows
-	}
-	if( testName == "after-commit-proxy" ){
-		antTarget = "run-scenarios-with-engine-build"
-		antArgs += "-Drunscenarios.Xmx=-Xmx512m"
-		trustStoreF = new File(baseD, "cloveretl.test.scenarios/truststore/proxyTests.truststore")
-	}
-	if (testName == "night") { //night tests need more memory
-		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
-	}
-	if (testName == "performance") {
-		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
-	}
-	if (testName == "after-commit" && testJVM.endsWith("IBM")) {
-		// disable Hadoop tests
-		antArgs += "-Dtestenv.excludedtestidentpattern=Hadoop.*|HDFS.*|Hive.*"
-		// prevent OutOfMemoryError and Segmentation error on IBM Java
-		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
-		antArgs += "-Drunscenarios.Xmso=-Xmso2048k" // CLO-4730, CLO-4567
+	if( !runTests ) {
+		if( jobGoal == "after-commit" ){
+			antTarget = "runtests-with-testdb"
+			antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun"
+			antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java,org/jetel/component/fileoperation/FTPOperationHandlerTest.java,com/opensys/cloveretl/component/EmailFilterTest.java,org/jetel/component/fileoperation/hadoop/Hadoop511OperationHandlerTest.java"
+			antArgs += "-Druntests-target=runtests-scenario-after-commit"
+		} else if( jobGoal == "detail"){
+			antTarget = "reports-hudson-detail"
+			antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun_detail"
+			antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/hadoop/Hadoop511OperationHandlerTest.java"
+			antArgs += "-Drun.coverage=true"
+			antArgs += "-Druntests-target=runtests-scenario-after-commit"
+		} else if( jobGoal == "tests-reset"){
+			antTarget = "runtests-tests-reset"
+			antArgs += "-Druntests-plugins-dontrun=true"
+			antArgs += "-Dtest.include=org/jetel/graph/ResetTest.java"
+			antArgs += "-Druntests.engine.Xmx=-Xmx3072m"
+			antArgs += "-Dadditional.jvmargs=-Djavax.net.ssl.trustStore=${trustStoreF}"
+			//antArgs += "-Dadditional.jvmargs=-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=33333 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=172.22.2.28"
+		}
+	} else {
+		antBaseD = testEnvironmentD
+		antArgs += "-Dscenarios=${scenarios}"
+		antArgs += "-Denvironment.config=${testConfiguration}"
+		if( testOption == "profile" ){
+			antTarget = "run-scenarios-with-profiler"
+			antArgs += "-Dprofiler.settings=CPURecording;MonitorRecording;ThreadProfiling;VMTelemetryRecording"
+		}
+		if( testName == "after-commit-koule" ){
+			antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
+			antCustomEnv["PATH"]="${env['PATH']}:/home/db2inst/sqllib/bin:/home/db2inst/sqllib/adm:/home/db2inst/sqllib/misc"
+			antCustomEnv["DB2DIR"]="/opt/ibm/db2/V9.7"
+			antCustomEnv["DB2INSTANCE"]="db2inst"
+		}
+		if( testName == "after-commit-windows" ){
+			//testing derby database is not available under windows platform, so target is changed
+			antTarget = "run-scenarios-with-engine-build"
+			antArgs += "-Drunscenarios.Xmx=-Xmx512m"
+			trustStoreF = trustStoreF.getCanonicalPath().replaceAll("\\\\", "/") // use forward slashes in path on windows
+		}
+		if( testName == "after-commit-proxy" ){
+			antTarget = "run-scenarios-with-engine-build"
+			antArgs += "-Drunscenarios.Xmx=-Xmx512m"
+			trustStoreF = new File(baseD, "cloveretl.test.scenarios/truststore/proxyTests.truststore")
+		}
+		if (testName == "night") { //night tests need more memory
+			antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
+		}
+		if (testName == "performance") {
+			antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
+		}
+		if (testName == "after-commit" && testJVM.endsWith("IBM")) {
+			// disable Hadoop tests
+			antArgs += "-Dtestenv.excludedtestidentpattern=Hadoop.*|HDFS.*|Hive.*"
+			// prevent OutOfMemoryError and Segmentation error on IBM Java
+			antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
+			antArgs += "-Drunscenarios.Xmso=-Xmso2048k" // CLO-4730, CLO-4567
+		}
 	}
 
 	cloverD = new File(baseD, "cloverETL")
