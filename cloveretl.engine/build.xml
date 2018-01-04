@@ -921,10 +921,13 @@ This software is licensed under the terms you may find in the file named "LICENS
 	
 	<target name="reports" depends="check-sources,reporttests,findbugs-html">
 	</target>
-	
+
 	<target name="reports-hudson" depends="dist,check-sources,runtests-with-testdb,javadoc">
 	</target>
 	
+	<target name="reports-hudson-unittest" depends="dist,check-sources,runtests">
+	</target>
+
 	<target name="reports-hudson-detail" depends="pmd,runtests-detail,findbugs-xml,findbugs-xml-plugins">
 	</target>
 	

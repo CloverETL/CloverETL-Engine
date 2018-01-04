@@ -74,7 +74,7 @@ if( jobGoal == "engine" ){
 		"-Djavaversion=${javaVersion}",
 		"-Ddir.examples=../cloveretl.examples"
 	]
-	antTarget = "dist"
+	antTarget = "reports-hudson-unittest"
 } else {
 	// download engine and run tests only
 	testEnvironmentD = new File( baseD, "cloveretl.test.environment" )
