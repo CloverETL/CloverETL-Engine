@@ -95,7 +95,7 @@ if( !runTests ){
 		// only compile engine and run the minimum unit tests (target runtests)
 		antTarget = "reports-hudson-unittest"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun"
-		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java,org/jetel/component/fileoperation/FTPOperationHandlerTest.java,com/opensys/cloveretl/component/EmailFilterTest.java"
+		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java,org/jetel/component/fileoperation/FTPOperationHandlerTest.java,com/opensys/cloveretl/component/EmailFilterTest.java,org/jetel/component/fileoperation/hadoop/Hadoop511OperationHandlerTest.java"
 	} else if( jobGoal == "optimalized"){
 		antTarget = "reports-hudson-optimalized"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.6-Sun_optimalized"
@@ -105,7 +105,7 @@ if( !runTests ){
 	} else if( jobGoal == "detail"){
 		antTarget = "reports-hudson-detail"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun_detail"
-		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java"
+		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/hadoop/Hadoop511OperationHandlerTest.java"
 		antArgs += "-Drun.coverage=true"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit"
 	} else if( jobGoal == "tests-reset"){
@@ -119,6 +119,7 @@ if( !runTests ){
 		println "ERROR: Unknown goal '${jobGoal}'"
 		exit 1
 	}
+
 } else {
 	// download engine and run CTE tests
 	antBaseD = testEnvironmentD
