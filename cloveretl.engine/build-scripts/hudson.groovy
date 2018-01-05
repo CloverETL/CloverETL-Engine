@@ -71,8 +71,8 @@ System.getenv().each{ println "\t${it}" }
 getBouncyPath()
 
 antCustomEnv = ["ANT_OPTS":"-Xmx2048m -XX:MaxPermSize=256m"]
-antBaseD = engineD
 if( !runTests ){
+	antBaseD = engineD
 	antArgs = [
 		"-Dadditional.plugin.list=cloveretl.license.engine,cloveretl.component.hadoop,cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial,cloveretl.profiler.commercial,cloveretl.mongodb.commercial,cloveretl.validator.commercial,cloveretl.initiate.engine,cloveretl.spreadsheet.commercial,cloveretl.oem.example.component,cloveretl.subgraph.commercial,cloveretl.smb2,cloveretl.tableau",
 		"-Dcte.logpath=${workspace}/cte-logs",
