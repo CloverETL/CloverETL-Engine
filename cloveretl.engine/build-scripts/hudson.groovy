@@ -41,8 +41,12 @@ if( runTests ) {
 
 baseD = new File( new File('').absolutePath )
 engineD = new File( baseD, "cloveretl.engine" )
+testEnvironmentD = new File( baseD, "cloveretl.test.environment" )
+trustStoreF = new File(baseD, "cloveretl.test.scenarios/truststore/certs") //set default truststore - some tests might use different one
 
 def jobIdent = generateJobIdent(testName ? testName : jobGoal)
+new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
+new File(baseD, "cloveretl.examples/ExtExamples/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 
 def startTime = new Date();
 println "======================= " + startTime
@@ -64,6 +68,8 @@ println "====================================================="
 println "Environment variables:"
 System.getenv().each{ println "\t${it}" }
 
+getBouncyPath()
+
 antCustomEnv = ["ANT_OPTS":"-Xmx2048m -XX:MaxPermSize=256m"]
 antBaseD = engineD
 if( !runTests ){
@@ -73,7 +79,9 @@ if( !runTests ){
 		"-Dcteguiloglink=${jenkinsBuildUrl}/artifact/cte-logs/",
 		"-Dcte.hudson.link=job/${jobName}/${buildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
-		"-Djavaversion=${javaVersion}"
+		"-Djavaversion=${javaVersion}",
+		"-Dcloveretl.smb2.bouncycastle.jar.file=${bouncyPath}/bcprov-jdk15on-1.57.jar",
+		"-Drunscenarios.trustStore=-Djavax.net.ssl.trustStore=${trustStoreF}"
 	]
 	if( jobGoal == "engine" ) {
 		// only compile engine and run the minimum unit tests (target runtests)
@@ -107,12 +115,6 @@ if( !runTests ){
 	}
 } else {
 	// download engine and run CTE tests
-
-	testEnvironmentD = new File( baseD, "cloveretl.test.environment" )
-	trustStoreF = new File(baseD, "cloveretl.test.scenarios/truststore/certs") //set default truststore - some tests might use different one
-	new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
-	new File(baseD, "cloveretl.examples/ExtExamples/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
-	getBouncyPath()
 	antBaseD = testEnvironmentD
 
 	engineJobName = "cloveretl.engine-" + versionSuffix
