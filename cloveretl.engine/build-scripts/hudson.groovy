@@ -150,8 +150,7 @@ if( !runTests ){
 		"-Ddir.examples=../cloveretl.examples",
 		"-Dtestenv.etlenvironment=engine",
 		"-Dcloveretl.smb2.bouncycastle.jar.file=${bouncyPath}/bcprov-jdk15on-1.57.jar",
-		"-Djavaversion=${javaVersion}",
-		"-Drunscenarios.trustStore=\"-Djavax.net.ssl.trustStore=${trustStoreF}\""
+		"-Djavaversion=${javaVersion}"
 	]
 
 	antTarget = "run-scenarios-with-engine-build-with-testdb"
@@ -189,6 +188,10 @@ if( !runTests ){
 		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
 		antArgs += "-Drunscenarios.Xmso=-Xmso2048k" // CLO-4730, CLO-4567
 	}
+
+	// trustStore file path set separately from the other arguments
+	// due to different platform path separators (trustStoreF above)
+	antArgs += "-Drunscenarios.trustStore=\"-Djavax.net.ssl.trustStore=${trustStoreF}\""
 
 	cloverD = new File(baseD, "cloverETL")
 	// removing files from previous build
