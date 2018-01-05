@@ -928,7 +928,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 	<target name="reports-hudson-unittest" depends="dist,check-sources,runtests">
 	</target>
 
-	<target name="reports-hudson-detail" depends="pmd,runtests-detail,findbugs-xml,findbugs-xml-plugins">
+	<target name="reports-hudson-detail" depends="pmd,dist,runtests-detail,findbugs-xml,findbugs-xml-plugins">
 	</target>
 	
 	<target name="reports-hudson-optimalized"  depends="dist,runtests-with-testdb">
