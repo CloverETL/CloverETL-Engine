@@ -18,13 +18,21 @@ def javaVersion = System.getProperty("java.specification.version", "")
 
 def testName
 
+// get paths for bouncy castle jars
+def getBouncyPath() {
+	bouncyPath = new GroovyShell().parse(new File('./cloveretl.test.environment/test-scripts/bouncyCastle.groovy')).with {
+		main()
+	}
+	println "We got path $bouncyPath"
+}
+
 jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-after-commit-mac-java-1.8-Sun|tests-after-commit-windows-java-1.7-Sun|tests-after-commit-windows-java-1.7-IBM|tests-after-commit-windows-java-1.7-IBM|tests-after-commit-proxy-java-1.7-Sun|tests-after-commit-java-8-Sun|tests-after-commit-java-1.7-Sun|tests-after-commit-java-1.7-IBM|tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional-java-1.7-Sun|tests-after-commit|tests-reset|tests-performance-java-1.7-Sun|detail)-)?(.+)$/
 assert jobNameM.matches()
 jobBasename = jobNameM[0][1]
 jobGoal = jobNameM[0][3]
 versionSuffix = jobNameM[0][4]
 
-if( !jobGoal ) jobGoal = "engine"
+if( !jobGoal ) jobGoal = "after-commit"
 runTests = jobGoal.startsWith("tests") && jobGoal.contains("java")
 if( runTests ) {
 	testNameM = jobGoal =~ /^tests-(.+)-(java-[^-]+-[^-]+)(-(.*))?$/
@@ -83,35 +91,33 @@ if( !runTests ){
 		"-Dcloveretl.smb2.bouncycastle.jar.file=${bouncyPath}/bcprov-jdk15on-1.57.jar",
 		"-Drunscenarios.trustStore=-Djavax.net.ssl.trustStore=${trustStoreF}"
 	]
-	if( jobGoal == "engine" ) {
+	if( jobGoal == "after-commit" ) {
 		// only compile engine and run the minimum unit tests (target runtests)
 		antTarget = "reports-hudson-unittest"
+		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun"
+		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java,org/jetel/component/fileoperation/FTPOperationHandlerTest.java,com/opensys/cloveretl/component/EmailFilterTest.java"
+	} else if( jobGoal == "optimalized"){
+		antTarget = "reports-hudson-optimalized"
+		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.6-Sun_optimalized"
+		antArgs += "-Dobfuscate.plugin.pattern=cloveretl\\.(?!ctlfunction).*"
+		antArgs += "-Druntests-dontrun=true"
+		antArgs += "-Druntests-target=runtests-scenario-after-commit-with-engine-classes"
+	} else if( jobGoal == "detail"){
+		antTarget = "reports-hudson-detail"
+		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun_detail"
+		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java"
+		antArgs += "-Drun.coverage=true"
+		antArgs += "-Druntests-target=runtests-scenario-after-commit"
+	} else if( jobGoal == "tests-reset"){
+		antTarget = "runtests-tests-reset"
+		antArgs += "-Druntests-plugins-dontrun=true"	
+		antArgs += "-Dtest.include=org/jetel/graph/ResetTest.java"
+		antArgs += "-Druntests.engine.Xmx=-Xmx3072m"
+		antArgs += "-Dadditional.jvmargs=-Djavax.net.ssl.trustStore=${trustStoreF}"
+		//antArgs += "-Dadditional.jvmargs=-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=33333 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=172.22.2.28"
 	} else {
-		antArgs += "-Dcloveretl.smb2.bouncycastle.jar.file=${bouncyPath}/bcprov-jdk15on-1.57.jar"
-		antArgs += "-Drunscenarios.trustStore=-Djavax.net.ssl.trustStore=${trustStoreF}"
-		if( jobGoal == "optimalized"){
-			antTarget = "reports-hudson-optimalized"
-			antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.6-Sun_optimalized"
-			antArgs += "-Dobfuscate.plugin.pattern=cloveretl\\.(?!ctlfunction).*"
-			antArgs += "-Druntests-dontrun=true"
-			antArgs += "-Druntests-target=runtests-scenario-after-commit-with-engine-classes"
-		} else if( jobGoal == "detail"){
-			antTarget = "reports-hudson-detail"
-			antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun_detail"
-			antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java"
-			antArgs += "-Drun.coverage=true"
-			antArgs += "-Druntests-target=runtests-scenario-after-commit"
-		} else if( jobGoal == "tests-reset"){
-			antTarget = "runtests-tests-reset"
-			antArgs += "-Druntests-plugins-dontrun=true"	
-			antArgs += "-Dtest.include=org/jetel/graph/ResetTest.java"
-			antArgs += "-Druntests.engine.Xmx=-Xmx3072m"
-			antArgs += "-Dadditional.jvmargs=-Djavax.net.ssl.trustStore=${trustStoreF}"
-			//antArgs += "-Dadditional.jvmargs=-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=33333 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=172.22.2.28"
-		} else {
-			println "ERROR: Unknown goal '${jobGoal}'"
-			exit 1
-		}
+		println "ERROR: Unknown goal '${jobGoal}'"
+		exit 1
 	}
 } else {
 	// download engine and run CTE tests
@@ -283,12 +289,4 @@ String generateJobIdent(String name) {
 		jobIdent = name.take(3)
 	}
 	return jobIdent + String.format('%05d', Math.abs(new Random().nextInt(100000)))
-}
-
-// get paths for bouncy castle jars
-def getBouncyPath() {
-	bouncyPath = new GroovyShell().parse(new File('./cloveretl.test.environment/test-scripts/bouncyCastle.groovy')).with {
-		main()
-	}
-	println "We got path $bouncyPath"
 }
