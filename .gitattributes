@@ -186,6 +186,9 @@ cloveretl.server/web/WEB-INF/lib/jsf-impl-2.2.15.jar filter=lfs diff=lfs merge=l
 cloveretl.server/lib/javax.el-api-2.2.5.jar filter=lfs diff=lfs merge=lfs -text
 cloveretl.server/lib/javax.servlet-api-3.0.1.jar filter=lfs diff=lfs merge=lfs -text
 cloveretl.server/lib.src/javax.el-api-2.2.5-sources.jar filter=lfs diff=lfs merge=lfs -text
+cloveretl.server/lib.src/primefaces-6.1-sources.jar filter=lfs diff=lfs merge=lfs -text
+cloveretl.server/web/WEB-INF/lib/primefaces-6.1.jar filter=lfs diff=lfs merge=lfs -text
+cloveretl.server/web/WEB-INF/lib/cdi-api-1.2.jar filter=lfs diff=lfs merge=lfs -text
 cloveretl.doc.integration.guide/Topics/LicenseVerifier.java2.xml	filter=lfs diff=lfs merge=lfs -text
 cloveretl.doc/issue-CLO-108/tools/docbook-xsl/doc/reference.pdf.gz	filter=lfs diff=lfs merge=lfs -text
 cloveretl.doc/issue-CLO-108/tools/docbook-xsl/docsrc/reference.xml.included	filter=lfs diff=lfs merge=lfs -text
