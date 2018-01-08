@@ -264,12 +264,11 @@ public class GraphTrackingDetail implements GraphTracking {
 
 	public void graphFinished() {
 		if (!result.isStop()) {
+			endTime = System.currentTimeMillis();
 			result = graph.getWatchDog().getStatus();
 			
 			//populate graph error
 			graphError = GraphErrorDetail.createInstance(graph.getWatchDog());
-			
-			endTime = System.currentTimeMillis();
 			
 			runningPhaseDetail = null;
 		}

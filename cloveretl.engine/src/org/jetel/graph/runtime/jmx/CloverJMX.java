@@ -241,8 +241,9 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 		for (Iterator<Map.Entry<Long, WatchDog>> iterator = watchDogCache.entrySet().iterator(); iterator.hasNext(); ) {
 			Entry<Long, WatchDog> entry = iterator.next();
 			WatchDog watchDog = entry.getValue();
-			if (watchDog.getStatus().isStop()
-					&& watchDog.getGraphTracking().getEndTime() + getObsoleteJobTimeout() < currentTime) {
+			GraphTrackingDetail tracking = watchDog.getGraphTracking();
+			if (tracking.getResult().isStop()
+					&& tracking.getEndTime() + getObsoleteJobTimeout() < currentTime) {
 				iterator.remove();
 				log.warn("Obsolete WatchDog has been removed from CloverJMX cache of running jobs.");
 			}
