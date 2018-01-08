@@ -26,12 +26,14 @@ import javax.management.NotificationListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.MDC;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.jmx.CloverJMX;
 import org.jetel.graph.runtime.jmx.GraphTrackingDetail;
 import org.jetel.graph.runtime.jmx.PhaseTracking;
 import org.jetel.graph.runtime.jmx.RunIdNotificationFilter;
 import org.jetel.graph.runtime.jmx.TrackingUtils;
+import org.jetel.util.LogUtils;
 import org.jetel.util.string.StringUtils;
 
 
@@ -72,6 +74,10 @@ public abstract class TrackingLogger implements NotificationListener {
 
 	@Override
 	public void handleNotification(Notification notification, Object handback) {
+		JMXNotificationMessage message = (JMXNotificationMessage)notification.getUserData();
+		if (message.getRunId() > 0) {
+			MDC.put(LogUtils.MDC_RUNID_KEY, Long.valueOf(message.getRunId()));
+		}
 		if(notification.getType().equals(CloverJMX.GRAPH_STARTED)) {
 			graphStarted();
 		} else if(notification.getType().equals(CloverJMX.TRACKING_UPDATED)) {
@@ -91,6 +97,9 @@ public abstract class TrackingLogger implements NotificationListener {
 			} catch (ListenerNotFoundException e) {
 				logger.warn("Unexpected error while graph logging will be ignored.");
 			}
+		}
+		if (message.getRunId() > 0) {
+			MDC.remove(LogUtils.MDC_RUNID_KEY);
 		}
 	}
 
