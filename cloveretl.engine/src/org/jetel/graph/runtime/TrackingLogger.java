@@ -74,32 +74,38 @@ public abstract class TrackingLogger implements NotificationListener {
 
 	@Override
 	public void handleNotification(Notification notification, Object handback) {
-		JMXNotificationMessage message = (JMXNotificationMessage)notification.getUserData();
-		if (message.getRunId() > 0) {
-			MDC.put(LogUtils.MDC_RUNID_KEY, Long.valueOf(message.getRunId()));
-		}
-		if(notification.getType().equals(CloverJMX.GRAPH_STARTED)) {
-			graphStarted();
-		} else if(notification.getType().equals(CloverJMX.TRACKING_UPDATED)) {
-			trackingUpdated();
-		} else if(notification.getType().equals(CloverJMX.PHASE_FINISHED)) {
-			phaseFinished();
-		} else if(notification.getType().equals(CloverJMX.PHASE_ABORTED)) {
-			phaseAborted();
-		} else if(notification.getType().equals(CloverJMX.PHASE_ERROR)) {
-			phaseError();
-		} else if(notification.getType().equals(CloverJMX.GRAPH_FINISHED)
-				|| notification.getType().equals(CloverJMX.GRAPH_ABORTED)
-				|| notification.getType().equals(CloverJMX.GRAPH_ERROR)) {
-			graphFinished();
-			try {
-				CloverJMX.getInstance().removeNotificationListener(this);
-			} catch (ListenerNotFoundException e) {
-				logger.warn("Unexpected error while graph logging will be ignored.");
+		JMXNotificationMessage message = (JMXNotificationMessage) notification.getUserData();
+
+		Object oldRunId = MDC.get(LogUtils.MDC_RUNID_KEY);
+		MDC.put(LogUtils.MDC_RUNID_KEY, Long.valueOf(message.getRunId()));
+
+		try {
+			if(notification.getType().equals(CloverJMX.GRAPH_STARTED)) {
+				graphStarted();
+			} else if(notification.getType().equals(CloverJMX.TRACKING_UPDATED)) {
+				trackingUpdated();
+			} else if(notification.getType().equals(CloverJMX.PHASE_FINISHED)) {
+				phaseFinished();
+			} else if(notification.getType().equals(CloverJMX.PHASE_ABORTED)) {
+				phaseAborted();
+			} else if(notification.getType().equals(CloverJMX.PHASE_ERROR)) {
+				phaseError();
+			} else if(notification.getType().equals(CloverJMX.GRAPH_FINISHED)
+					|| notification.getType().equals(CloverJMX.GRAPH_ABORTED)
+					|| notification.getType().equals(CloverJMX.GRAPH_ERROR)) {
+				graphFinished();
+				try {
+					CloverJMX.getInstance().removeNotificationListener(this);
+				} catch (ListenerNotFoundException e) {
+					logger.warn("Unexpected error while graph logging will be ignored.");
+				}
 			}
-		}
-		if (message.getRunId() > 0) {
-			MDC.remove(LogUtils.MDC_RUNID_KEY);
+		} finally {
+			if (oldRunId == null) {
+				MDC.remove(LogUtils.MDC_RUNID_KEY);
+			} else {
+				MDC.put(LogUtils.MDC_RUNID_KEY, oldRunId);
+			}
 		}
 	}
 

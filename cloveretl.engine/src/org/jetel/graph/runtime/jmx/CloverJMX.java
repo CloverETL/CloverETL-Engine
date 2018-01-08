@@ -126,36 +126,52 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	
 	@Override
 	public GraphTracking getGraphTracking(long runId) {
+		Object oldRunId = MDC.get(LogUtils.MDC_RUNID_KEY);
 		MDC.put(LogUtils.MDC_RUNID_KEY, runId);
 		try {
 			return getWatchDog(runId).getGraphTracking();
 		} finally {
-			MDC.remove(LogUtils.MDC_RUNID_KEY);
+			if (oldRunId == null) {
+				MDC.remove(LogUtils.MDC_RUNID_KEY);
+			} else {
+				MDC.put(LogUtils.MDC_RUNID_KEY, oldRunId);
+			}
 		}
 	}
 
 	@Override
 	public void abortGraphExecution(long runId) {
+		Object oldRunId = MDC.get(LogUtils.MDC_RUNID_KEY);
 		MDC.put(LogUtils.MDC_RUNID_KEY, runId);
 		try {
 			getWatchDog(runId).abort();
 		} finally {
-			MDC.remove(LogUtils.MDC_RUNID_KEY);
+			if (oldRunId == null) {
+				MDC.remove(LogUtils.MDC_RUNID_KEY);
+			} else {
+				MDC.put(LogUtils.MDC_RUNID_KEY, oldRunId);
+			}
 		}
 	}
 
 	@Override
 	public void abortGraphExecution(long runId, boolean waitForAbort) {
+		Object oldRunId = MDC.get(LogUtils.MDC_RUNID_KEY);
 		MDC.put(LogUtils.MDC_RUNID_KEY, runId);
 		try {
 			getWatchDog(runId).abort(waitForAbort);
 		} finally {
-			MDC.remove(LogUtils.MDC_RUNID_KEY);
+			if (oldRunId == null) {
+				MDC.remove(LogUtils.MDC_RUNID_KEY);
+			} else {
+				MDC.put(LogUtils.MDC_RUNID_KEY, oldRunId);
+			}
 		}
 	}
 
 	@Override
 	public void relaseJob(long runId) {
+		Object oldRunId = MDC.get(LogUtils.MDC_RUNID_KEY);
 		MDC.put(LogUtils.MDC_RUNID_KEY, runId);
 		try {
 			WatchDog watchDog = watchDogCache.remove(runId);
@@ -165,7 +181,11 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 				log.debug("Finished job unregistered from CloverJMX: " + runId);
 			}
 		} finally {
-			MDC.remove(LogUtils.MDC_RUNID_KEY);
+			if (oldRunId == null) {
+				MDC.remove(LogUtils.MDC_RUNID_KEY);
+			} else {
+				MDC.put(LogUtils.MDC_RUNID_KEY, oldRunId);
+			}
 		}
 	}
 
@@ -185,12 +205,17 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 
 	@Override
 	public synchronized void setApprovedPhaseNumber(long runId, int approvedPhaseNumber) {
+		Object oldRunId = MDC.get(LogUtils.MDC_RUNID_KEY);
 		MDC.put(LogUtils.MDC_RUNID_KEY, runId);
 		try {
 			getWatchDog(runId).setApprovedPhaseNumber(approvedPhaseNumber);
 			notifyAll();
 		} finally {
-			MDC.remove(LogUtils.MDC_RUNID_KEY);
+			if (oldRunId == null) {
+				MDC.remove(LogUtils.MDC_RUNID_KEY);
+			} else {
+				MDC.put(LogUtils.MDC_RUNID_KEY, oldRunId);
+			}
 		}
 	}
 
