@@ -19,7 +19,6 @@
 package org.jetel.ctl.extensions;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +26,11 @@ import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.Node;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.Plugins;
+import org.jetel.util.compile.ClassLoaderUtils;
 
 /**
  * This class provides access to TL functions stored in engine plugins.
@@ -93,7 +95,28 @@ public class TLFunctionPluginRepository {
      * @return	consolidated map of function to the descriptor
      */
 	public static Map<String,List<TLFunctionDescriptor>> getAllFunctions() {
-		return Collections.unmodifiableMap(consolidatedFunctions);
+		return getAllFunctions(null);
+	}
+	
+	public static Map<String,List<TLFunctionDescriptor>> getAllFunctions(List<String> userLibs) {
+		Map<String,List<TLFunctionDescriptor>> result = new TreeMap<String, List<TLFunctionDescriptor>>(consolidatedFunctions);
+		Node contextNode = ContextProvider.getNode();
+		if (contextNode != null) {
+			for (String userLib : userLibs) {
+				ITLFunctionLibrary library = ClassLoaderUtils.loadClassInstance(ITLFunctionLibrary.class, userLib, contextNode);
+				library.init();
+				Map<String,List<TLFunctionDescriptor>> functions = library.getAllFunctions();
+				for (String name : functions.keySet()) {
+					List<TLFunctionDescriptor> value = result.get(name);
+					if (value == null) {
+						value = new LinkedList<TLFunctionDescriptor>();
+						result.put(name, value);
+					}
+					value.addAll(functions.get(name));
+				}
+			}
+		}
+		return result;
 	}
 
 }

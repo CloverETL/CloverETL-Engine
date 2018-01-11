@@ -640,6 +640,7 @@ TOKEN :
 | < CASE: "case" >
 | < ENUM: "enum" >
 | < IMPORT: "import" >
+| < LOAD: "load" >
 | < SWITCH: "switch" >
 | < CASE_DEFAULT: "default" >
 | < DO: "do" >
@@ -873,7 +874,7 @@ CLVFStartExpression StartExpression() : {}{
 void CompilationUnit() #void :
 {}
 {
-	(ImportSource() ";" )*
+	(ImportSource() ";" | LoadClass() ";" )*
 
 	try {
    (
@@ -911,6 +912,27 @@ void StatementOrBlock() #void :
 	}
 	|
 	Block()
+}
+
+void LoadClass() :
+{
+	Token t;
+	String className;
+}
+{
+	<LOAD>
+	{
+		jjtThis.begin(token.beginLine,token.beginColumn);
+	}
+	 ( 
+	 	t=<STRING_LITERAL> { className=unquote(t.image); }
+		| 
+		t=<STRING_PLAIN_LITERAL> { className=t.image; } 
+	 )
+	{
+		jjtThis.setClassName(className);
+		jjtThis.end(t.endLine,t.endColumn);
+	}
 }
 
 

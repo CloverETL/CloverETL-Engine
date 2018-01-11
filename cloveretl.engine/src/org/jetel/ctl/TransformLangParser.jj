@@ -644,6 +644,7 @@ TOKEN :
 | < CASE: "case" >
 | < ENUM: "enum" >
 | < IMPORT: "import" >
+| < LOAD: "load" >
 | < SWITCH: "switch" >
 | < CASE_DEFAULT: "default" >
 | < DO: "do" >
@@ -939,7 +940,7 @@ CLVFStartExpression StartExpression() : {/*@bgen(jjtree) StartExpression */
 void CompilationUnit()       :
 {}
 {
-	(ImportSource() ";" )*
+	(ImportSource() ";" | LoadClass() ";" )*
 
 	try {
    (
@@ -977,6 +978,44 @@ void StatementOrBlock()       :
 	}
 	|
 	Block()
+}
+
+void LoadClass() :
+{/*@bgen(jjtree) LoadClass */
+        CLVFLoadClass jjtn000 = new CLVFLoadClass(this, JJTLOADCLASS);
+        boolean jjtc000 = true;
+        jjtree.openNodeScope(jjtn000);
+/*@egen*/
+	Token t;
+	String className;
+}
+{/*@bgen(jjtree) LoadClass */
+        try {
+/*@egen*/
+	<LOAD>
+	{
+		jjtn000.begin(token.beginLine,token.beginColumn);
+	}
+	 ( 
+	 	t=<STRING_LITERAL> { className=unquote(t.image); }
+		| 
+		t=<STRING_PLAIN_LITERAL> { className=t.image; } 
+	 )/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
+	{
+		jjtn000.setClassName(className);
+		jjtn000.end(t.endLine,t.endColumn);
+	}/*@bgen(jjtree)*/
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+        }
+/*@egen*/
 }
 
 

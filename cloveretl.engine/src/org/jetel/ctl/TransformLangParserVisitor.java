@@ -8,6 +8,7 @@ public interface TransformLangParserVisitor extends SyntheticNodeVisitor
   public Object visit(SimpleNode node, Object data);
   public Object visit(CLVFStart node, Object data);
   public Object visit(CLVFStartExpression node, Object data);
+  public Object visit(CLVFLoadClass node, Object data);
   public Object visit(CLVFImportSource node, Object data);
   public Object visit(CLVFParameters node, Object data);
   public Object visit(CLVFType node, Object data);
@@ -61,4 +62,4 @@ public interface TransformLangParserVisitor extends SyntheticNodeVisitor
   public Object visit(CLVFLookupNode node, Object data);
   public Object visit(CLVFDictionaryNode node, Object data);
 }
-/* JavaCC - OriginalChecksum=46eab910681949722e5e0548f060ff48 (do not edit this line) */
+/* JavaCC - OriginalChecksum=be19f39f2c8079606aea244795a6416c (do not edit this line) */

@@ -6,64 +6,66 @@ public interface TransformLangParserTreeConstants
   public int JJTSTART = 0;
   public int JJTSTARTEXPRESSION = 1;
   public int JJTVOID = 2;
-  public int JJTIMPORTSOURCE = 3;
-  public int JJTPARAMETERS = 4;
-  public int JJTTYPE = 5;
-  public int JJTFUNCTIONDECLARATION = 6;
-  public int JJTVARIABLEDECLARATION = 7;
-  public int JJTASSIGNMENT = 8;
-  public int JJTCONDITIONALFAILEXPRESSION = 9;
-  public int JJTCONDITIONALEXPRESSION = 10;
-  public int JJTOR = 11;
-  public int JJTAND = 12;
-  public int JJTCOMPARISON = 13;
-  public int JJTADDNODE = 14;
-  public int JJTSUBNODE = 15;
-  public int JJTMULNODE = 16;
-  public int JJTDIVNODE = 17;
-  public int JJTMODNODE = 18;
-  public int JJTUNARYSTATEMENT = 19;
-  public int JJTUNARYNONSTATEMENT = 20;
-  public int JJTPOSTFIXEXPRESSION = 21;
-  public int JJTMEMBERACCESSEXPRESSION = 22;
-  public int JJTARRAYACCESSEXPRESSION = 23;
-  public int JJTINFUNCTION = 24;
-  public int JJTFUNCTIONCALL = 25;
-  public int JJTISNULLNODE = 26;
-  public int JJTNVLNODE = 27;
-  public int JJTNVL2NODE = 28;
-  public int JJTIIFNODE = 29;
-  public int JJTPRINTERRNODE = 30;
-  public int JJTPRINTLOGNODE = 31;
-  public int JJTPRINTSTACKNODE = 32;
-  public int JJTRAISEERRORNODE = 33;
-  public int JJTFIELDACCESSEXPRESSION = 34;
-  public int JJTIDENTIFIER = 35;
-  public int JJTARGUMENTS = 36;
-  public int JJTDATEFIELD = 37;
-  public int JJTLOGLEVEL = 38;
-  public int JJTLITERAL = 39;
-  public int JJTLISTOFLITERALS = 40;
-  public int JJTBLOCK = 41;
-  public int JJTIFSTATEMENT = 42;
-  public int JJTSWITCHSTATEMENT = 43;
-  public int JJTCASESTATEMENT = 44;
-  public int JJTWHILESTATEMENT = 45;
-  public int JJTFORSTATEMENT = 46;
-  public int JJTFOREACHSTATEMENT = 47;
-  public int JJTDOSTATEMENT = 48;
-  public int JJTBREAKSTATEMENT = 49;
-  public int JJTCONTINUESTATEMENT = 50;
-  public int JJTRETURNSTATEMENT = 51;
-  public int JJTSEQUENCENODE = 52;
-  public int JJTLOOKUPNODE = 53;
-  public int JJTDICTIONARYNODE = 54;
+  public int JJTLOADCLASS = 3;
+  public int JJTIMPORTSOURCE = 4;
+  public int JJTPARAMETERS = 5;
+  public int JJTTYPE = 6;
+  public int JJTFUNCTIONDECLARATION = 7;
+  public int JJTVARIABLEDECLARATION = 8;
+  public int JJTASSIGNMENT = 9;
+  public int JJTCONDITIONALFAILEXPRESSION = 10;
+  public int JJTCONDITIONALEXPRESSION = 11;
+  public int JJTOR = 12;
+  public int JJTAND = 13;
+  public int JJTCOMPARISON = 14;
+  public int JJTADDNODE = 15;
+  public int JJTSUBNODE = 16;
+  public int JJTMULNODE = 17;
+  public int JJTDIVNODE = 18;
+  public int JJTMODNODE = 19;
+  public int JJTUNARYSTATEMENT = 20;
+  public int JJTUNARYNONSTATEMENT = 21;
+  public int JJTPOSTFIXEXPRESSION = 22;
+  public int JJTMEMBERACCESSEXPRESSION = 23;
+  public int JJTARRAYACCESSEXPRESSION = 24;
+  public int JJTINFUNCTION = 25;
+  public int JJTFUNCTIONCALL = 26;
+  public int JJTISNULLNODE = 27;
+  public int JJTNVLNODE = 28;
+  public int JJTNVL2NODE = 29;
+  public int JJTIIFNODE = 30;
+  public int JJTPRINTERRNODE = 31;
+  public int JJTPRINTLOGNODE = 32;
+  public int JJTPRINTSTACKNODE = 33;
+  public int JJTRAISEERRORNODE = 34;
+  public int JJTFIELDACCESSEXPRESSION = 35;
+  public int JJTIDENTIFIER = 36;
+  public int JJTARGUMENTS = 37;
+  public int JJTDATEFIELD = 38;
+  public int JJTLOGLEVEL = 39;
+  public int JJTLITERAL = 40;
+  public int JJTLISTOFLITERALS = 41;
+  public int JJTBLOCK = 42;
+  public int JJTIFSTATEMENT = 43;
+  public int JJTSWITCHSTATEMENT = 44;
+  public int JJTCASESTATEMENT = 45;
+  public int JJTWHILESTATEMENT = 46;
+  public int JJTFORSTATEMENT = 47;
+  public int JJTFOREACHSTATEMENT = 48;
+  public int JJTDOSTATEMENT = 49;
+  public int JJTBREAKSTATEMENT = 50;
+  public int JJTCONTINUESTATEMENT = 51;
+  public int JJTRETURNSTATEMENT = 52;
+  public int JJTSEQUENCENODE = 53;
+  public int JJTLOOKUPNODE = 54;
+  public int JJTDICTIONARYNODE = 55;
 
 
   public String[] jjtNodeName = {
     "Start",
     "StartExpression",
     "void",
+    "LoadClass",
     "ImportSource",
     "Parameters",
     "Type",
@@ -118,4 +120,4 @@ public interface TransformLangParserTreeConstants
     "DictionaryNode",
   };
 }
-/* JavaCC - OriginalChecksum=f25e4f8a619576140f2efa204c51fc14 (do not edit this line) */
+/* JavaCC - OriginalChecksum=693ac5a83963cc9e6d45b52e4baaa361 (do not edit this line) */

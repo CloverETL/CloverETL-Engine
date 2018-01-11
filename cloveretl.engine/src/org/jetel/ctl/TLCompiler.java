@@ -276,8 +276,10 @@ public class TLCompiler implements ITLCompiler {
 		if (problemReporter.errorCount() > 0) {
 			return getDiagnosticMessages();
 		}
+		UserLibsVisitor userLibsVisitor = new UserLibsVisitor();
+		List<String> userLibs = userLibsVisitor.find(parseTree);
 		
-		TypeChecker typeChecker = new TypeChecker(problemReporter,parser.getFunctions(),TLFunctionPluginRepository.getAllFunctions());
+		TypeChecker typeChecker = new TypeChecker(problemReporter,parser.getFunctions(),TLFunctionPluginRepository.getAllFunctions(userLibs));
 		typeChecker.check(parseTree);
 		if (problemReporter.errorCount() > 0) {
 			return getDiagnosticMessages();

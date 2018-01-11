@@ -65,6 +65,7 @@ import org.jetel.ctl.ASTnode.CLVFInFunction;
 import org.jetel.ctl.ASTnode.CLVFIsNullNode;
 import org.jetel.ctl.ASTnode.CLVFListOfLiterals;
 import org.jetel.ctl.ASTnode.CLVFLiteral;
+import org.jetel.ctl.ASTnode.CLVFLoadClass;
 import org.jetel.ctl.ASTnode.CLVFLogLevel;
 import org.jetel.ctl.ASTnode.CLVFLookupNode;
 import org.jetel.ctl.ASTnode.CLVFMemberAccessExpression;
@@ -3152,5 +3153,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		if (Thread.interrupted()) {
 			throw new JetelRuntimeException("Execution thread was interrupted", new InterruptedException());
 		}
+	}
+
+	@Override
+	public Object visit(CLVFLoadClass node, Object data) {
+		node.childrenAccept(this, data);
+		return data;
 	}
 }
