@@ -1080,7 +1080,8 @@ public class ASTBuilder extends NavigatingVisitor {
 				break;
 			case TransformLangParserTreeConstants.JJTFUNCTIONDECLARATION:
 			case TransformLangParserTreeConstants.JJTIMPORTSOURCE:
-				// these two are only in for CLVFStart
+			case TransformLangParserTreeConstants.JJTLOADCLASS:
+				// these three are only in for CLVFStart
 				break;
 			default:
 				error(child,"Syntax error, statement expected");

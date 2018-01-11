@@ -57,6 +57,7 @@ import org.jetel.ctl.ASTnode.CLVFInFunction;
 import org.jetel.ctl.ASTnode.CLVFIsNullNode;
 import org.jetel.ctl.ASTnode.CLVFListOfLiterals;
 import org.jetel.ctl.ASTnode.CLVFLiteral;
+import org.jetel.ctl.ASTnode.CLVFLoadClass;
 import org.jetel.ctl.ASTnode.CLVFLogLevel;
 import org.jetel.ctl.ASTnode.CLVFLookupNode;
 import org.jetel.ctl.ASTnode.CLVFMemberAccessExpression;
@@ -86,12 +87,11 @@ import org.jetel.ctl.ASTnode.CLVFWhileStatement;
 import org.jetel.ctl.ASTnode.CastNode;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.data.TLType;
-import org.jetel.ctl.data.TLTypePrimitive;
-import org.jetel.ctl.data.TLType.TLTypeByteArray;
 import org.jetel.ctl.data.TLType.TLTypeList;
 import org.jetel.ctl.data.TLType.TLTypeMap;
 import org.jetel.ctl.data.TLType.TLTypeRecord;
 import org.jetel.ctl.data.TLType.TLTypeSymbol;
+import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.ctl.extensions.TLFunctionCallContext;
 import org.jetel.ctl.extensions.TLFunctionDescriptor;
 import org.jetel.metadata.DataFieldMetadata;
@@ -1022,6 +1022,13 @@ public class TypeChecker extends NavigatingVisitor {
 		return data;
 	}
 	
+	@Override
+	public Object visit(CLVFLoadClass node, Object data) {
+		super.visit(node, data);
+		node.setType(TLType.VOID);
+		return data;
+	}
+
 	@Override
 	public Object visit(CLVFInFunction node, Object data) {
 		super.visit(node, data);
