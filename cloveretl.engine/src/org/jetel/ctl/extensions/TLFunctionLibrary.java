@@ -191,19 +191,19 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
 	    		toConvert[0] = javaRetType;
 	    		System.arraycopy(javaFormal, 0, toConvert, 1, javaFormal.length);
 	    		
-	    		if (toConvert.length <= 1 || !TLFunctionCallContext.class.equals(toConvert[1])) {
-	    			throw new IllegalArgumentException("Java function definition must have TLFunctionCallContext as a first formal parameter.");
-	    		}
+//	    		if (toConvert.length <= 1 || !TLFunctionCallContext.class.equals(toConvert[1])) {
+//	    			throw new IllegalArgumentException("Java function definition must have TLFunctionCallContext as a first formal parameter.");
+//	    		}
 	    		
 	    		TLType[] converted = new TLType[toConvert.length];
 	    		int j = 0;
 	    		for (int i = 0; i < toConvert.length; i++) {
-	    			if (i != 1) // we skip first argument (0-th is the return type) 
+	    			if (!TLFunctionCallContext.class.equals(toConvert[i])) // we skip first argument (0-th is the return type) 
 	    				converted[j++] = TLType.fromJavaType(toConvert[i]);
 				}
 
 	    		TLType returnType = converted[0];
-	    		TLType[] formal = new TLType[javaFormal.length-1]; // we're skipping first java formal parameter (with TLFunctionCallContext)
+	    		TLType[] formal = new TLType[j - 1]; // we're skipping first java formal parameter (with TLFunctionCallContext)
 	    		System.arraycopy(converted, 1, formal, 0, formal.length);
 	    		
 	    		TLFunctionDescriptor descriptor = new TLFunctionDescriptor(this,functionName,a.value(),formal,paramsDesc,returnType,isGenericMethod,m.isVarArgs(), 
