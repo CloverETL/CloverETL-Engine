@@ -22,15 +22,21 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.ctl.Stack;
 import org.jetel.ctl.data.TLType;
+import org.jetel.exception.JetelRuntimeException;
+
+import com.ibm.icu.math.BigDecimal;
 
 /**
  * Recommended ascendant of all TL function libraries. This class is intended
@@ -58,7 +64,9 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
     	return Collections.unmodifiableMap(library);
     }
     
-    abstract public String getName();
+    public String getName() {
+    	return "unknown";
+    }
     
     public String getLibraryClassName() {
     	return getClass().getName();
@@ -70,8 +78,59 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
      * @return
      * @throws IllegalArgumentException when function proxy cannot be created
      */
-    public abstract TLFunctionPrototype getExecutable(String functionName) 
-    throws IllegalArgumentException;
+    public TLFunctionPrototype getExecutable(String functionName) throws IllegalArgumentException {
+    	Method[] methods = this.getClass().getMethods();
+    	for (final Method method : methods) {
+    		if (method.getName().equals(functionName)) {
+    			return new TLFunctionPrototype() {
+					
+					@Override
+					public void init(TLFunctionCallContext context) {
+					}
+					
+					@Override
+					public void execute(Stack stack, TLFunctionCallContext context) {
+						try {
+							Class<?>[] parameterTypes = method.getParameterTypes();
+							ArrayUtils.reverse(parameterTypes);
+							Object[] parameters = new Object[parameterTypes.length];
+							int i = 0;
+							for (Class<?> parameterType : parameterTypes) {
+								if (parameterType.isAssignableFrom(TLFunctionCallContext.class)) {
+									parameters[i] = null;
+								} else if (parameterType.isAssignableFrom(Boolean.class)) {
+									parameters[i] = stack.popBoolean();
+								} else if (parameterType.isAssignableFrom(String.class)) {
+									parameters[i] = stack.popString();
+								} else if (parameterType.isAssignableFrom(Date.class)) {
+									parameters[i] = stack.popDate();
+								} else if (parameterType.isAssignableFrom(BigDecimal.class)) {
+									parameters[i] = stack.popDecimal();
+								} else if (parameterType.isAssignableFrom(Double.class)) {
+									parameters[i] = stack.popDouble();
+								} else if (parameterType.isAssignableFrom(Integer.class)) {
+									parameters[i] = stack.popInt();
+								} else if (parameterType.isAssignableFrom(Long.class)) {
+									parameters[i] = stack.popLong();
+								} else if (parameterType.isAssignableFrom(String.class)) {
+									parameters[i] = stack.popString();
+								} else {
+									throw new JetelRuntimeException("Unknown parameter type: " + parameterType.getName());
+								}
+								i++;
+							}
+							
+							ArrayUtils.reverse(parameters);
+							stack.push(method.invoke(null, parameters));
+						} catch (Exception e) {
+							throw new JetelRuntimeException("Function invocation failed.", e);
+						}
+					}
+				};
+    		}
+    	}
+    	throw new JetelRuntimeException("Function does not found: " + functionName);
+    }
  
     private void registerFunction(TLFunctionDescriptor prototype) {
     	List<TLFunctionDescriptor> registration = library.get(prototype.getName());
