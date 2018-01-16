@@ -617,7 +617,7 @@ public class RunGraph extends Node{
 				try {
 					contextURL = FileUtils.convertUrlToFile(graphContextURL).getAbsolutePath();
 				} catch (MalformedURLException e) {
-					throw new ComponentNotReadyException("Context URL does not found.", e);
+					throw new ComponentNotReadyException("Context URL not found.", e);
 				}
 			}
 		}
