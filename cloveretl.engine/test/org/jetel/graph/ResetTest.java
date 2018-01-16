@@ -363,6 +363,10 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("WebService.grf") // example that currently fails
 							&& !file.getName().equals("WebServicesHTTP.grf") // example that currently fails
 							&& !file.getName().equals("WebServicesWSClient.grf") // example that currently fails
+							&& !file.getName().equals("_initJmsBroker.grf") // can't run without jms broker
+							&& !file.getName().equals("graphJmsSingleXmlField.grf") // can't run without jms broker
+							&& !file.getName().equals("graphJms.grf") // can't run without jms broker
+							&& !file.getName().equals("outPortWriting.grf") // can't run without jms broker
 							;
 				}
 			};
