@@ -68,7 +68,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
     /**
      * Cache for all currently running WatchDogs.
      */
-    private static Map<Long, WatchDog> watchDogCache = new ConcurrentHashMap<>();
+    private Map<Long, WatchDog> watchDogCache = new ConcurrentHashMap<>();
 
     private int notificationSequence;
     
@@ -140,11 +140,16 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	}
 
 	@Override
-	public void abortGraphExecution(long runId) {
+	public boolean abortGraphExecution(long runId) {
 		Object oldRunId = MDC.get(LogUtils.MDC_RUNID_KEY);
 		MDC.put(LogUtils.MDC_RUNID_KEY, runId);
 		try {
-			getWatchDog(runId).abort();
+			WatchDog watchDog = watchDogCache.get(runId);
+			if (watchDog != null) {
+				watchDog.abort();
+				return true;
+			}
+			return false;
 		} finally {
 			if (oldRunId == null) {
 				MDC.remove(LogUtils.MDC_RUNID_KEY);
@@ -155,11 +160,16 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	}
 
 	@Override
-	public void abortGraphExecution(long runId, boolean waitForAbort) {
+	public boolean abortGraphExecution(long runId, boolean waitForAbort) {
 		Object oldRunId = MDC.get(LogUtils.MDC_RUNID_KEY);
 		MDC.put(LogUtils.MDC_RUNID_KEY, runId);
 		try {
-			getWatchDog(runId).abort(waitForAbort);
+			WatchDog watchDog = watchDogCache.get(runId);
+			if (watchDog != null) {
+				watchDog.abort(waitForAbort);
+				return true;
+			}
+			return false;
 		} finally {
 			if (oldRunId == null) {
 				MDC.remove(LogUtils.MDC_RUNID_KEY);

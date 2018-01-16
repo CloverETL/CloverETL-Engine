@@ -513,13 +513,15 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			MDC.put(LogUtils.MDC_RUNID_KEY, runtimeContext.getRunId());
 
 			currentPhaseLock.lock();
+			if (watchDogStatus == Result.N_A || watchDogStatus == Result.READY) {
+				waitForAbort = false;
+			}
 			//only running or waiting graph can be aborted
 			if (watchDogStatus != Result.RUNNING && watchDogStatus != Result.WAITING) {
 				//if the graph status is not final, so the graph was aborted
 				if (!watchDogStatus.isStop()) {
 			        watchDogStatus = Result.ABORTED;
 				}
-				currentPhaseLock.unlock();
 				return;
 			}
 

@@ -86,8 +86,9 @@ public interface CloverJMXMBean {
     /**
      * Event for clients to stop graph processing.
      * This operation is blocking until the graph is really aborted.
+     * @return true if watchdog was aborted, false if there was no watchdog to abort 
      */
-    public void abortGraphExecution(long runId);
+    public boolean abortGraphExecution(long runId);
 
     /**
      * Event for clients to stop graph processing.
@@ -98,8 +99,9 @@ public interface CloverJMXMBean {
      * Method execution with waitForAbort=false just send a signal,
      * which tries to abort the graph and the current thread is 
      * immediately returned.
+     * @return true if watchdog was aborted, false if there was no watchdog to abort
      */
-    public void abortGraphExecution(long runId, boolean waitForAbort);
+    public boolean abortGraphExecution(long runId, boolean waitForAbort);
 
     /**
      * Client should call this method immediately after all tracking information have been received.
