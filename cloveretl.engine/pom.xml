@@ -484,7 +484,7 @@
 		<repository>
 			<id>internal</id>
 			<name>Javlin internal</name>
-			<url>http://172.22.0.219:8081/nexus/content/repositories/internal/</url>
+			<url>http://nexus.javlin.eu:8081/nexus/content/repositories/internal/</url>
 			<layout>default</layout>
 		</repository> 
 	</repositories>	
