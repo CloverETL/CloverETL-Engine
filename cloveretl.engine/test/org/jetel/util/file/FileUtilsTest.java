@@ -384,7 +384,7 @@ public class FileUtilsTest extends CloverTestCase {
 		final String fileSpec = "http://" + credentials + "javlin.eu/file";
 		final URL contexUrl = null;
 		
-		URL urlWithCredentials = new URL(contexUrl, fileSpec); //FileUtils.getFileURL(contexUrl, fileSpec);
+		URL urlWithCredentials = FileUtils.getFileURL(contexUrl, fileSpec);
 		String serializedUrl = urlWithCredentials.toExternalForm();
 		String toStringUrl = urlWithCredentials.toString();
 		
