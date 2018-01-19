@@ -204,7 +204,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 		if (watchDog != null) {
 			return watchDog;
 		} else {
-			throw new JetelRuntimeException("WatchDog does not found for runId=" + runId);
+			throw new JetelRuntimeException("WatchDog not found for runId=" + runId);
 		}
 	}
 	

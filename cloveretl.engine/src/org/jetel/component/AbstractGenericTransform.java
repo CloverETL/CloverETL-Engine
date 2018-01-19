@@ -212,7 +212,7 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 				throw new JetelRuntimeException("Connection '" + name + "' is not DB connection.");
 			}
 		} else {
-			throw new JetelRuntimeException("Connection '" + name + "' does not found.");
+			throw new JetelRuntimeException("Connection '" + name + "' not found.");
 		}
 	}
 	
