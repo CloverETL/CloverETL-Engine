@@ -18,6 +18,8 @@
  */
 package org.jetel.graph.runtime.jmx;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -267,5 +269,10 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	public void setObsoleteJobTimeout(long obsoleteJobTimeout) {
 		this.obsoleteJobTimeout = obsoleteJobTimeout;
 	}
+	
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        watchDogCache = new ConcurrentHashMap<>();
+    }
 	
 }
