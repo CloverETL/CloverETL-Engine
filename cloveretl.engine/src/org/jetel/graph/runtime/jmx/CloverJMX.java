@@ -68,7 +68,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
     /**
      * Cache for all currently running WatchDogs.
      */
-    private Map<Long, WatchDog> watchDogCache = new ConcurrentHashMap<>();
+    private transient Map<Long, WatchDog> watchDogCache = new ConcurrentHashMap<>();
 
     private int notificationSequence;
     
