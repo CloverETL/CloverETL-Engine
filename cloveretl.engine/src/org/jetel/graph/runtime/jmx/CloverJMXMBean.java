@@ -18,6 +18,8 @@
  */
 package org.jetel.graph.runtime.jmx;
 
+import org.jetel.graph.dictionary.DictionaryValuesContainer;
+
 /**
  * JMX managed bean which is dedicated to provide tracking information about running graph.
  * 
@@ -108,6 +110,5 @@ public interface CloverJMXMBean {
      */
     public void relaseJob(long runId);
     
-	public void setApprovedPhaseNumber(long runId, int approvedPhaseNumber);
-
+    public void setApprovedPhaseNumber(long runId, int approvedPhaseNumber, DictionaryValuesContainer mergedDictionary);
 }

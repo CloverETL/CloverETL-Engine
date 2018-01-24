@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.BrokenBarrierException;
@@ -46,7 +46,6 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.GraphElement;
-import org.jetel.graph.GraphParameter;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
@@ -966,7 +965,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 		if (provideJMX) {
 			int runningPhaseNum = graphTracking.getRunningPhaseTracking().getPhaseNum();
-			CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_FINISHED, null, runningPhaseNum);
+			DictionaryValuesContainer dictionary = DictionaryValuesContainer.getDictionaryValuesContainer(graph.getDictionary(), true, true, true);
+			JMXNotificationData data = new JMXNotificationData(runningPhaseNum, dictionary);
+			CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_FINISHED, null, data);
 		}
 	}
 

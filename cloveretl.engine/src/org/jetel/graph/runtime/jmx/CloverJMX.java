@@ -36,6 +36,7 @@ import javax.management.ObjectName;
 import org.apache.log4j.Logger;
 import org.apache.log4j.MDC;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.JMXNotificationMessage;
 import org.jetel.graph.runtime.WatchDog;
@@ -216,11 +217,15 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	}
 
 	@Override
-	public synchronized void setApprovedPhaseNumber(long runId, int approvedPhaseNumber) {
+	public synchronized void setApprovedPhaseNumber(long runId, int approvedPhaseNumber, DictionaryValuesContainer mergedDictionary) {
 		Object oldRunId = MDC.get(LogUtils.MDC_RUNID_KEY);
 		MDC.put(LogUtils.MDC_RUNID_KEY, runId);
 		try {
-			getWatchDog(runId).setApprovedPhaseNumber(approvedPhaseNumber);
+			
+			WatchDog watchDog = getWatchDog(runId);
+			setDictionary(watchDog, mergedDictionary);
+			watchDog.setApprovedPhaseNumber(approvedPhaseNumber);
+			
 			notifyAll();
 		} finally {
 			if (oldRunId == null) {
@@ -268,6 +273,14 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	
 	public void setObsoleteJobTimeout(long obsoleteJobTimeout) {
 		this.obsoleteJobTimeout = obsoleteJobTimeout;
+	}
+	
+	private void setDictionary(WatchDog watchDog, DictionaryValuesContainer mergedDictionary) {
+		try {
+			DictionaryValuesContainer.setModifiedValues(watchDog.getGraph().getDictionary(), mergedDictionary);
+		} catch (Exception e) {
+			log.error("Can't merge dictionary " + watchDog.getGraphRuntimeContext().getRunId() + " "+mergedDictionary, e);
+		}
 	}
 	
 	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
