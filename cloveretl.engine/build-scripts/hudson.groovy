@@ -56,6 +56,11 @@ def jobIdent = generateJobIdent(testName ? testName : jobGoal)
 new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 new File(baseD, "cloveretl.examples/ExtExamples/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 
+def JMSPort = generateJMSPort()
+new File(baseD, "cloveretl.test.scenarios/JMSPort.prm").write("JMS_PORT=" + JMSPort)
+new File(baseD, "cloveretl.examples/ExtExamples/JMSPort.prm").write("JMS_PORT=" + JMSPort)
+println "JMS port is ${JMSPort}"
+
 def startTime = new Date();
 println "======================= " + startTime
 println "====================================================="
@@ -293,4 +298,8 @@ String generateJobIdent(String name) {
 		jobIdent = name.take(3)
 	}
 	return jobIdent + String.format('%05d', Math.abs(new Random().nextInt(100000)))
+}
+
+String generateJMSPort() {
+	return String.format('%05d', 60000 + Math.abs(new Random().nextInt(5535)))
 }
