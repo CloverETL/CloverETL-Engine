@@ -210,4 +210,10 @@ public class HttpContextMock implements HttpContext {
 		return null;
 	}
 
+	@Override
+	public Map<String, List<String>> getAllRequestParametersList() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
