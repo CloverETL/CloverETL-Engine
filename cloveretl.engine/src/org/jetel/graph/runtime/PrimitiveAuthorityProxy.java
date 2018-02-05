@@ -392,6 +392,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 	
 	@Override
+	public File newTempFile(String label, String suffix, int allocationHint, long runId) throws TempFileCreationException {
+		return newTempFile(label, suffix, allocationHint);
+	}
+	
+	@Override
 	public File newTempFile(String label, String suffix, int allocationHint) throws TempFileCreationException {
 		try {
 			label = decorateTempFileLabel(label);
@@ -401,6 +406,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		} catch (IOException e) {
 			throw new TempFileCreationException(e, label, allocationHint, null);
 		}
+	}
+	
+	@Override
+	public File newTempDir(String label, int allocationHint, long runId) throws TempFileCreationException {
+		return newTempDir(label, allocationHint);
 	}
 
 	@Override

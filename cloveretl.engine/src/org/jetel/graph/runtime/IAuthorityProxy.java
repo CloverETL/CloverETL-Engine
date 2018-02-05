@@ -501,6 +501,8 @@ public abstract class IAuthorityProxy {
 	 * @throws TempFileCreationException 
 	 */
 	public abstract File newTempFile(String label, String suffix, int allocationHint) throws TempFileCreationException;
+	
+	public abstract File newTempFile(String label, String suffix, int allocationHint, long runId) throws TempFileCreationException;
 
 	public final File newTempFile(String label, int allocationHint) throws TempFileCreationException {
 		return newTempFile(label, null, allocationHint);
@@ -555,6 +557,8 @@ public abstract class IAuthorityProxy {
 	}
 	
 	public abstract File newTempDir(String label, int allocationHint) throws TempFileCreationException;
+	
+	public abstract File newTempDir(String label, int allocationHint, long runId) throws TempFileCreationException;
 	
 	public abstract ClassLoader getClassLoader(URL[] urls, ClassLoader parent, boolean greedy);
 
