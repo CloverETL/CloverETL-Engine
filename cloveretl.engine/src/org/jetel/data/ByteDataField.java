@@ -566,7 +566,7 @@ public class ByteDataField extends DataFieldImpl implements Comparable<Object> {
             return ByteBufferUtils.lengthEncoded(0);
         } else {
             final int length = value.length;
-            return length + ByteBufferUtils.lengthEncoded(length);
+            return length + ByteBufferUtils.lengthEncoded(length + 1); //this incrementation is necessary due 'null/empty string' encoding, see serialize/deserialize methods
         }
 	}
 

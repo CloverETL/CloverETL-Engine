@@ -302,7 +302,8 @@ public class CompressedByteDataField extends ByteDataField {
         if(isNull) {
             return ByteBufferUtils.lengthEncoded(0);
         } else {
-            return ByteBufferUtils.lengthEncoded(dataLen) + ByteBufferUtils.lengthEncoded(value.length) + value.length;
+        	// increment length of non-null values by one - see serialization of null and non-null values
+            return ByteBufferUtils.lengthEncoded(dataLen + 1) + ByteBufferUtils.lengthEncoded(value.length) + value.length;
         }
 	}
     
