@@ -30,6 +30,13 @@ import java.util.Map;
 
 import org.jetel.ctl.TLUtils;
 import org.jetel.ctl.TransformLangParserConstants;
+import org.jetel.ctl.data.TLTypePrimitive.TLTypeBoolean;
+import org.jetel.ctl.data.TLTypePrimitive.TLTypeDateTime;
+import org.jetel.ctl.data.TLTypePrimitive.TLTypeDecimal;
+import org.jetel.ctl.data.TLTypePrimitive.TLTypeDouble;
+import org.jetel.ctl.data.TLTypePrimitive.TLTypeInteger;
+import org.jetel.ctl.data.TLTypePrimitive.TLTypeLong;
+import org.jetel.ctl.data.TLTypePrimitive.TLTypeString;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.EqualsUtil;
@@ -664,31 +671,31 @@ public abstract class TLType implements Serializable {
 	}
 	
 	public boolean isDate() {
-		return this == TLTypePrimitive.DATETIME;
+		return (this instanceof TLTypeDateTime);
 	}
 	
 	public boolean isInteger() {
-		return this == TLTypePrimitive.INTEGER;
+		return (this instanceof TLTypeInteger);
 	}
 	
 	public boolean isLong() {
-		return this == TLTypePrimitive.LONG;
+		return (this instanceof TLTypeLong);
 	}
 	
 	public boolean isDouble() {
-		return this == TLTypePrimitive.DOUBLE;
+		return (this instanceof TLTypeDouble);
 	}
 	
 	public boolean isDecimal() {
-		return this == TLTypePrimitive.DECIMAL;
+		return (this instanceof TLTypeDecimal);
 	}
 	
 	public boolean isBoolean() {
-		return this == TLTypePrimitive.BOOLEAN;
+		return (this instanceof TLTypeBoolean);
 	}
 	
 	public boolean isString() {
-		return this == TLTypePrimitive.STRING;
+		return (this instanceof TLTypeString);
 	}
 	
 	public boolean isRecord() {
@@ -728,19 +735,19 @@ public abstract class TLType implements Serializable {
 	}
 	
 	public boolean isVoid() {
-		return this == TLType.VOID;
+		return (this instanceof TLTypeVoid);
 	}
 	
 	public boolean isNull() {
-		return this ==TLType.NULL;
+		return (this instanceof TLTypeNull);
 	}
 	
 	public boolean isObject() {
-		return this == TLType.OBJECT;
+		return (this instanceof TLTypeObject);
 	}
 	
 	public boolean isUnknown() {
-		return this == TLType.UNKNOWN;
+		return (this instanceof TLTypeUnknown);
 	}
 	
 	public boolean isTypeVariable() {
