@@ -71,6 +71,15 @@ public abstract class TLTypePrimitive extends TLType {
 			return TLType.ERROR;
 
 		}
+
+		/**
+		 * This method ensures this class is still singleton even after serialization/deserialization.
+		 * This is necessary for remote CTL debugging, where the TLTypes are
+		 * transfered using DebugJMX interface.
+		 */
+		private Object readResolve() {
+			return TLTypePrimitive.INTEGER;
+		}
 	}
 
 	public static final class TLTypeString extends TLTypePrimitive {
@@ -104,6 +113,15 @@ public abstract class TLTypePrimitive extends TLType {
 			
 			return TLType.ERROR;
 		}
+		
+		/**
+		 * This method ensures this class is still singleton even after serialization/deserialization.
+		 * This is necessary for remote CTL debugging, where the TLTypes are
+		 * transfered using DebugJMX interface.
+		 */
+		private Object readResolve() {
+			return TLTypePrimitive.STRING;
+		}
 	}
 
 	public static final class TLTypeBoolean extends TLTypePrimitive {
@@ -136,6 +154,15 @@ public abstract class TLTypePrimitive extends TLType {
 			}
 
 			return TLType.ERROR;
+		}
+		
+		/**
+		 * This method ensures this class is still singleton even after serialization/deserialization.
+		 * This is necessary for remote CTL debugging, where the TLTypes are
+		 * transfered using DebugJMX interface.
+		 */
+		private Object readResolve() {
+			return TLTypePrimitive.BOOLEAN;
 		}
 	}
 
@@ -173,7 +200,15 @@ public abstract class TLTypePrimitive extends TLType {
 			}
 
 			return TLType.ERROR;
+		}
 
+		/**
+		 * This method ensures this class is still singleton even after serialization/deserialization.
+		 * This is necessary for remote CTL debugging, where the TLTypes are
+		 * transfered using DebugJMX interface.
+		 */
+		private Object readResolve() {
+			return TLTypePrimitive.LONG;
 		}
 	}
 
@@ -207,6 +242,15 @@ public abstract class TLTypePrimitive extends TLType {
 			}
 			
 			return TLType.ERROR;
+		}
+
+		/**
+		 * This method ensures this class is still singleton even after serialization/deserialization.
+		 * This is necessary for remote CTL debugging, where the TLTypes are
+		 * transfered using DebugJMX interface.
+		 */
+		private Object readResolve() {
+			return TLTypePrimitive.DATETIME;
 		}
 	}
 
@@ -246,6 +290,15 @@ public abstract class TLTypePrimitive extends TLType {
 			
 			return TLType.ERROR;
 		}
+		
+		/**
+		 * This method ensures this class is still singleton even after serialization/deserialization.
+		 * This is necessary for remote CTL debugging, where the TLTypes are
+		 * transfered using DebugJMX interface.
+		 */
+		private Object readResolve() {
+			return TLTypePrimitive.DOUBLE;
+		}
 	}
 	
 	public static final class TLTypeDecimal extends TLTypePrimitive {
@@ -279,6 +332,14 @@ public abstract class TLTypePrimitive extends TLType {
 			return TLType.ERROR;
 		}
 		
+		/**
+		 * This method ensures this class is still singleton even after serialization/deserialization.
+		 * This is necessary for remote CTL debugging, where the TLTypes are
+		 * transfered using DebugJMX interface.
+		 */
+		private Object readResolve() {
+			return TLTypePrimitive.DECIMAL;
+		}
 	}
 	
 	
