@@ -18,6 +18,8 @@
  */
 package org.jetel.exception;
 
+import java.io.Serializable;
+
 import org.apache.commons.logging.Log;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
@@ -37,9 +39,11 @@ import org.jetel.util.string.StringUtils;
  * @created 24.11.2006
  * @see ConfigurationException
  */
-public class ConfigurationProblem {
+public class ConfigurationProblem implements Serializable {
     
-    private String message;
+	private static final long serialVersionUID = -5155451983615451717L;
+
+	private String message;
     
     private Severity severity;
     
@@ -143,7 +147,11 @@ public class ConfigurationProblem {
 	}
 
 	public void setCauseException(Throwable causeException) {
-		this.causeException = causeException;
+		if (causeException == null) {
+			this.causeException = null;
+		} else {
+			this.causeException = new SerializableException(causeException);
+		}
 	}
 
 	/**

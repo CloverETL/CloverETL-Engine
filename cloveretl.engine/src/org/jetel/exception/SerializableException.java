@@ -45,33 +45,48 @@ public class SerializableException extends JetelRuntimeException {
 	private String message;
 
 	/**
-	 * Class of the wrapped exception.
+	 * Class name of the wrapped exception.
 	 */
-	private Class<? extends Throwable> virtualClass;
+	private String virtualClassName;
 	
 	/**
 	 * In case the wrapped exception is {@link CompoundException},
 	 * this is list of causes of the wrapped compound exception.
 	 */
 	private List<SerializableException> causes;
+
+	/**
+	 * @return serializable exception derived from the given exception
+	 */
+	public static SerializableException wrap(Throwable e) {
+		SerializableException result;
+		if (e instanceof ConfigurationException) {
+			result = new GraphElementSerializableException((ConfigurationException) e);
+		} else if (e instanceof ComponentNotReadyException) {
+			result = new GraphElementSerializableException((ComponentNotReadyException) e);
+		} else {
+			result = new SerializableException(e);
+		}
+		return result;
+	}
 	
-	public SerializableException(Throwable e) {
+	SerializableException(Throwable e) {
 		if (e.getCause() != null) {
 			//if the wrapped exception has a cause exception
 			//the cause is wrapped as well and set as cause of this SerializableException
-			initCause(wrapException(e.getCause()));
+			initCause(wrap(e.getCause()));
 		}
 		
 		//persist message of the wrapped exception
-		message = extractMessage(e);
-		//persist class of the wrapped exception
-		virtualClass = e.getClass();
-		//inherit stackstrace from the wrapped exception
+		message = e.getMessage();
+		//persist class name of the wrapped exception
+		virtualClassName = e.getClass().getName();
+		//inherit stacktrace from the wrapped exception
 		setStackTrace(e.getStackTrace());
 
 		//persist suppressed exceptions
 		for (Throwable suppressedException : e.getSuppressed()) {
-			addSuppressed(wrapException(suppressedException));
+			addSuppressed(wrap(suppressedException));
 		}
 
 		//compound exception needs special handling
@@ -79,17 +94,9 @@ public class SerializableException extends JetelRuntimeException {
 			CompoundException ce = (CompoundException) e;
 			causes = new ArrayList<SerializableException>(ce.getCauses().size());
 			for (Throwable t : ce.getCauses()) {
-				causes.add(new SerializableException(t));
+				causes.add(wrap(t));
 			}
 		}
-	}
-	
-	protected SerializableException wrapException(Throwable e) {
-		return new SerializableException(e);
-	}
-	
-	protected String extractMessage(Throwable e) {
-		return e.getMessage();
 	}
 	
 	@Override
@@ -105,21 +112,26 @@ public class SerializableException extends JetelRuntimeException {
 	@Override
 	public String toString() {
         String message = getLocalizedMessage();
-        return (message != null) ? (virtualClass.getName() + ": " + message) : virtualClass.getName();
+        return (message != null) ? (virtualClassName + ": " + message) : virtualClassName;
 	}
 
 	/**
 	 * This is workaround for regular instanceof operator.
 	 */
 	public boolean instanceOf(Class<? extends Throwable> throwableClass) {
-		return throwableClass.isAssignableFrom(virtualClass);
+		try {
+			Class<?> virtualClass = Class.forName(virtualClassName);
+			return throwableClass.isAssignableFrom(virtualClass);
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
 	}
 
 	/**
-	 * @return class of wrapped exception
+	 * @return class name of wrapped exception
 	 */
-	public Class<? extends Throwable> getWrappedExceptionClass() {
-		return virtualClass;
+	public String getWrappedExceptionClassName() {
+		return virtualClassName;
 	}
 
 	/**

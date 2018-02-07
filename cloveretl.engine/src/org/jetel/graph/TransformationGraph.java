@@ -38,9 +38,11 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.ctl.debug.DebugJMX;
+import org.jetel.ctl.debug.GraphDebugger;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.database.IConnection;
+import org.jetel.database.sql.DBConnection;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -54,7 +56,6 @@ import org.jetel.graph.rest.jaxb.EndpointSettings;
 import org.jetel.graph.rest.jaxb.RestJobResponseStatus;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.GraphRuntimeContext;
-import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.graph.runtime.WatchDog;
 import org.jetel.graph.runtime.tracker.TokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
@@ -125,8 +126,6 @@ public final class TransformationGraph extends GraphElement {
 	
 	private WatchDog watchDog;
 	
-	private DebugJMX debugJMX;
-
 	private GraphParameters graphParameters;
 
 	private TrueZipVFSEntries vfsEntries;
@@ -532,9 +531,12 @@ public final class TransformationGraph extends GraphElement {
 			if (!isAnalysed()) {
 				TransformationGraphAnalyzer.analyseGraph(this, getRuntimeContext(), true);
 			}
-			// emit init event for debugger
-			if (getDebugJMX() != null) {
-				getDebugJMX().notifyInit();
+
+			//prepare CTL graph debugger if necessary
+			if (getRuntimeContext().useJMX() && getRuntimeContext().isCtlDebug()) {
+				GraphDebugger graphDebugger = DebugJMX.getGraphDebugger(this);
+				// emit init event for debugger
+				graphDebugger.notifyInit();
 			}
 
 			//initialize dictionary
@@ -552,6 +554,10 @@ public final class TransformationGraph extends GraphElement {
 					throw new ComponentNotReadyException(connection, "Can't initialize connection " + connection + ".", e);
 				} finally {
 					Thread.currentThread().setContextClassLoader(formerClassLoader);
+					//Lookup JNDI connection in original classloader
+					if (connection instanceof DBConnection) {
+						((DBConnection)connection).lookupJndiConnection();
+					}
 				}
 			}
 
@@ -561,10 +567,6 @@ public final class TransformationGraph extends GraphElement {
 				ClassLoader formerClassLoader = Thread.currentThread().getContextClassLoader();
 				try {
 					Thread.currentThread().setContextClassLoader(sequence.getClass().getClassLoader());
-					if (sequence.isShared()) {
-						sequence = getAuthorityProxy().getSharedSequence(sequence);
-						sequences.put(sequence.getId(), sequence);
-					}
 					sequence.init();
 					logger.info(sequence + " ... OK");
 				} catch (Exception e) {
@@ -872,16 +874,7 @@ public final class TransformationGraph extends GraphElement {
 		while (iterator.hasNext()) {
 			try {
 				final Sequence seq = (Sequence) iterator.next();
-				if (seq.isShared()) {
-					IAuthorityProxy ap = getAuthorityProxy();
-					if (ap == null) { // CLD-3693: graph runs on the server
-						// try with the default authority proxy instead - should be a ServerAuthorityProxy
-						ap = IAuthorityProxy.getDefaultProxy();
-					}
-					ap.freeSharedSequence(seq);
-				} else {
-					seq.free();
-				}
+				seq.free();
 			} catch (Exception ex) {
 			    logger.warn("Can't free Sequence", ex);
 			}
@@ -1164,15 +1157,26 @@ public final class TransformationGraph extends GraphElement {
 		try {
 			super.free();
 			
-	        freeResources();
+			try {
+				freeResources();
+			} catch (Exception e) {
+				logger.warn("Resources release failed.", e);
+			}
 	    	
 	    	//free dictionary /some readers use dictionary in the free method for the incremental reading
-	    	dictionary.free();
+			try {
+				dictionary.free();
+			} catch (Exception e) {
+				logger.warn("Dictionary release failed.", e);
+			}
 	    	
-	    	if (debugJMX != null) {
-	    		debugJMX.free();
-	    	}
-	    	
+	    	//free GraphDebugger if any
+			try {
+				DebugJMX.freeGraphDebugger(this);
+			} catch (Exception e) {
+				logger.warn("GraphDebugger release failed.", e);
+			}
+
 	    	if (watchDog != null) {
 	    		watchDog.free();
 	    		watchDog = null;
@@ -1415,14 +1419,6 @@ public final class TransformationGraph extends GraphElement {
         this.watchDog = watchDog;
     }
     
-    public DebugJMX getDebugJMX() {
-    	return this.debugJMX;
-    }
-    
-    public void setDebugJMX(DebugJMX debugJMX) {
-    	this.debugJMX = debugJMX;
-    }
-
     /**
      * @return runtime context of watchdog if is available or initialization runtime context instance
      */

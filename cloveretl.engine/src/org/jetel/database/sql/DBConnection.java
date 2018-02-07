@@ -121,6 +121,8 @@ public interface DBConnection extends IConnection {
     
     public boolean isPasswordEncrypted();
 
+    public void lookupJndiConnection() throws ComponentNotReadyException;
+    
     public String getJndiName();
 
 	public JdbcDriver getJdbcDriver();

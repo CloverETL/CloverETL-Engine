@@ -118,12 +118,10 @@
 	</FunctionalTest>
 
 	<FunctionalTest ident="JMS" graphFile="graph/graphJms.grf">
-         <Property name="LIB_DIR" value="examples/extExamples/lib" />
 	 	  <FlatFile outputFile="data-out/jms.out" supposedFile="supposed-out/jms.JMS.out"/>	                                                                    
 	</FunctionalTest>
 
 	<FunctionalTest ident="JmsSingleXmlField" graphFile="graph/graphJmsSingleXmlField.grf">
-         <Property name="LIB_DIR" value="examples/extExamples/lib" />
 	 	  <FlatFile outputFile="data-out/customers.out" supposedFile="supposed-out/customers.JmsSingleXmlField.out"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/orders.out" supposedFile="supposed-out/orders.JmsSingleXmlField.out"/>	                                                                    
 	</FunctionalTest>

@@ -85,6 +85,7 @@ import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.ctl.debug.DebugStack;
 import org.jetel.ctl.debug.DebugStack.FunctionCallFrame;
 import org.jetel.ctl.debug.DebugStatus;
+import org.jetel.ctl.debug.GraphDebugger;
 import org.jetel.ctl.debug.IdSequence;
 import org.jetel.ctl.debug.ListVariableOptions;
 import org.jetel.ctl.debug.ListVariableResult;
@@ -124,7 +125,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private String prevSourceId = null;
 	private BlockingQueue<DebugCommand> commandQueue;
 	private BlockingQueue<DebugStatus> statusQueue;
-	private DebugJMX debugJMX;
+	private GraphDebugger graphDebugger;
 	private Breakpoint curpoint;
 	private volatile RunToMark runToMark;
 	private Thread ctlThread;
@@ -190,8 +191,8 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	@Override
 	public void free() {
 		lastActiveThread = null;
-		if (debugJMX != null) {
-			debugJMX.unregisterTransformLangExecutor(this);
+		if (graphDebugger != null) {
+			graphDebugger.unregisterTransformLangExecutor(this);
 		}
 	}
 	
@@ -480,8 +481,8 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private void initDebug() {
 		this.commandQueue = new SynchronousQueue<>(true);
 		this.statusQueue = new SynchronousQueue<>(true);
-		debugJMX = graph.getDebugJMX();
-		debugJMX.registerTransformLangExecutor(this);
+		graphDebugger = DebugJMX.getGraphDebugger(graph);
+		graphDebugger.registerTransformLangExecutor(this);
 	}
 	
 	private StackFrame[] getCallStack(SimpleNode node) {
@@ -671,7 +672,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private void registerCurrentThread() {
 		ctlThread = new Thread();
 		ctlThread.setJavaThread(java.lang.Thread.currentThread());
-		boolean suspendIt = debugJMX.registerCTLThread(ctlThread, this);
+		boolean suspendIt = graphDebugger.registerCTLThread(ctlThread, this);
 		if (suspendIt) {
 			suspend();
 		}
@@ -679,7 +680,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	
 	private void unregisterCurrentThread() {
 		if (ctlThread != null) {
-			debugJMX.unregisterCTLThread(ctlThread);
+			graphDebugger.unregisterCTLThread(ctlThread);
 			ctlThread = null;
 		}
 	}
@@ -689,7 +690,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		DebugStatus status = new DebugStatus(node, cause);
 		status.setSourceFilename(node.getSourceId());
 		status.setThreadId(ctlThread.getId());
-		debugJMX.notifySuspend(status);
+		graphDebugger.notifySuspend(status);
 	}
 	
 	private void handleResume(SimpleNode node, CommandType cause) {
@@ -697,7 +698,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		DebugStatus status = new DebugStatus(node, cause);
 		status.setSourceFilename(node.getSourceId());
 		status.setThreadId(ctlThread.getId());
-		debugJMX.notifyResume(status);
+		graphDebugger.notifyResume(status);
 	}
 	
 	private void setStack(DebugStack stack) {
@@ -864,7 +865,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 							return condition.isFulFilled();
 						}
 					} catch (Exception e) {
-						debugJMX.notifyConditionError(bp, ExceptionUtils.getMessage(e));
+						graphDebugger.notifyConditionError(bp, ExceptionUtils.getMessage(e));
 					}
 				}
 				return true;

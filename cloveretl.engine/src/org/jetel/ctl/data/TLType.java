@@ -30,6 +30,13 @@ import java.util.Map;
 
 import org.jetel.ctl.TLUtils;
 import org.jetel.ctl.TransformLangParserConstants;
+import org.jetel.ctl.data.TLTypePrimitive.TLTypeBoolean;
+import org.jetel.ctl.data.TLTypePrimitive.TLTypeDateTime;
+import org.jetel.ctl.data.TLTypePrimitive.TLTypeDecimal;
+import org.jetel.ctl.data.TLTypePrimitive.TLTypeDouble;
+import org.jetel.ctl.data.TLTypePrimitive.TLTypeInteger;
+import org.jetel.ctl.data.TLTypePrimitive.TLTypeLong;
+import org.jetel.ctl.data.TLTypePrimitive.TLTypeString;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.EqualsUtil;
@@ -112,7 +119,15 @@ public abstract class TLType implements Serializable {
 		public String name() {
 			return "object";
 		}
-		
+
+		/**
+		 * This method ensures this class is still singleton even after serialization/deserialization.
+		 * This is necessary for remote CTL debugging, where the TLTypes are
+		 * transfered using DebugJMX interface.
+		 */
+		private Object readResolve() {
+			return TLTypePrimitive.OBJECT;
+		}
 	}
 	
 	public static final class TLTypeUnknown extends TLType {
@@ -141,6 +156,14 @@ public abstract class TLType implements Serializable {
 			return true;
 		}
 
+		/**
+		 * This method ensures this class is still singleton even after serialization/deserialization.
+		 * This is necessary for remote CTL debugging, where the TLTypes are
+		 * transfered using DebugJMX interface.
+		 */
+		private Object readResolve() {
+			return TLTypePrimitive.UNKNOWN;
+		}
 	}
 	
 	public static final class TLTypeVoid extends TLType {
@@ -166,7 +189,15 @@ public abstract class TLType implements Serializable {
 		
 			return TLType.ERROR;
 		}
-		
+
+		/**
+		 * This method ensures this class is still singleton even after serialization/deserialization.
+		 * This is necessary for remote CTL debugging, where the TLTypes are
+		 * transfered using DebugJMX interface.
+		 */
+		private Object readResolve() {
+			return TLTypePrimitive.VOID;
+		}
 	}
 	
 	public static final class TLTypeNull extends TLType {
@@ -187,6 +218,15 @@ public abstract class TLType implements Serializable {
 		@Override
 		public TLType promoteWith(TLType otherType) {
 			return otherType;
+		}
+
+		/**
+		 * This method ensures this class is still singleton even after serialization/deserialization.
+		 * This is necessary for remote CTL debugging, where the TLTypes are
+		 * transfered using DebugJMX interface.
+		 */
+		private Object readResolve() {
+			return TLTypePrimitive.NULL;
 		}
 	}
 	
@@ -209,6 +249,15 @@ public abstract class TLType implements Serializable {
 		@Override
 		public TLType promoteWith(TLType otherType) {
 			return this;
+		}
+		
+		/**
+		 * This method ensures this class is still singleton even after serialization/deserialization.
+		 * This is necessary for remote CTL debugging, where the TLTypes are
+		 * transfered using DebugJMX interface.
+		 */
+		private Object readResolve() {
+			return TLTypePrimitive.ERROR;
 		}
 	}
 	
@@ -465,6 +514,15 @@ public abstract class TLType implements Serializable {
 			}
 			
 			return TLType.ERROR;
+		}
+
+		/**
+		 * This method ensures this class is still singleton even after serialization/deserialization.
+		 * This is necessary for remote CTL debugging, where the TLTypes are
+		 * transfered using DebugJMX interface.
+		 */
+		private Object readResolve() {
+			return TLTypePrimitive.BYTEARRAY;
 		}
 	}
 	

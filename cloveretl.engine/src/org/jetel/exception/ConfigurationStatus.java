@@ -18,6 +18,7 @@
  */
 package org.jetel.exception;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -39,8 +40,10 @@ import org.jetel.util.string.StringUtils;
  * @created 24.11.2006
  */
 @CloverPublicAPI
-public class ConfigurationStatus implements Iterable<ConfigurationProblem> {
+public class ConfigurationStatus implements Iterable<ConfigurationProblem>, Serializable {
 
+	private static final long serialVersionUID = 2379308038227670155L;
+	
 	private static Log logger = LogFactory.getLog(ConfigurationStatus.class);
 
     public enum Severity {

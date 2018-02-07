@@ -22,7 +22,6 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import org.jetel.graph.runtime.jmx.CloverJMX;
 import org.jetel.graph.runtime.jmx.NodeTracking;
 import org.jetel.graph.runtime.jmx.PortTracking;
 import org.jetel.util.string.StringUtils;
@@ -41,8 +40,8 @@ public class GraphTrackingLogger extends TrackingLogger {
     private static final int[] ARG_SIZES_WITH_CPU = { -6, -4, 27, 15, 11, 8, 8 };
     private static final int[] ARG_SIZES_WITHOUT_CPU = { 37, 15, 11, 8, 8 };
 
-    GraphTrackingLogger(CloverJMX cloverJMX) {
-    	super(cloverJMX);
+    GraphTrackingLogger(WatchDog watchDog) {
+    	super(watchDog);
     }
 
     /**
@@ -56,9 +55,9 @@ public class GraphTrackingLogger extends TrackingLogger {
 	protected void printProcessingStatus(boolean finalTracking) {
         //StringBuilder strBuf=new StringBuilder(120);
         if (finalTracking)
-            logger.info("----------------------** Final tracking Log for phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseLabel() + "] **---------------------");
+            logger.info("----------------------** Final tracking Log for phase [" + getGraphTracking().getRunningPhaseTracking().getPhaseLabel() + "] **---------------------");
         else 
-            logger.info("---------------------** Start of tracking Log for phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseLabel() + "] **-------------------");
+            logger.info("---------------------** Start of tracking Log for phase [" + getGraphTracking().getRunningPhaseTracking().getPhaseLabel() + "] **-------------------");
         // France is here just to get 24hour time format
         logger.info("Time: "
             + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, Locale.FRANCE).
@@ -69,7 +68,7 @@ public class GraphTrackingLogger extends TrackingLogger {
         	logger.info("Node                   ID        Port       #Records        #KB   Rec/s    KB/s");
         }
         logger.info("---------------------------------------------------------------------------------");
-        for (NodeTracking nodeDetail : cloverJMX.getGraphTracking().getRunningPhaseTracking().getNodeTracking()) {
+        for (NodeTracking nodeDetail : getGraphTracking().getRunningPhaseTracking().getNodeTracking()) {
             Object nodeInfo[] = {nodeDetail.getNodeName(), nodeDetail.getNodeID(), nodeDetail.getResult().message()};
             int nodeSizes[] = {-23, -41, 15};
             logger.info(StringUtils.formatString(nodeInfo, nodeSizes));

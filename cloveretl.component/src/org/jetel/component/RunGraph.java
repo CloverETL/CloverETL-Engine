@@ -518,6 +518,7 @@ public class RunGraph extends Node{
 		runtimeContext.setRuntimeClassPath(this.getGraph().getRuntimeContext().getRuntimeClassPath());
 		runtimeContext.setCompileClassPath(this.getGraph().getRuntimeContext().getCompileClassPath());
 		runtimeContext.setJobUrl(graphFileName);
+		runtimeContext.setForceParentJvm(true);
 		RunStatus rs = this.getGraph().getAuthorityProxy().executeGraphSync( graphFileName, runtimeContext, null);
 		
 		outputRecordData.setDescription(rs.errException);
@@ -616,7 +617,7 @@ public class RunGraph extends Node{
 				try {
 					contextURL = FileUtils.convertUrlToFile(graphContextURL).getAbsolutePath();
 				} catch (MalformedURLException e) {
-					throw new ComponentNotReadyException("Context URL does not found.", e);
+					throw new ComponentNotReadyException("Context URL not found.", e);
 				}
 			}
 		}

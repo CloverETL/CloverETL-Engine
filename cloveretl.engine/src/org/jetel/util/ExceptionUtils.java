@@ -30,10 +30,14 @@ import java.util.List;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.CompoundException;
+import org.jetel.exception.ConfigurationException;
+import org.jetel.exception.GraphElementSerializableException;
 import org.jetel.exception.SerializableException;
 import org.jetel.exception.StackTraceWrapperException;
 import org.jetel.exception.UserAbortException;
+import org.jetel.graph.IGraphElement;
 import org.jetel.logger.SafeLogUtils;
 import org.jetel.util.string.StringUtils;
 
@@ -251,8 +255,8 @@ public class ExceptionUtils {
 		}
 
 		//do not report exception message that is mentioned already in parent exception message
-		//unless it is User abort e.g. from Fail component - never suppress this
-		if (message != null && lastMessage != null && lastMessage.contains(message) && !(t instanceof UserAbortException)) {
+		//unless it is User abort e.g. from Fail component - never suppress this (CLO-2931)
+		if (message != null && lastMessage != null && lastMessage.contains(message) && !basicInstanceOf(t, UserAbortException.class)) {
 			message = null;
 		}
 		
@@ -276,7 +280,7 @@ public class ExceptionUtils {
 		if (!(t instanceof SerializableException)) {
 			return t.getClass().getName();
 		} else {
-			return ((SerializableException) t).getWrappedExceptionClass().getName();
+			return ((SerializableException) t).getWrappedExceptionClassName();
 		}
     }
     
@@ -599,4 +603,36 @@ public class ExceptionUtils {
 		}
 		return error.getMessage();
 	}
+	
+	/**
+	 * This method tries to detect cause graph element from the given exception.
+	 * 
+	 * @param t
+	 * @return cause graph element identifier
+	 */
+	public static String getCauseGraphElementId(Throwable t) {
+		String result = null;
+		while (true) {
+			String errComponent = null;
+			if (t instanceof ConfigurationException) {
+				errComponent = ((ConfigurationException) t).getCausedGraphElementId();
+			} else if (t instanceof ComponentNotReadyException) {
+				IGraphElement graphElement = ((ComponentNotReadyException) t).getGraphElement();
+				if (graphElement != null) {
+					errComponent = graphElement.getId();
+				}
+			} else if (t instanceof GraphElementSerializableException) {
+				errComponent = ((GraphElementSerializableException) t).getCauseGraphElementId();
+			}
+			if (!StringUtils.isEmpty(errComponent)) {
+				result = errComponent;
+			}
+			if (t.getCause() == null || t == t.getCause()) {
+				break;
+			}
+			t = t.getCause();
+		}
+		return result;
+	}
+	
 }

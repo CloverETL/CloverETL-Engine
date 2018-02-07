@@ -245,15 +245,17 @@ public class Phase extends GraphElement implements Comparable<Phase> {
         if(logger.isDebugEnabled()){
 		    logger.debug("Edges post-execution");
         }
-		for (Edge edge : edges.values()) {
-			try {
-				edge.postExecute();
-			} catch (ComponentNotReadyException e) {
-				result = Result.ERROR;
-				exceptions.add(new ComponentNotReadyException(edge, "Edge " + edge + " post-execution failed.", e));
+		for (Edge edge : getGraph().getEdges().values()) { //release all edges with reader component in this phase
+			if (edge.getReader().getPhase() == this) {
+				try {
+					edge.postExecute();
+				} catch (ComponentNotReadyException e) {
+					result = Result.ERROR;
+					exceptions.add(new ComponentNotReadyException(edge, "Edge " + edge + " post-execution failed.", e));
+				}
 			}
 		}
-        if(logger.isDebugEnabled()){
+		if(logger.isDebugEnabled()){
 	    	logger.debug("Edges post-execution " + (exceptions.size() != 0 ? "failed." : "success."));
         }
 
@@ -335,6 +337,7 @@ public class Phase extends GraphElement implements Comparable<Phase> {
 
 		//check nodes configuration
         for (Node node : nodes.values()) {
+    		Context c = ContextProvider.registerNode(node);
         	try {
         		node.checkConfig(status);
         	} catch (Exception e) {
@@ -345,6 +348,8 @@ public class Phase extends GraphElement implements Comparable<Phase> {
         	} catch (Error e) {
         		// java.lang.Error is thrown when you try to load invalid class (Eclipse produces invalid .class files when you don't set classpath correctly for compilation)
         		status.addError(node, null, e);
+        	} finally {
+        		ContextProvider.unregister(c);
         	}
         }
 

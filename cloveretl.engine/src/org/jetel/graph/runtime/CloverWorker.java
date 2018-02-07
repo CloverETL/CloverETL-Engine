@@ -25,6 +25,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.Node;
+import org.jetel.util.LogUtils;
 
 /**
  * This implementation of Runnable interface should be use for each thread inside a
@@ -74,7 +75,7 @@ public abstract class CloverWorker implements Runnable, Thread.UncaughtException
 	public void run() {
 		Context c = ContextProvider.registerNode(node);
 		try {
-			MDC.put("runId", node.getGraph().getRuntimeContext().getRunId());
+			MDC.put(LogUtils.MDC_RUNID_KEY, node.getGraph().getRuntimeContext().getRunId());
 			//set a meaningful name of current thread
 			thread = Thread.currentThread();
 			Thread parentThread = node.getNodeThread();
@@ -99,7 +100,7 @@ public abstract class CloverWorker implements Runnable, Thread.UncaughtException
 		} finally {
 			ContextProvider.unregister(c);
 			node.unregisterChildThread(thread);
-			MDC.remove("runId");
+			MDC.remove(LogUtils.MDC_RUNID_KEY);
 			Thread.currentThread().setName("<unnamed>");
 		}
 	}

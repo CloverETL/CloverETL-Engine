@@ -33,6 +33,8 @@ import org.jetel.graph.TransformationGraph;
  */
 public class LogUtils {
 
+	public static final String MDC_RUNID_KEY = "runId";
+
 	private static final Logger DEFAULT_LOGGER = Logger.getLogger(LogUtils.class);
 	
 	public static Logger getLogger() {

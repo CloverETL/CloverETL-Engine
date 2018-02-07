@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
@@ -299,16 +298,6 @@ public class DBConnectionImpl extends AbstractDBConnection {
         } catch (SQLException e) {
             throw new ComponentNotReadyException(e);
         } 
-
-        //initiate  JNDI data source
-        if (!StringUtils.isEmpty(getJndiName())) {
-        	try {
-		    	Context initContext = new InitialContext();
-		   		jndiDataSource = (DataSource) initContext.lookup(getJndiName());
-	    	} catch (Exception e) {
-	    		throw new ComponentNotReadyException("Cannot open DB connection from JNDI data source: '" + getJndiName() + "'. " + e.getMessage(), e);
-	    	}
-        }
 
         //decrypt password
         decryptPassword();
@@ -644,7 +633,20 @@ public class DBConnectionImpl extends AbstractDBConnection {
         this.isPasswordEncrypted = isPasswordEncrypted;
     }
 
-	@Override
+    @Override
+    public void lookupJndiConnection() throws ComponentNotReadyException {
+		//initiate  JNDI data source
+    	if (!StringUtils.isEmpty(getJndiName())) {
+        	try {
+        		InitialContext initContext = new InitialContext();
+		   		jndiDataSource = (DataSource) initContext.lookup(getJndiName());
+	    	} catch (Exception e) {
+	    		throw new ComponentNotReadyException("Cannot open DB connection from JNDI data source: '" + getJndiName() + "'. " + e.getMessage(), e);
+	    	}
+        }
+    }
+    
+    @Override
 	public String getJndiName() {
 		return jndiName;
 	}
@@ -913,6 +915,9 @@ public class DBConnectionImpl extends AbstractDBConnection {
 	protected SqlConnection connect(OperationType operationType) throws JetelException {
     	if (!StringUtils.isEmpty(getJndiName())) {
         	try {
+        		if (jndiDataSource == null) {
+        			lookupJndiConnection();
+        		}
         		Connection jndiConnection = jndiDataSource.getConnection();
                	//update jdbc specific of this DBConnection according given JNDI connection
                	updateJdbcSpecific(jndiConnection);

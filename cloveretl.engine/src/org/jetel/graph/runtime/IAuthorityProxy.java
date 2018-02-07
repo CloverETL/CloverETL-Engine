@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.net.URL;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.Charset;
@@ -35,9 +36,6 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.sequence.Sequence;
-import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.HttpContextNotAvailableException;
 import org.jetel.exception.JetelRuntimeException;
@@ -47,7 +45,6 @@ import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Edge;
 import org.jetel.graph.EdgeBase;
 import org.jetel.graph.GraphParameter;
-import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -113,7 +110,10 @@ public abstract class IAuthorityProxy {
 		}
 	}
 	
-	public static class RunStatus {
+	public static class RunStatus implements Serializable {
+		
+		private static final long serialVersionUID = -4945370081989985664L;
+		
 		public long runId;
 		public String clusterNodeId;
 		public String jobUrl;
@@ -194,21 +194,7 @@ public abstract class IAuthorityProxy {
 			errException = ExceptionUtils.stackTraceToString(e);
 			
 			//try to find caused graph element id
-			Throwable t = e;
-			while (true) {
-				if (t instanceof ConfigurationException) {
-					errComponent = ((ConfigurationException) t).getCausedGraphElementId();
-				} else if (t instanceof ComponentNotReadyException) {
-					IGraphElement graphElement = ((ComponentNotReadyException) t).getGraphElement();
-					if (graphElement != null) {
-						errComponent = graphElement.getId();
-					}
-				}
-				if (!StringUtils.isEmpty(errComponent) || t.getCause() == null || t == t.getCause()) {
-					break;
-				}
-				t = t.getCause();
-			}
+			errComponent = ExceptionUtils.getCauseGraphElementId(e);
 		}
 	}
 
@@ -277,10 +263,6 @@ public abstract class IAuthorityProxy {
 	 * May be null when the AuthorityProxy instance is related to the graph which is not intended to be executed.
 	 */
 	protected GraphRuntimeContext runtimeContext;
-	
-	public abstract Sequence getSharedSequence(Sequence sequence);
-
-	public abstract void freeSharedSequence(Sequence sequence);
 
 	/**
 	 * Sets context for this graph run. Must be called just once for this instance just before graph run.
@@ -367,15 +349,6 @@ public abstract class IAuthorityProxy {
 	 * @return final run status for all killed jobs (job finished/failed before this request aren't included)
 	 */
 	public abstract List<RunStatus> killExecutionGroup(String executionGroup, boolean recursive);
-
-	/**
-	 * Ask authority to kill all children jobs.
-	 * @param recursive - true if daemon children jobs should be killed as well
-	 * @return final run status for all killed jobs (job finished/failed before this request aren't included)
-	 */
-	public abstract List<RunStatus> killChildrenJobs(boolean recursive);
-	
-	
 
 	/**
 	 * Throws exception if user who executed graph doesn't have write permission for requested sandbox.
@@ -480,21 +453,6 @@ public abstract class IAuthorityProxy {
 	public abstract Edge getParentGraphTargetEdge(int outputPortIndex);
 
 	/**
-	 * Assigns proper portion of a file to current cluster node. It is used mainly by ParallelReader,
-	 * which is able to read just pre-defined part of file. Null is returned if the whole file should
-	 * be processed. This functionality makes available that each cluster node can process different
-	 * part of a single file.
-	 * 
-	 * @param componentId
-	 * @param fileURL
-	 * @return
-	 * @throws IOException
-	 * @see {@link FileConstrains}
-	 * @see {@link ParallelReader}
-	 */
-	public abstract FileConstrains assignFilePortion(String componentId, String fileURL, SeekableByteChannel channel, byte[] recordDelimiter) throws IOException;
-	
-	/**
 	 * Assigns file portion to a cluster. Ensures that the portion start and ends at the record boundary
 	 * Used for delimited data by ParallelReader in segment mode. 
 	 * @param componentId
@@ -506,18 +464,6 @@ public abstract class IAuthorityProxy {
 	 * @throws IOException
 	 */
 	public abstract FileConstrains assignFilePortion(String componentId, String fileURL, SeekableByteChannel channel, Charset charset, String[] recordDelimiters) throws IOException;
-
-	/**
-	 * Assigns file portion to a cluster. Ensures that the portion start and ends at the record boundary
-	 * Used for fixed-length data by ParallelReader in segment mode. 
-	 * @param componentId
-	 * @param fileURL
-	 * @param channel The channel to be apportioned
-	 * @param recordLength Record length in bytes
-	 * @return
-	 * @throws IOException
-	 */
-	public abstract FileConstrains assignFilePortion(String componentId, String fileURL, SeekableByteChannel channel, int recordLength) throws IOException;
 
 	/**
 	 * <p>
@@ -555,6 +501,8 @@ public abstract class IAuthorityProxy {
 	 * @throws TempFileCreationException 
 	 */
 	public abstract File newTempFile(String label, String suffix, int allocationHint) throws TempFileCreationException;
+	
+	public abstract File newTempFile(String label, String suffix, int allocationHint, long runId) throws TempFileCreationException;
 
 	public final File newTempFile(String label, int allocationHint) throws TempFileCreationException {
 		return newTempFile(label, null, allocationHint);
@@ -610,6 +558,8 @@ public abstract class IAuthorityProxy {
 	
 	public abstract File newTempDir(String label, int allocationHint) throws TempFileCreationException;
 	
+	public abstract File newTempDir(String label, int allocationHint, long runId) throws TempFileCreationException;
+	
 	public abstract ClassLoader getClassLoader(URL[] urls, ClassLoader parent, boolean greedy);
 
 	public ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy) {
@@ -631,8 +581,6 @@ public abstract class IAuthorityProxy {
 	 * @return multi-parent classloader based on the given parent classloaders
 	 */
 	public abstract ClassLoader createMultiParentClassLoader(ClassLoader... parents);
-	
-	public abstract boolean isClusterEnabled();
 	
 	/**
 	 * Returns true if runtime environment allows executing partitioned jobs.

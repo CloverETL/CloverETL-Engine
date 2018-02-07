@@ -32,6 +32,8 @@ import java.util.List;
  */
 public class SingleCloverURI extends CloverURI {
 	
+	private static final long serialVersionUID = -2007497747271435842L;
+
 	private final String path;
 	
 	private boolean quoted = false;

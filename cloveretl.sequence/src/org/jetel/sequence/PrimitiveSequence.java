@@ -218,10 +218,5 @@ public class PrimitiveSequence extends AbstractSequence {
     public void setConfigFileName(String configFileName) {
     	this.configFileName = configFileName;
     }
-    
-	@Override
-	public boolean isShared() {
-		return false;
-	}
 
 }
