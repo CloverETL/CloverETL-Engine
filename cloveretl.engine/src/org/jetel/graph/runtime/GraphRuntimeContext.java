@@ -44,6 +44,8 @@ import org.jetel.util.MiscUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * Common used implementation of IGraphRuntimeContext interface.
  * 
@@ -121,6 +123,7 @@ public class GraphRuntimeContext implements Serializable {
 	private boolean transactionMode;
 	private boolean batchMode;
 	private boolean embeddedRun;
+	@SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
 	private transient URL contextURL;
 	/**
 	 * This string representation of contextURL is necessary to keep GraphRuntimeContext
@@ -136,7 +139,9 @@ public class GraphRuntimeContext implements Serializable {
 	private String jobUrl;
 	/** Only for subgraphs - component id, where this subgraph has been executed. */
 	private String parentSubgraphComponentId;
+	@SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
 	private transient IAuthorityProxy authorityProxy;
+	@SuppressFBWarnings("SE_BAD_FIELD")
 	private MetadataProvider metadataProvider;
 	/** Should executor check required graph parameters? */
 	private boolean validateRequiredParameters;
@@ -245,7 +250,7 @@ public class GraphRuntimeContext implements Serializable {
 		ret.jobType = getJobType();
 		ret.jobUrl = getJobUrl();
 		ret.parentSubgraphComponentId = getParentSubgraphComponentId();
-		ret.authorityProxy = getAuthorityProxy();
+		ret.setAuthorityProxy(getAuthorityProxy());
 		ret.executionType = getExecutionType();
 		ret.metadataProvider = getMetadataProvider();
 		ret.validateRequiredParameters = isValidateRequiredParameters();
@@ -868,7 +873,7 @@ public class GraphRuntimeContext implements Serializable {
 	 * Sets authority proxy with this run.
 	 * @param authorityProxy
 	 */
-	public void setAuthorityProxy(IAuthorityProxy authorityProxy) {
+	public synchronized void setAuthorityProxy(IAuthorityProxy authorityProxy) {
 		this.authorityProxy = authorityProxy;
 		if (authorityProxy != null) {
 			authorityProxy.setGraphRuntimeContext(this);
