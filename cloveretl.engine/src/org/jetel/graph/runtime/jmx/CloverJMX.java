@@ -202,6 +202,13 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 		}
 	}
 
+	/**
+	 * @return {@link WatchDog} for the given runId or null if no {@link WatchDog} is registered
+	 */
+	public WatchDog getRunningGraph(long runId) {
+		return watchDogCache.get(runId);
+	}
+
 	private WatchDog getWatchDog(long runId) {
 		WatchDog watchDog = watchDogCache.get(runId);
 		if (watchDog != null) {
@@ -287,5 +294,12 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
         in.defaultReadObject();
         watchDogCache = new ConcurrentHashMap<>();
     }
+
+	/**
+	 * @return number of just now running jobs
+	 */
+	public int getNumOfRunningJobs() {
+		return watchDogCache.size();
+	}
 	
 }

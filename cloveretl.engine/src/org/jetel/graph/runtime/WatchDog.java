@@ -39,6 +39,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.MDC;
+import org.apache.log4j.WriterAppender;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.CompoundException;
@@ -129,6 +130,13 @@ public class WatchDog implements Callable<Result>, CloverPost {
      */
     private volatile int approvedPhaseNumber = Integer.MIN_VALUE;
 
+    /**
+     * Log4j file appender, which is created on each graph execution for graph specific logging.
+     * This is just cache for later release.
+     * @see com.cloveretl.server.worker.runtime.ExecutionHelper.releaseWatchdog(WatchDog watchDog)
+     */
+    private WriterAppender graphLogAppender;
+    
 	/**
 	 *Constructor for the WatchDog object
 	 *
@@ -808,6 +816,14 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 	public void setApprovedPhaseNumber(int approvedPhaseNumber) {
 		this.approvedPhaseNumber = approvedPhaseNumber;
+	}
+
+	public WriterAppender getGraphLogAppender() {
+		return graphLogAppender;
+	}
+
+	public void setGraphLogAppender(WriterAppender graphLogAppender) {
+		this.graphLogAppender = graphLogAppender;
 	}
 
     public void free() {
