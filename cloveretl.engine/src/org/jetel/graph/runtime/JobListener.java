@@ -30,8 +30,7 @@ public interface JobListener {
 
 	/**
 	 * This method is invoked on job (graph, jobflow, ...) finish.
-	 * @param runId
 	 */
-	public void jobFinished(long runId);
+	public void jobFinished(WatchDog watchDog);
 	
 }

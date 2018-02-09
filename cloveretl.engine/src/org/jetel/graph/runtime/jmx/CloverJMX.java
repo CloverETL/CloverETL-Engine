@@ -24,7 +24,9 @@ import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.ThreadMXBean;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,6 +41,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.JMXNotificationMessage;
+import org.jetel.graph.runtime.JobListener;
 import org.jetel.graph.runtime.WatchDog;
 import org.jetel.util.LogUtils;
 
@@ -84,6 +87,11 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
      * The only instance of CloverJMX mBean.
      */
     private static volatile CloverJMX cloverJMX;
+    
+    /**
+     * List of listeners, which are interested about the Watchdog is release by an authority.
+     */
+    private List<JobListener> jobListeners = new ArrayList<>();
     
 	/**
 	 * Registers CloverJMX as JMX mBean.
@@ -189,9 +197,10 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 		try {
 			WatchDog watchDog = watchDogCache.remove(runId);
 			if (watchDog == null) {
-				log.error("Unregister WatchDog failed for runId=" + runId);
+				log.error("Released WatchDog does not found for runId #" + runId);
 			} else {
-				log.debug("Finished job unregistered from CloverJMX: " + runId);
+				sendReleaseWatchdogNotification(watchDog);
+				log.debug("WatchDog unregistered from CloverJMX #" + runId);
 			}
 		} finally {
 			if (oldRunId == null) {
@@ -202,6 +211,14 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 		}
 	}
 
+	private void sendReleaseWatchdogNotification(WatchDog watchDog) {
+		synchronized (jobListeners) {
+			for (JobListener jobListener : jobListeners) {
+				jobListener.jobFinished(watchDog);
+			}
+		}
+	}
+	
 	/**
 	 * @return {@link WatchDog} for the given runId or null if no {@link WatchDog} is registered
 	 */
@@ -260,7 +277,8 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	/**
 	 * Removes all finished jobs older than 10s from watchDogCache.
 	 */
-	private void cleanObsoleteWatchDogs() {
+	private synchronized void cleanObsoleteWatchDogs() {
+		List<Long> watchdogsToRelease = new ArrayList<>();
 		long currentTime = System.currentTimeMillis();
 		for (Iterator<Map.Entry<Long, WatchDog>> iterator = watchDogCache.entrySet().iterator(); iterator.hasNext(); ) {
 			Entry<Long, WatchDog> entry = iterator.next();
@@ -268,8 +286,15 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 			GraphTrackingDetail tracking = watchDog.getGraphTracking();
 			if (tracking.getResult().isStop()
 					&& tracking.getEndTime() + getObsoleteJobTimeout() < currentTime) {
-				iterator.remove();
-				log.warn("Obsolete WatchDog has been removed from CloverJMX cache of running jobs.");
+				watchdogsToRelease.add(entry.getKey());
+			}
+		}
+		
+		for (Long runId : watchdogsToRelease) {
+			WatchDog watchDog = watchDogCache.remove(runId);
+			if (watchDog != null) {
+				log.warn("Obsolete WatchDog has been removed from CloverJMX cache of running jobs with runId=" + runId);
+				sendReleaseWatchdogNotification(watchDog);
 			}
 		}
 	}
@@ -293,6 +318,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         watchDogCache = new ConcurrentHashMap<>();
+        jobListeners = new ArrayList<>();
     }
 
 	/**
@@ -300,6 +326,12 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	 */
 	public int getNumOfRunningJobs() {
 		return watchDogCache.size();
+	}
+	
+	public void addJobListener(JobListener jobListener) {
+		synchronized (jobListener) {
+			jobListeners.add(jobListener);
+		}
 	}
 	
 }

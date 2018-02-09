@@ -175,7 +175,7 @@ public class SimpleThreadManager implements IThreadManager {
 		@Override
 		protected void done() {
 			for (JobListener jobListener : jobListeners) {
-				jobListener.jobFinished(getWatchDog().getGraphRuntimeContext().getRunId());
+				jobListener.jobFinished(getWatchDog());
 			}
 		}
 	}
