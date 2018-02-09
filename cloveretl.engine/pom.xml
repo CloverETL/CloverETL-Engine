@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.cloveretl.worker</groupId>
 		<artifactId>cloveretl</artifactId>
-		<version>4.6.0-SNAPSHOT</version>
+		<version>4.9.0-SNAPSHOT</version>
 		<relativePath>../infrastructure/pom.xml</relativePath>
 	</parent>
 
