@@ -118,8 +118,8 @@ if( !runTests ){
 		antArgs += "-Druntests-plugins-dontrun=true"	
 		antArgs += "-Dtest.include=org/jetel/graph/ResetTest.java"
 		antArgs += "-Druntests.engine.Xmx=-Xmx3072m"
-		antArgs += "-Dadditional.jvmargs=-Djavax.net.ssl.trustStore=${trustStoreF}"
-		//antArgs += "-Dadditional.jvmargs=-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=33333 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=172.22.2.28"
+		//antArgs += "-Dadditional.jvmargs=-Djavax.net.ssl.trustStore=${trustStoreF}"
+		antArgs += "-Dadditional.jvmargs=-Djavax.net.ssl.trustStore=${trustStoreF} -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=33333 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=172.22.2.11"
 	} else {
 		println "ERROR: Unknown goal '${jobGoal}'"
 		exit 1
