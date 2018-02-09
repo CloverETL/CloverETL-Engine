@@ -252,6 +252,12 @@
 				<exclude>**/*.java</exclude>
 			</excludes>
 		</resource>
+		<resource>
+			<directory>.</directory>
+			<includes>
+				<include>version.properties</include>
+			</includes>
+		</resource>
 	</resources>	
 	<finalName>${project.artifactId}</finalName>
 	<plugins>
