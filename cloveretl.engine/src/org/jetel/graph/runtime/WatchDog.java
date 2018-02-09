@@ -252,7 +252,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	    		watchDogStatus = Result.RUNNING;
 	
 	    		//creates tracking logger for cloverJMX mbean
-	            TrackingLogger.track(this);
+	    		if (provideJMX) {
+	    			TrackingLogger.track(this);
+	    		}
 	          	
 	           	graphStarted();
 	
