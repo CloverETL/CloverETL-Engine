@@ -638,7 +638,8 @@ This software is licensed under the terms you may find in the file named "LICENS
 		<!-- Create directory for dist. -->
 		<mkdir dir="${dir.package}/lib"/>
 
-		<echo message="*** Creating jar ${dir.package}/lib/cloveretl.engine.jar from dir.package.classes." />
+		<echo message="*** Creating jar ${dir.package}/lib/cloveretl.engine.jar from ${dir.package.classes}." />
+		<copy file="${basedir}/version.properties" todir="${dir.package.classes}" overwrite="yes"/>
 		<jar destfile="${dir.package}/lib/cloveretl.engine.jar" basedir="${dir.package.classes}">
 			<include name="**/*"/>
 			<exclude name="test/**/*"/>
