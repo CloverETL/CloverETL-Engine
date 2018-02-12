@@ -58,7 +58,6 @@ public interface GraphTracking extends Serializable {
 	 */
 	long getExecutionTime();
 
-	
 	/**
 	 * @return graph file name.
 	 */
@@ -69,6 +68,12 @@ public interface GraphTracking extends Serializable {
 	 */
 	Result getResult();
 
+	/**
+	 * @return graph error descriptor for failed graphs ({@link #getResult()}
+	 * is {@link Result#ERROR}) or null for aborted and successful graphs.
+	 */
+	GraphError getGraphError();
+	
 	/**
 	 * @return identifier of cluster node, where the graph was executed; can be null for non-cluster runs
 	 */

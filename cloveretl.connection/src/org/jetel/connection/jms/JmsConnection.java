@@ -140,6 +140,26 @@ public class JmsConnection extends GraphElement implements IConnection {
 		this.destId = destId;
 		this.passwordEncrypted = passwordEncrypted;
 		this.libraries = libraries;
+		
+		if (iniCtxFtory == null) { // use jndi.properties
+			try {
+				initCtx = new InitialContext();
+				// Let's lookup factory and destination before worker context is damaged by classloaders.
+				Object o = initCtx.lookup(conFtory);
+				if (o instanceof ConnectionFactory) {
+					factory = (ConnectionFactory) o;
+				}
+				Object d = initCtx.lookup(destId);
+				if (d instanceof Destination) {
+					destination = (Destination)d;
+				}
+				
+			} catch (NamingException e) {
+				initCtx = null;
+				factory = null;
+				destination = null;
+			}
+		} 		
 	}
 	
 	private static TypedProperties readConfig(URL contextURL, String cfgFile, TransformationGraph graph) {
@@ -189,7 +209,9 @@ public class JmsConnection extends GraphElement implements IConnection {
 						properties.put(Context.PROVIDER_URL, providerUrl);
 						initCtx = new InitialContext(properties);
 					} else { // use jndi.properties
-						initCtx = new InitialContext();
+						if (initCtx == null) {
+							initCtx = new InitialContext();
+						}
 					}
 				} catch (NoInitialContextException e) {
 					if (e.getRootCause() instanceof ClassNotFoundException)
@@ -200,16 +222,17 @@ public class JmsConnection extends GraphElement implements IConnection {
 					throw new ComponentNotReadyException("Cannot create initial context", e);
 				}
 				try {
-					Object o = initCtx.lookup(conFtory);
-					if (o instanceof ConnectionFactory) {
-						factory = (ConnectionFactory) o;
-					} else {
-						if (o == null)
-							throw new ComponentNotReadyException("Cannot find connection factory " + ConnectionFactory.class + " with jndiName:" + conFtory + " in the ctx:"+initCtx);
-						else
-							throw new ComponentNotReadyException("Cannot find connection factory (interface may be loaded by different classloader) " + ConnectionFactory.class + " loaded by:" + ConnectionFactory.class.getClassLoader() + " with jndiName:" + conFtory + " found:" + o + " " + (o != null ? (("" + o.getClass() + " loaded by:" + o.getClass().getClassLoader())) : ""));
+					if (factory == null) { 
+						Object o = initCtx.lookup(conFtory);
+						if (o instanceof ConnectionFactory) {
+							factory = (ConnectionFactory) o;
+						} else {
+							if (o == null)
+								throw new ComponentNotReadyException("Cannot find connection factory " + ConnectionFactory.class + " with jndiName:" + conFtory + " in the ctx:"+initCtx);
+							else
+								throw new ComponentNotReadyException("Cannot find connection factory (interface may be loaded by different classloader) " + ConnectionFactory.class + " loaded by:" + ConnectionFactory.class.getClassLoader() + " with jndiName:" + conFtory + " found:" + o + " " + (o != null ? (("" + o.getClass() + " loaded by:" + o.getClass().getClassLoader())) : ""));
+						}
 					}
-
 				} catch (ComponentNotReadyException e) {
 					throw e;
 				} catch (NamingException e) {
@@ -348,10 +371,12 @@ public class JmsConnection extends GraphElement implements IConnection {
 			if (connection == null)
 				throw new ComponentNotReadyException("Cannot establish JMS connection");
 			try {
-				Object o = initCtx.lookup(destId);
-				if (!(o instanceof Destination))
-					throw new ComponentNotReadyException(this, "Specified destination " + destId + " doesn't contain instance of " + Destination.class + ", but:" + o);
-				destination = (Destination) o;
+				if (destination == null) {
+					Object o = initCtx.lookup(destId);
+					if (!(o instanceof Destination))
+						throw new ComponentNotReadyException(this, "Specified destination " + destId + " doesn't contain instance of " + Destination.class + ", but:" + o);
+					destination = (Destination) o;
+				}
 			} catch (NamingException e) {
 				throw new ComponentNotReadyException("Cannot find destination \"" + destId + "\" in initial context");
 			}

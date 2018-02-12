@@ -67,9 +67,10 @@ public class SimpleSequence extends AbstractSequence {
     public final static String SEQUENCE_TYPE = "SIMPLE_SEQUENCE";
     public static final Log logger = LogFactory.getLog(SimpleSequence.class);
     
-    // file for persisting
+    /** file for persisting */
     private String filename;
     private long numCachedValues;
+    /** how many times we can return next value before we have to look into the file */
     long counter;
     private SimpleSequenceSynchronizer synchronizer; 
 
@@ -175,14 +176,15 @@ public class SimpleSequence extends AbstractSequence {
         	// register this sequence, set it's value
         	synchronizer = SimpleSequenceSynchronizer.registerAndGetSynchronizer(this);
     		alreadyIncremented = false;
-        } catch(IOException ex) {
+		} catch (IOException ex) {
             free();
-            ComponentNotReadyException cnre = new ComponentNotReadyException(this, "Can't read value from sequence file. If you "
-            		+ "are using CloverETL Cluster, please make sure you are accessing persisted sequence "
-            		+StringUtils.quote(getName())+" on the same cluster node.", ex);
+            ComponentNotReadyException cnre = new ComponentNotReadyException(this, "Can't read value from sequence file. " +
+            		"This is caused by accessing the file from multiple Java Virtual Machines at the same time. " +
+            		"If you are using CloverETL Cluster, make sure you are accessing persisted sequence " +
+            		StringUtils.quote(getName()) + " on the same cluster node.", ex);
             cnre.setAttributeName(XML_FILE_URL_ATTRIBUTE);
             throw cnre;
-		}catch (BufferUnderflowException e) {
+		} catch (BufferUnderflowException e) {
 			free();
 			throw new ComponentNotReadyException("Can't read value from sequence file. File is probably corrupted.", e);
 		}
@@ -228,25 +230,15 @@ public class SimpleSequence extends AbstractSequence {
      */
     @Override
 	synchronized public void free() {
-        if(!isInitialized()) return;
-        if (synchronizer != null) {
-        	synchronizer.unregisterSequence(this);
-        }
-        super.free();
-    }
-    
-    public synchronized void delete() {
-//        if(!isInitialized()) {
-//            throw new RuntimeException("Can't delete non-initialized sequence "+getId());
-//        }
-        File sequenceFile;
-        free();
-        sequenceFile = new File(filename);
-        if (sequenceFile.exists()) {
-            sequenceFile.delete();
-        }
-    }
-    
+		if (!isInitialized()) {
+			return;
+		}
+		if (synchronizer != null) {
+			synchronizer.unregisterSequence(this);
+		}
+		super.free();
+	}
+
 	public long getNumCachedValues() {
 		return numCachedValues;
 	}
@@ -257,14 +249,6 @@ public class SimpleSequence extends AbstractSequence {
 
 	public void setFilename(String filename) {
 		this.filename = filename;
-	}
-	
-	public SimpleSequenceSynchronizer getSynchronizer() {
-		return synchronizer;
-	}
-	
-	public void setSynchronizer(SimpleSequenceSynchronizer synchronizer) {
-		this.synchronizer = synchronizer;
 	}
 
 	static public SimpleSequence fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException, AttributeNotFoundException {
@@ -301,11 +285,6 @@ public class SimpleSequence extends AbstractSequence {
         
         return status;
     }
-
-	@Override
-	public boolean isShared() {
-		return true;
-	}
 
 	/**
 	 * @return the last number this sequence has currently reserved

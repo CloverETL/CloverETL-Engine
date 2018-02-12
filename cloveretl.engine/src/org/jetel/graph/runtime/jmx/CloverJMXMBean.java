@@ -18,6 +18,8 @@
  */
 package org.jetel.graph.runtime.jmx;
 
+import org.jetel.graph.dictionary.DictionaryValuesContainer;
+
 /**
  * JMX managed bean which is dedicated to provide tracking information about running graph.
  * 
@@ -78,33 +80,35 @@ public interface CloverJMXMBean {
      */
     public static final String NODE_FINISHED = "clover.node.finished";
 
-    
-    /**
-     * (Not implemented)
-     * @return clover engine version in text form
-     */
-    public String getCloverVersion();
-    
     /**
      * @return comprehensive graph tracking information
      */
-    public GraphTracking getGraphTracking();
+    public GraphTracking getGraphTracking(long runId);
 
     /**
      * Event for clients to stop graph processing.
+     * This operation is blocking until the graph is really aborted.
+     * @return true if watchdog was aborted, false if there was no watchdog to abort 
      */
-    public void abortGraphExecution();
+    public boolean abortGraphExecution(long runId);
+
+    /**
+     * Event for clients to stop graph processing.
+     * This abort operation can be synchronous or asynchronous,
+     * based on the only parameter @param waitForAbort.
+     * Method execution with waitForAbort=true is identical with
+     * {@link #abortGraphExecution()}.
+     * Method execution with waitForAbort=false just send a signal,
+     * which tries to abort the graph and the current thread is 
+     * immediately returned.
+     * @return true if watchdog was aborted, false if there was no watchdog to abort
+     */
+    public boolean abortGraphExecution(long runId, boolean waitForAbort);
 
     /**
      * Client should call this method immediately after all tracking information have been received.
      */
-    public void closeServer();
+    public void relaseJob(long runId);
     
-//    Thread[] getCtlThreads();
-//    
-//    StackFrame[] getStackFrames(long threadId);
-//    
-//    void resume(long threadId);
-//    
-//    void resumeAll();
+    public void setApprovedPhaseNumber(long runId, int approvedPhaseNumber, DictionaryValuesContainer mergedDictionary);
 }

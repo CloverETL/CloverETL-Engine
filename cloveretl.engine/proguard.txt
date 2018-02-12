@@ -1,0 +1,526 @@
+-keepattributes *Annotation*,Exceptions,InnerClasses,SourceFile,LineNumberTable,Signature
+-keepclassmembernames class * { java.lang.Class class$(java.lang.String); java.lang.Class class$(java.lang.String, boolean); }
+-keepclassmembernames class * implements org.jetel.graph.IGraphElement { }
+
+-keepclassmembers enum * {
+	public static **[] values();
+	public static ** valueOf(java.lang.String);
+}
+
+-keep public class * extends java.lang.Enum { 
+	public <fields>;
+	public <methods>;
+}
+-keep public class * extends org.jetel.ctl.data.TLTypePrimitive { 
+	public <fields>;
+	public <methods>;
+}
+-keep public class * extends org.jetel.ctl.data.TLType { 
+	public <fields>;
+	public <methods>;
+}
+
+-keep class org.jetel.data.Defaults {
+}
+-keep class org.jetel.plugin.PluginDescriptor {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.plugin.PluginActivator {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.plugin.PluginLocation {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.plugin.Plugins {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.plugin.ExtensionParameter {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.plugin.Extension {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class org.jetel.plugin.PluginClassLoader {
+	public <methods>;
+}
+-keep class org.jetel.graph.Result {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.graph.GraphElement {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.graph.Node {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class org.jetel.graph.EdgeDebuger {
+	public <fields>;
+	public <methods>;
+}
+			
+-keep class org.jetel.graph.runtime.IAuthorityProxy {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class org.jetel.graph.runtime.IAuthorityProxy$RunResult {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.graph.runtime.IThreadManager {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class org.jetel.graph.runtime.GraphRuntimeContext {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class org.jetel.graph.runtime.GraphRuntimeContext$PropertyKey {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.graph.runtime.EngineInitializer {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class org.jetel.graph.runtime.CloverClassPath {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.graph.runtime.CloverWorker {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class org.jetel.graph.runtime.jmx.CloverJMXMBean{ }
+-keep class org.jetel.graph.runtime.jmx.CloverJMX {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.graph.runtime.jmx.*Tracking {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.graph.runtime.jmx.*TrackingDetail {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.graph.runtime.jmx.TrackingUtils {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.graph.runtime.WatchDog {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.graph.runtime.SingleThreadWatchDog {
+	public <fields>;
+	public <methods>;
+}
+			
+-keep class org.jetel.plugin.PluginRepositoryLocation {
+	public <fields>;
+	public <methods>;
+}
+
+-keep class org.jetel.data.* {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.data.PluginableItemDescription {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class org.jetel.data.parser.* {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class org.jetel.data.reader.DriverReader {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.data.reader.InputReader {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.data.reader.SlaveReader {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.data.reader.SlaveReaderDup {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.data.sequence.* {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.data.primitive.* {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.data.formatter.CloverDataFormatter {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.data.formatter.StructureFormatter {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.data.formatter.*Formatter {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.data.formatter.provider.*FormatterProvider {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.data.lookup.Lookup {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class org.jetel.data.lookup.LookupTable {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class org.jetel.data.tape.DataRecordTape {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class org.jetel.data.xsd.ConvertorRegistry {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.data.xsd.IGenericConvertor {
+	public <fields>;
+	public <methods>;
+}
+						
+-keep class org.jetel.exception.BadDataFormatException {
+	public protected <fields>;
+	public protected <methods>;
+}
+-keep class org.jetel.main.runGraph {
+	public <fields>;
+	public <methods>;
+}
+			
+-keep class java.util.* {
+	public <fields>;     
+	public <methods>;
+}
+-keep class org.jetel.graph.* {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.metadata.* {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.exception.* {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.util.* {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.util.primitive.* {
+	public <fields>;
+	public <methods>;
+}
+-keep class org.jetel.util.property.ComponentXMLAttributes {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.property.PropertyRefResolver {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.property.RefResFlag {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.protocols.proxy.* {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.compile.ClassLoaderUtils {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.classloader.GreedyURLClassLoader {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.exec.ProcBox {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.exec.DataConsumer {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.exec.DataProducer {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.exec.PlatformUtils {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.string.Compare {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.string.StringUtils {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.string.StringAproxComparator {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.string.Concatenate {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.string.QuotingDecoder {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.stream.StreamUtils {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.file.FileUtils {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.file.FileURLParser {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.file.WcardPattern {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.formatter.*Formatter* {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.joinKey.AproximativeJoinKey {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.joinKey.JoinKeyUtils {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.joinKey.OrderedKey {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.key.KeyTokenizer {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.key.RecordKeyTokens {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.compile.* {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.bytes.* {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.crypto.Enigma {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.crypto.Base64 {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.crypto.Digest {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.util.crypto.Digest$DigestType {
+	public <fields>;
+    public <methods>;
+}
+			
+-keep class org.jetel.component.RecordTransform {
+	public <fields>;
+    public <methods>;
+}
+
+-keep class org.jetel.enums.PartitionFileTagType {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.enums.OrderEnum {
+	public <fields>;
+    public <methods>;
+}
+			
+-keep class org.jetel.component.* {
+	public protected <fields>;
+    public protected <methods>;
+}
+			
+-keep class org.jetel.graph.dictionary.* {
+	public <fields>;
+    public <methods>;
+}
+			
+-keep class org.jetel.interpreter.ParseException {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.interpreter.TransformLangParser {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.interpreter.* {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.interpreter.data.* {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.interpreter.extensions.* {
+	public protected <fields>;
+    public protected <methods>;
+}
+-keep class org.jetel.interpreter.ASTnode.CLVFStartExpression {
+	public <fields>;
+    public <methods>;
+}
+			
+-keep class org.jetel.ctl.CTLAbstractTransform {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.CTLAbstractTransformAdapter {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.CTLEntryPoint {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.ErrorLocation {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.ErrorMessage {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.ErrorMessageException {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.NavigatingVisitor {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.ITLCompiler {
+	public protected <fields>;
+    public protected <methods>;
+}
+-keep class org.jetel.ctl.TLCompiler {
+	public protected <fields>;
+    public protected <methods>;
+}
+-keep class org.jetel.ctl.TLCompilerFactory {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.TransformLangExecutor {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.TLUtils {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.TransformLangExecutorRuntimeException {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.TransformLangParserVisitor {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.ProblemReporter {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.Stack {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.SyntacticPosition {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.ASTnode.* {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.data.TLType {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.data.TLTypePrimitive {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.extensions.* {
+	public protected <fields>;
+    public protected <methods>;
+}
+
+-keep class org.jetel.ctl.debug.DebugJMXMBean { }
+-keep class org.jetel.ctl.debug.DebugJMX {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.debug.Breakpoint {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.debug.DebugStatus {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.debug.StackFrame {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.ctl.debug.Thread {
+	public <fields>;
+    public <methods>;
+}
+			
+-keep class org.jetel.database.IConnection {
+	public <fields>;
+    public <methods>;
+}
+-keep class org.jetel.database.dbf.DBFDataParser {
+	public <fields>;
+    public <methods>;
+}

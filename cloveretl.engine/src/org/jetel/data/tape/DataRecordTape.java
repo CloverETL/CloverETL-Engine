@@ -18,6 +18,7 @@
  */
 package org.jetel.data.tape;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -64,7 +65,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * @since  20.1.2005
  *
  */
-public class DataRecordTape {
+public class DataRecordTape implements Closeable {
 
     private RandomAccessFile tmpRandomAccessFile;
     private FileChannel tmpFileChannel;
@@ -181,7 +182,8 @@ public class DataRecordTape {
 	 * @throws InterruptedException 
 	 *@since                   September 17, 2002
 	 */
-	public void close() throws IOException, InterruptedException {
+	@Override
+	public void close() throws IOException {
         if(deleteOnExit) {
             clear();
             closeTmpFile();

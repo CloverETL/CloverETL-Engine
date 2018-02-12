@@ -179,6 +179,7 @@ profiler.gui/.metadata/.plugins/org.eclipse.jdt.core/3968077481.index	filter=lfs
 profiler.server/dist/jersey-archive-1.16.zip	filter=lfs diff=lfs merge=lfs -text
 profiler.test.scenarios/data/climate	filter=lfs diff=lfs merge=lfs -text
 profiler.test.scenarios/data/national	filter=lfs diff=lfs merge=lfs -text
+cloveretl.engine/lib.src/commons-io-2.2-src.zip filter=lfs diff=lfs merge=lfs -text
 cloveretl.server/lib.src/jsf-api-2.2.15-sources.jar filter=lfs diff=lfs merge=lfs -text
 cloveretl.server/lib.src/jsf-impl-2.2.15-sources.jar filter=lfs diff=lfs merge=lfs -text
 cloveretl.server/web/WEB-INF/lib/jsf-api-2.2.15.jar filter=lfs diff=lfs merge=lfs -text

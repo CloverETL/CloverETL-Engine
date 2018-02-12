@@ -47,7 +47,6 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.Filter;
 import org.apache.log4j.spi.LoggingEvent;
-import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
@@ -67,6 +66,7 @@ import org.jetel.graph.runtime.jmx.TrackingEvent;
 import org.jetel.main.runGraph;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.FileConstrains;
+import org.jetel.util.LogUtils;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.file.FileUtils;
@@ -83,7 +83,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	 * Auto-incremented number, which is used in {@link #getUniqueRunId()}
 	 * for generating unique run IDs. 
 	 */
-	private static long runIdSequence = 1;
+	private static long runIdSequence = -1;
 
 	/**
 	 * Suffix of temp files created by standalone engine
@@ -92,24 +92,6 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 	public PrimitiveAuthorityProxy(){
 		super();
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSharedSequence(org.jetel.data.sequence.Sequence)
-	 */
-	@Override
-	public Sequence getSharedSequence(Sequence sequence) {
-		return sequence;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#freeSharedSequence(org.jetel.data.sequence.Sequence)
-	 */
-	@Override
-	public void freeSharedSequence(Sequence sequence) {
-		sequence.free();
 	}
 	
 	protected GraphRuntimeContext prepareRuntimeContext(GraphRuntimeContext givenRuntimeContext, long runId) {
@@ -191,7 +173,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
     		rr.endTime = new Date(System.currentTimeMillis());
         	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
             rr.dictionaryOut = DictionaryValuesContainer.getInstance(graph.getDictionary());
-            rr.tracking = graph.getWatchDog().getCloverJmx().getGraphTracking();
+            rr.tracking = graph.getWatchDog().getGraphTracking();
             rr.status = result;
     		rr.errMessage = graph.getWatchDog().getErrorMessage();            
         	rr.errException = ExceptionUtils.stackTraceToString(graph.getWatchDog().getCauseException());
@@ -207,13 +189,13 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 	/**
 	 * Implementation taken from original RunGraph component created by Juraj Vicenik.
+	 * @throws InterruptedException 
 	 * 
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#executeGraph(long, java.lang.String)
 	 */
 	@Override
-	public RunStatus executeGraphSync(String graphFileName, GraphRuntimeContext givenRuntimeContext, Long timeout) {
+	public RunStatus executeGraphSync(String graphFileName, GraphRuntimeContext givenRuntimeContext, Long timeout) throws InterruptedException {
 		RunStatus rr = new RunStatus();
-        long runId = (this.runtimeContext == null) ? 0:this.runtimeContext.getRunId();
         
 		InputStream in = null;		
 
@@ -261,7 +243,6 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	public RunStatus executeGraphSync(TransformationGraph graph, GraphRuntimeContext givenRuntimeContext, Long timeout)
 			throws InterruptedException {
 		RunStatus rr = new RunStatus();
-        long runId = (this.runtimeContext == null) ? 0:this.runtimeContext.getRunId();
         
 		long startTime = System.currentTimeMillis();
 		rr.startTime = new Date(startTime);
@@ -272,10 +253,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 
 	/**
+	 * Negative number are used to avoid conflicts with user-specified runIds.
 	 * @return unique long number, which can be used as run ID of newly executed graphs
 	 */
 	public static synchronized long getUniqueRunId() {
-		return runIdSequence++;
+		return runIdSequence--;
 	}
 	
 	/**
@@ -321,7 +303,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 		@Override
 		public int decide(LoggingEvent event) {
-			Object oRunId = event.getMDC("runId");
+			Object oRunId = event.getMDC(LogUtils.MDC_RUNID_KEY);
 			if (!(oRunId instanceof Long))
 				return Filter.DENY;
 			Long rId = (Long)oRunId;
@@ -385,23 +367,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 
 	@Override
-	public FileConstrains assignFilePortion(String componentId, String fileURL,
-			SeekableByteChannel channel, int recordLength) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#assignFilePortion(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public FileConstrains assignFilePortion(String componentId, String fileURL, SeekableByteChannel channel, byte[] recordDelimiter) throws IOException {
-		return null;
-	}
-
-
-	@Override
-	public RunStatus getRunStatus(long runId, List<TrackingEvent> trackingEvents, Long timeout) {
+	public RunStatus getRunStatus(long runId, List<TrackingEvent> trackingEvents, Long timeout) throws InterruptedException {
 		throw new UnsupportedOperationException("Graph execution status is available only in CloverETL Server environment!");
 	}
 
@@ -416,11 +382,6 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 
 	@Override
-	public List<RunStatus> killChildrenJobs(boolean recursive) {
-		throw new UnsupportedOperationException("Graph abortation is available only in CloverETL Server environment!");
-	}
-
-	@Override
 	public RunStatus executeGraph(String graphUrl, GraphRuntimeContext runtimeContext) {
 		throw new UnsupportedOperationException("Subgraph execution is available only in CloverETL Server environment!");
 	}
@@ -428,6 +389,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	@Override
 	public ConfigurationStatus checkConfig(String graphUrl, GraphRuntimeContext runtimeContext) {
 		throw new UnsupportedOperationException("Subgraph configuration check is available only in CloverETL Server environment!");
+	}
+	
+	@Override
+	public File newTempFile(String label, String suffix, int allocationHint, long runId) throws TempFileCreationException {
+		return newTempFile(label, suffix, allocationHint);
 	}
 	
 	@Override
@@ -440,6 +406,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		} catch (IOException e) {
 			throw new TempFileCreationException(e, label, allocationHint, null);
 		}
+	}
+	
+	@Override
+	public File newTempDir(String label, int allocationHint, long runId) throws TempFileCreationException {
+		return newTempDir(label, allocationHint);
 	}
 
 	@Override
@@ -516,11 +487,6 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		return new MultiParentClassLoader(parents);
 	}
 	
-	@Override
-	public boolean isClusterEnabled() {
-		return false;
-	}
-
 	@Override
 	public boolean isPartitioningEnabled() {
 		return false;

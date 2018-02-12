@@ -47,6 +47,8 @@ public class GraphTrackingDetail implements GraphTracking {
 	private long endTime = -1;
 
     private Result result;
+    
+    private GraphErrorDetail graphError;
 
     private String nodeId;
     
@@ -172,6 +174,11 @@ public class GraphTrackingDetail implements GraphTracking {
 	public Result getResult() {
 		return result;
 	}
+	
+	@Override
+	public GraphError getGraphError() {
+		return graphError;
+	}
 
 	@Override
 	public String getNodeId() {
@@ -229,7 +236,7 @@ public class GraphTrackingDetail implements GraphTracking {
 	}
 
 	//******************* EVENTS ********************/
-	void graphStarted() {
+	public void graphStarted() {
 		startTime = System.currentTimeMillis();
 		
 		result = Result.RUNNING;
@@ -237,33 +244,34 @@ public class GraphTrackingDetail implements GraphTracking {
 	}
 
 
-	void phaseStarted(Phase phase) {
+	public void phaseStarted(Phase phase) {
 		setRunningPhaseDetail(getPhaseDetail(phase.getPhaseNum()));
 		
 		runningPhaseDetail.phaseStarted();
 	}
 
-	void gatherTrackingDetails() {
+	public void gatherTrackingDetails() {
 		if (runningPhaseDetail != null)
 			runningPhaseDetail.gatherTrackingDetails();
 	}
 
-	void phaseFinished() {
+	public void phaseFinished() {
 		gatherTrackingDetails();
 		runningPhaseDetail.phaseFinished();
 		
 		lastPhaseResult = runningPhaseDetail.getResult();
 	}
 
-	void graphFinished() {
-		if (lastPhaseResult != null) {
-			result = lastPhaseResult;
-		} else {
-			//for empty graphs
+	public void graphFinished() {
+		if (!result.isStop()) {
+			endTime = System.currentTimeMillis();
 			result = graph.getWatchDog().getStatus();
+			
+			//populate graph error
+			graphError = GraphErrorDetail.createInstance(graph.getWatchDog());
+			
+			runningPhaseDetail = null;
 		}
-		
-		endTime = System.currentTimeMillis();
 	}
 
 }

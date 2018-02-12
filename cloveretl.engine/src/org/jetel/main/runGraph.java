@@ -142,7 +142,6 @@ public class runGraph {
     public final static String DEBUG_DIRECTORY_SWITCH = "-debugdirectory";
     public final static String CONTEXT_URL_SWITCH = "-contexturl";
     //private command line options
-    public final static String WAIT_FOR_JMX_CLIENT_SWITCH = "-waitForJMXClient";
     public final static String MBEAN_NAME = "-mbean";
     public final static String DICTIONARY_VALUE_DEFINITION_SWITCH = "-V:";
     public final static String CLOVER_CLASS_PATH = "-classpath";
@@ -169,7 +168,6 @@ public class runGraph {
         Properties additionalProperties = new Properties();
         int trackingInterval = 0;
         String password = null;
-        boolean waitForJMXClient = GraphRuntimeContext.DEFAULT_WAIT_FOR_JMX_CLIENT;
         boolean useJMX = GraphRuntimeContext.DEFAULT_USE_JMX;
         boolean edgeDebugging = GraphRuntimeContext.DEFAULT_EDGE_DEBUGGING;
         boolean tokenTracking = GraphRuntimeContext.DEFAULT_TOKEN_TRACKING;
@@ -258,8 +256,6 @@ public class runGraph {
                 logHost = args[i];
             } else if (args[i].startsWith(SKIP_CHECK_CONFIG_SWITCH)) {
                 skipCheckConfig = true;
-            } else if (args[i].startsWith(WAIT_FOR_JMX_CLIENT_SWITCH)) {
-                waitForJMXClient = true;
             } else if (args[i].startsWith(MBEAN_NAME)){
                 i++;
                 //TODO
@@ -351,7 +347,6 @@ public class runGraph {
         runtimeContext.addAdditionalProperties(additionalProperties);
         if (trackingInterval > 0) runtimeContext.setTrackingInterval(trackingInterval);
         runtimeContext.setPassword(password);
-        runtimeContext.setWaitForJMXClient(waitForJMXClient);
         runtimeContext.setSkipCheckConfig(skipCheckConfig);
         runtimeContext.setUseJMX(useJMX);
         runtimeContext.setTokenTracking(tokenTracking);
@@ -565,9 +560,8 @@ public class runGraph {
 	private static MessageFormat RUNTIME_HEADER_3 = new MessageFormat(
 			"Running on {0} CPU(s)" +
     		", OS {1}" +
-    		", architecture {2}" + 
-    		", max available memory for JVM {3} KB");
-	private static MessageFormat RUNTIME_HEADER_4 = new MessageFormat("Running on {0}, {1}, {2} ({3})");
+    		", architecture {2}");
+	private static MessageFormat RUNTIME_HEADER_4 = new MessageFormat("Running on {0}, {1}, {2} ({3}), max available memory for JVM {4} KB");
 	
 	public static void printRuntimeHeader() {
         logger.info(RUNTIME_HEADER_1.format(new Object[] {JetelVersion.LIBRARY_BUILD_YEAR}));
@@ -575,17 +569,20 @@ public class runGraph {
         logger.info(RUNTIME_HEADER_3.format(new Object[] {
         		Runtime.getRuntime().availableProcessors(),
         		System.getProperty("os.name"),
-        		System.getProperty("os.arch"),
-        		Runtime.getRuntime().maxMemory() / 1024
+        		System.getProperty("os.arch")
         }));
+	}
+
+	public static void printJvmInfo() {
         logger.info(RUNTIME_HEADER_4.format(new Object[] {
         		System.getProperty("java.runtime.name"),
         		System.getProperty("java.version"),
         		System.getProperty("java.vendor"),
-        		isCompilerAvailable() ? "JDK" : "JRE - runtime compilation is not available!"
+        		(isCompilerAvailable() ? "JDK" : "JRE - runtime compilation is not available!"),
+        		Runtime.getRuntime().maxMemory() / 1024
         }));
 	}
-	
+
 	/**
 	 * @return true if JDK with valid java compiler is detected, false for simple JRE
 	 */

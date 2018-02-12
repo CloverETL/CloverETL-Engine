@@ -33,5 +33,7 @@ import org.jetel.graph.Result;
 public interface WatchDogFuture extends FutureOfCallable<WatchDog, Result> {
 
 	public WatchDog getWatchDog();
+
+	public void addJobListener(JobListener jobListener);
 	
 }

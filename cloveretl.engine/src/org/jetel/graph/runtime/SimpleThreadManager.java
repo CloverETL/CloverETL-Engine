@@ -18,6 +18,8 @@
  */
 package org.jetel.graph.runtime;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
@@ -154,6 +156,8 @@ public class SimpleThreadManager implements IThreadManager {
 	}
 
 	private class WatchDogFutureImpl extends FutureOfCallableImpl<WatchDog, Result> implements WatchDogFuture {
+		private List<JobListener> jobListeners = new ArrayList<>();
+		
 		public WatchDogFutureImpl(WatchDog watchDog) {
 			super(watchDog);
 		}
@@ -161,6 +165,18 @@ public class SimpleThreadManager implements IThreadManager {
 		@Override
 		public WatchDog getWatchDog() {
 			return getCallable();
+		}
+		
+		@Override
+		public void addJobListener(JobListener jobListener) {
+			jobListeners.add(jobListener);
+		}
+		
+		@Override
+		protected void done() {
+			for (JobListener jobListener : jobListeners) {
+				jobListener.jobFinished(getWatchDog());
+			}
 		}
 	}
 	

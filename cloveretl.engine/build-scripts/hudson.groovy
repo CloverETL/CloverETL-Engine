@@ -56,6 +56,11 @@ def jobIdent = generateJobIdent(testName ? testName : jobGoal)
 new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 new File(baseD, "cloveretl.examples/ExtExamples/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 
+def JMSPort = generateJMSPort()
+new File(baseD, "cloveretl.test.scenarios/JMSPort.prm").write("JMS_PORT=" + JMSPort)
+new File(baseD, "cloveretl.examples/ExtExamples/JMSPort.prm").write("JMS_PORT=" + JMSPort)
+println "JMS port is ${JMSPort}"
+
 def startTime = new Date();
 println "======================= " + startTime
 println "====================================================="
@@ -114,7 +119,7 @@ if( !runTests ){
 		antArgs += "-Dtest.include=org/jetel/graph/ResetTest.java"
 		antArgs += "-Druntests.engine.Xmx=-Xmx3072m"
 		antArgs += "-Dadditional.jvmargs=-Djavax.net.ssl.trustStore=${trustStoreF}"
-		//antArgs += "-Dadditional.jvmargs=-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=33333 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=172.22.2.28"
+		//antArgs += "-Dadditional.jvmargs=-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=33333 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=172.22.2.11"
 	} else {
 		println "ERROR: Unknown goal '${jobGoal}'"
 		exit 1
@@ -293,4 +298,8 @@ String generateJobIdent(String name) {
 		jobIdent = name.take(3)
 	}
 	return jobIdent + String.format('%05d', Math.abs(new Random().nextInt(100000)))
+}
+
+String generateJMSPort() {
+	return String.format('%05d', 60000 + Math.abs(new Random().nextInt(5535)))
 }

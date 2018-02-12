@@ -16,38 +16,41 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.exception;
+package org.jetel.graph.runtime.jmx;
 
-import org.jetel.logger.SafeLogUtils;
+import javax.management.Notification;
+import javax.management.NotificationFilter;
+
+import org.jetel.graph.runtime.JMXNotificationMessage;
 
 /**
- * This is exception derived from an existing exception. The new exception
- * should has similar as possible characteristics as the former exception.
- * Only error messages of complete exception chain are obfuscated
- * using {@link SafeLogUtils#obfuscateSensitiveInformation(String)}.
+ * JMX notification filter which allows only notifications with user data
+ * containing instance of {@link JMXNotificationMessage} with specified runId.
  * 
- * @author Kokon (info@cloveretl.com)
+ * @author martin (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 5.6.2013
+ * @created 21. 12. 2017
  */
-public class ObfuscatingException extends SerializableException {
+public class RunIdNotificationFilter implements NotificationFilter {
 
-	private static final long serialVersionUID = -5439348107967100144L;
-
-	public ObfuscatingException(Throwable e) {
-		super(e);
-	}
-
-	@Override
-	protected ObfuscatingException wrapException(Throwable e) {
-		return new ObfuscatingException(e);
+	private static final long serialVersionUID = -7787802499929544438L;
+	
+	private long runId;
+	
+	public RunIdNotificationFilter(long runId) {
+		this.runId = runId;
 	}
 	
 	@Override
-	protected String extractMessage(Throwable e) {
-		String message = super.extractMessage(e);
-		return SafeLogUtils.obfuscateSensitiveInformation(message);
+	public boolean isNotificationEnabled(Notification notification) {
+		Object userData = notification.getUserData();
+		if (userData instanceof JMXNotificationMessage) {
+			JMXNotificationMessage message = (JMXNotificationMessage) userData;
+			return runId == message.getRunId();
+		} else {
+			return false;
+		}
 	}
 	
 }

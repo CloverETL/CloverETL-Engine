@@ -61,6 +61,12 @@ public interface HttpContext {
 	List<String> getRequestParameters(String name);
 	
 	/**
+	 * Answers complete list of parameters and values 
+	 * Used for Worker cache
+	 */
+	Map<String, List<String>> getAllRequestParametersList();	
+	
+	/**
 	 * Answers parameters as a map. For multi-value parameters, first value is returned.
 	 * @return
 	 */
@@ -203,4 +209,5 @@ public interface HttpContext {
 	 * @throws IOException
 	 */
 	OutputStream getResponseOutputStream() throws IOException;
+	
 }

@@ -18,6 +18,8 @@
  */
 package org.jetel.graph.runtime;
 
+import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,13 +34,17 @@ import org.apache.log4j.Level;
 import org.jetel.component.MetadataProvider;
 import org.jetel.ctl.debug.Breakpoint;
 import org.jetel.data.Defaults;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Common used implementation of IGraphRuntimeContext interface.
@@ -48,10 +54,11 @@ import org.jetel.util.string.StringUtils;
  *
  * @created 27.11.2007
  */
-public class GraphRuntimeContext {
+public class GraphRuntimeContext implements Serializable {
 
+	private static final long serialVersionUID = 2613877772912214702L;
+	
 	public static final boolean DEFAULT_VERBOSE_MODE = false;
-	public static final boolean DEFAULT_WAIT_FOR_JMX_CLIENT = false;
 	public static final boolean DEFAULT_USE_JMX = true;
 	public static final boolean DEFAULT_EDGE_DEBUGGING = true;
 	public static final boolean DEFAULT_SKIP_CHECK_CONFIG = false;
@@ -72,7 +79,6 @@ public class GraphRuntimeContext {
 	private int trackingInterval;
 //	private int trackingFlushInterval;
 	private boolean useJMX;
-	private boolean waitForJMXClient;
 	private boolean verboseMode;
 	private Properties additionalProperties;
 	private boolean skipCheckConfig;
@@ -86,6 +92,18 @@ public class GraphRuntimeContext {
 	private volatile boolean ctlBreakpointsEnabled = true;
 	private volatile boolean suspendThreads = false;
 	private final Set<Breakpoint> ctlBreakpoints = new CopyOnWriteArraySet<>();
+	
+	/**
+	 * Whether the execution must happen on worker in multi-jvm environment.
+	 */
+	private Boolean workerExecution;
+	
+	/**
+	 * Whether the execution must happen on the same JVM as parent execution.
+	 * Only valid for non-root executions.
+	 */
+	private boolean forceParentJvm;
+	
 	/**
 	 * Default multi-thread execution is managed by {@link WatchDog}.
 	 * Single thread execution is managed by {@link SingleThreadWatchDog}. 
@@ -105,16 +123,25 @@ public class GraphRuntimeContext {
 	private boolean transactionMode;
 	private boolean batchMode;
 	private boolean embeddedRun;
-	private URL contextURL;
+	@SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
+	private transient URL contextURL;
+	/**
+	 * This string representation of contextURL is necessary to keep GraphRuntimeContext
+	 * serializable, since contextURL is URL with sandbox protocol, which is not possible to deserialize,
+	 * because the respective URL handler (SandboxStreamHandler) cannot be correctly registered.
+	 */
+	private String contextURLString; 
 	private DictionaryValuesContainer dictionaryContent;
 	/** Hint for the server environment where to execute the graph */
 	private String clusterNodeId;
-	private ClassLoader classLoader;
+	private transient ClassLoader classLoader;
 	private JobType jobType;
 	private String jobUrl;
 	/** Only for subgraphs - component id, where this subgraph has been executed. */
 	private String parentSubgraphComponentId;
-	private IAuthorityProxy authorityProxy;
+	@SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
+	private transient IAuthorityProxy authorityProxy;
+	@SuppressFBWarnings("SE_BAD_FIELD")
 	private MetadataProvider metadataProvider;
 	/** Should executor check required graph parameters? */
 	private boolean validateRequiredParameters;
@@ -160,7 +187,6 @@ public class GraphRuntimeContext {
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
 		useJMX = DEFAULT_USE_JMX;
-		waitForJMXClient = DEFAULT_WAIT_FOR_JMX_CLIENT;
 		verboseMode = DEFAULT_VERBOSE_MODE;
 		additionalProperties = new Properties();
 		skipCheckConfig = DEFAULT_SKIP_CHECK_CONFIG;
@@ -175,7 +201,6 @@ public class GraphRuntimeContext {
 		dictionaryContent = new DictionaryValuesContainer();
 		clusterNodeId = null;
 		jobType = JobType.DEFAULT;
-		setAuthorityProxy(AuthorityProxyFactory.createDefaultAuthorityProxy());
 		locale = null;
 		timeZone = null;
 		validateRequiredParameters = DEFAULT_VALIDATE_REQUIRED_PARAMETERS;
@@ -185,6 +210,8 @@ public class GraphRuntimeContext {
 		strictGraphFactorization = true;
 		classLoaderCaching = false;
 		calculateNoMetadata = false;
+		workerExecution = null;
+		forceParentJvm = false;
 	}
 	
 	/* (non-Javadoc)
@@ -201,8 +228,9 @@ public class GraphRuntimeContext {
 		ret.trackingInterval = getTrackingInterval();
 		ret.skipCheckConfig = isSkipCheckConfig();
 		ret.verboseMode = isVerboseMode();
+		ret.workerExecution = isWorkerExecution();
+		ret.forceParentJvm = isForceParentJvm();
 		ret.useJMX = useJMX();
-		ret.waitForJMXClient = isWaitForJMXClient();
 		ret.password = getPassword();
 		ret.edgeDebugging = isEdgeDebugging();
 		ret.debugDirectory = getDebugDirectory();
@@ -211,7 +239,8 @@ public class GraphRuntimeContext {
 		ret.synchronizedRun = isSynchronizedRun();
 		ret.transactionMode = isTransactionMode();
 		ret.batchMode = isBatchMode();
-		ret.contextURL = getContextURL();
+		ret.contextURL = this.contextURL;
+		ret.contextURLString = this.contextURLString;
 		ret.dictionaryContent = DictionaryValuesContainer.duplicate(getDictionaryContent());
 		ret.executionGroup = getExecutionGroup();
 		ret.executionLabel = getExecutionLabel();
@@ -221,7 +250,7 @@ public class GraphRuntimeContext {
 		ret.jobType = getJobType();
 		ret.jobUrl = getJobUrl();
 		ret.parentSubgraphComponentId = getParentSubgraphComponentId();
-		ret.authorityProxy = getAuthorityProxy();
+		ret.setAuthorityProxy(getAuthorityProxy());
 		ret.executionType = getExecutionType();
 		ret.metadataProvider = getMetadataProvider();
 		ret.validateRequiredParameters = isValidateRequiredParameters();
@@ -248,8 +277,9 @@ public class GraphRuntimeContext {
 		prop.setProperty("trackingInterval", Integer.toString(getTrackingInterval()));
 		prop.setProperty(PropertyKey.SKIP_CHECK_CONFIG.getKey(), Boolean.toString(isSkipCheckConfig()));
 		prop.setProperty("verboseMode", Boolean.toString(isVerboseMode()));
+		prop.setProperty("workerExecution", String.valueOf(isWorkerExecution()));
+		prop.setProperty("forceParentJvm", Boolean.toString(isForceParentJvm()));
 		prop.setProperty("useJMX", Boolean.toString(useJMX()));
-		prop.setProperty("waitForJMXClient", Boolean.toString(isWaitForJMXClient()));
 		prop.setProperty("password", String.valueOf(getPassword()));
 		prop.setProperty("edgeDebugging", Boolean.toString(isEdgeDebugging()));
 		prop.setProperty("debugDirectory", String.valueOf(getDebugDirectory()));
@@ -359,21 +389,6 @@ public class GraphRuntimeContext {
     }
 
     /**
-     * @return whether watchdog should wait for a JMX client; it is necessary for short running graphs
-     */
-    public boolean isWaitForJMXClient() {
-    	return waitForJMXClient;
-    }
-    
-    /**
-     * Sets whether watchdog should wait for a JMX client. It is necessary for short running graphs.
-     * @param waitForJMXClient
-     */
-    public void setWaitForJMXClient(boolean waitForJMXClient) {
-    	this.waitForJMXClient = waitForJMXClient;
-    }
-    
-    /**
      * Sets whether should be checked graph configuration. (TransformationGraph.checkConfig())
      * @param checkConfig
      */
@@ -401,6 +416,30 @@ public class GraphRuntimeContext {
 	 */
 	public boolean isVerboseMode() {
 		return verboseMode;
+	}
+	
+	/**
+	 * Sets whether graph should run on a worker.
+	 * @param workerExecution
+	 */
+	public void setWorkerExecution(Boolean workerExecution) {
+		this.workerExecution = workerExecution;
+	}
+	
+	public Boolean isWorkerExecution() {
+		return workerExecution;
+	}
+
+	public boolean isForceParentJvm() {
+		return forceParentJvm;
+	}
+
+	/**
+	 * Sets whether graph must run on the same jvm as parent graph.
+	 * @param parentJvm
+	 */
+	public void setForceParentJvm(boolean parentJvm) {
+		this.forceParentJvm = parentJvm;
 	}
 
 	/**
@@ -616,11 +655,27 @@ public class GraphRuntimeContext {
 	}
 
     public URL getContextURL() {
-        return contextURL;
+    	if (contextURL != null) {
+    		return contextURL;
+    	} else if (contextURLString != null) {
+    		try {
+				contextURL = FileUtils.getFileURL(contextURLString);
+			} catch (MalformedURLException e) {
+				throw new JetelRuntimeException(e);
+			}
+    		return contextURL;
+    	} else {
+    		return null;
+    	}
     }
 
     public void setContextURL(URL contextURL) {
     	this.contextURL = contextURL;
+    	this.contextURLString = contextURL != null ? contextURL.toString() : null;
+    }
+
+    public void setContextURL(String contextURLString) {
+    	this.contextURLString = contextURLString;
     }
 
 	/**
@@ -807,7 +862,10 @@ public class GraphRuntimeContext {
 	/**
 	 * @return authority proxy associated with this run
 	 */
-	public IAuthorityProxy getAuthorityProxy() {
+	public synchronized IAuthorityProxy getAuthorityProxy() {
+		if (authorityProxy == null) {
+			authorityProxy = AuthorityProxyFactory.createDefaultAuthorityProxy();
+		}
 		return authorityProxy;
 	}
 	
@@ -815,9 +873,11 @@ public class GraphRuntimeContext {
 	 * Sets authority proxy with this run.
 	 * @param authorityProxy
 	 */
-	public void setAuthorityProxy(IAuthorityProxy authorityProxy) {
+	public synchronized void setAuthorityProxy(IAuthorityProxy authorityProxy) {
 		this.authorityProxy = authorityProxy;
-		authorityProxy.setGraphRuntimeContext(this);
+		if (authorityProxy != null) {
+			authorityProxy.setGraphRuntimeContext(this);
+		}
 	}
 
 	/**
@@ -1105,6 +1165,13 @@ public class GraphRuntimeContext {
 			@Override
 			public Object parseValue(String s) {
 				return Boolean.parseBoolean(s);
+			}
+		},
+		WORKER_EXECUTION("workerExecution", Boolean.class) {
+			
+			@Override
+			public Object parseValue(String s) {
+				return parseBoolean(s);
 			}
 		};
 		

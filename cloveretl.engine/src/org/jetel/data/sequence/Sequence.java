@@ -97,10 +97,4 @@ public interface Sequence extends IGraphElement {
     @Override
 	public abstract void free();
 
-    /**
-     * Is this sequence shared via an authority (i.e. server).
-     * Returns true if the sequence doesn't have its lifetime bound to the graph instance. 
-     */
-    public boolean isShared();
-
 }

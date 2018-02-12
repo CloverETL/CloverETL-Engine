@@ -27,10 +27,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
 import org.apache.log4j.net.SocketAppender;
 import org.jetel.component.fileoperation.FileManager;
+import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.jmx.CloverJMX;
 import org.jetel.main.runGraph;
 import org.jetel.plugin.PluginLocation;
 import org.jetel.plugin.PluginRepositoryLocation;
@@ -68,7 +70,7 @@ public class EngineInitializer {
     	}
     	
     	//shared part of initialiation
-    	internalInit(defaultPropertiesFile, logHost);
+    	internalInit(null, defaultPropertiesFile, logHost);
 	
         //init clover plugins system
         Plugins.init(pluginsRootDirectory);
@@ -91,7 +93,7 @@ public class EngineInitializer {
     	}
     	
 		//shared part of initialiation
-    	internalInit(defaultPropertiesFile, logHost);
+    	internalInit(null, defaultPropertiesFile, logHost);
     	
         //init clover plugins system
     	List<PluginLocation> pluginLocations = new ArrayList<PluginLocation>();
@@ -110,7 +112,7 @@ public class EngineInitializer {
         }
         
         //shared part of initialiation
-        internalInit(defaultPropertiesFile, logHost);
+        internalInit(defaultPropertiesFile, null, logHost);
 
         //init clover plugins system
         List<PluginLocation> pluginLocations = new ArrayList<PluginLocation>();
@@ -137,7 +139,7 @@ public class EngineInitializer {
     	}
 
     	//shared part of initialiation
-    	internalInit(defaultPropertiesFile, logHost);
+    	internalInit(null, defaultPropertiesFile, logHost);
     	
         //init clover plugins system
         Plugins.init(pluginRepositories);
@@ -163,7 +165,7 @@ public class EngineInitializer {
     	}
 
     	//shared part of initialiation
-    	internalInit(defaultPropertiesFile, logHost);
+    	internalInit(null, defaultPropertiesFile, logHost);
     	
         //init clover plugins system
         Plugins.init(pluginLocs);
@@ -171,21 +173,7 @@ public class EngineInitializer {
     	alreadyInitialized = true;
     }
     
-    private static void internalInit(String defaultPropertiesFile, String logHost) {
-    	//init logging
-    	initLogging(logHost);
-
-        // print out the basic environment information to log4j interface - has to be after log4j initialization - issue #1911
-        runGraph.printRuntimeHeader();
-
-        //init framework constants
-        Defaults.init(defaultPropertiesFile);
-
-        //file manager initialisation
-        FileManager.init();
-    }
-    
-    private static void internalInit(URL defaultPropertiesFile, String logHost) {
+    private static void internalInit(URL urlDefaultPropertiesFile, String sDefaultPropertiesFile, String logHost) {
         //init logging
         initLogging(logHost);
 
@@ -193,10 +181,20 @@ public class EngineInitializer {
         runGraph.printRuntimeHeader();
 
         //init framework constants
-        Defaults.init(defaultPropertiesFile);
+        if (urlDefaultPropertiesFile != null) {
+        	Defaults.init(urlDefaultPropertiesFile);
+        } else {
+        	Defaults.init(sDefaultPropertiesFile);
+        }
 
         //file manager initialisation
         FileManager.init();
+
+		// create and register CloverJMX mbean for graph tracking
+		CloverJMX.registerMBean();
+
+		// create and register DebugJMX mbean for CTL debugging
+		DebugJMX.registerMBean();
     }
     
     /**

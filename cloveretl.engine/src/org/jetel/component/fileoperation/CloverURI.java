@@ -21,6 +21,7 @@ package org.jetel.component.fileoperation;
 import static java.text.MessageFormat.format;
 
 import java.io.File;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
@@ -32,10 +33,10 @@ import org.jetel.data.Defaults;
  * The FileManager and related classes
  * are considered internal and may change in the future.
  */
-public abstract class CloverURI {
+public abstract class CloverURI implements Serializable {
 	
-	public static final String SEPARATOR = Defaults.DEFAULT_PATH_SEPARATOR_REGEX;
-	
+	private static final long serialVersionUID = -6835691054654957465L;
+
 	public static final String PATH_SEPARATOR = "/"; //$NON-NLS-1$
 	
 	private static final Pattern BACKSLASH_PATTERN = Pattern.compile("\\\\"); //$NON-NLS-1$
@@ -97,8 +98,9 @@ public abstract class CloverURI {
 		}
 		CloverURI result = null;
 		uriString = preprocess(uriString);
-		if (uriString.contains(SEPARATOR)) {
-			String[] uris = uriString.split(SEPARATOR);
+		String separator = getSeparator();
+		if (uriString.contains(separator)) {
+			String[] uris = uriString.split(separator);
 			for (int i = 0; i < uris.length; i++) {
 				uris[i] = fileToUri(uris[i]);
 			}
@@ -142,7 +144,7 @@ public abstract class CloverURI {
 	}
 	
 	public static SingleCloverURI createSingleURI(URI context, String uri) {
-		if (uri.contains(SEPARATOR)) {
+		if (uri.contains(getSeparator())) {
 			throw new IllegalArgumentException(FileOperationMessages.getString("CloverURI.not_a_single_URI")); //$NON-NLS-1$
 		}
 		uri = fileToUri(preprocess(uri));
@@ -179,6 +181,10 @@ public abstract class CloverURI {
 			result = context + SLASH + spec;
 		}
 		return result;
+	}
+	
+	public static String getSeparator() {
+		return Defaults.DEFAULT_PATH_SEPARATOR_REGEX;
 	}
 
 	public abstract CloverURI getAbsoluteURI();

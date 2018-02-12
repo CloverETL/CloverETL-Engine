@@ -37,31 +37,31 @@ public interface DebugJMXMBean {
     public static final String THREAD_STOPPED = "clover.thread.stopped";
     public static final String BP_CONDITION_ERROR = "clover.bp_condition.error";
 	
-    Thread[] listCtlThreads();
+    Thread[] listCtlThreads(long runId);
     
-    StackFrame[] getStackFrames(long threadId);
+    StackFrame[] getStackFrames(long runId, long threadId);
     
-    void resume(long threadId);
+    void resume(long runId, long threadId);
     
-    void resumeAll();
+    void resumeAll(long runId);
 
-    void suspend(long threadId);
+    void suspend(long runId, long threadId);
 
-    void suspendAll();
+    void suspendAll(long runId);
 
-    void addBreakpoints(List<Breakpoint> breakpoints);
+    void addBreakpoints(long runId, List<Breakpoint> breakpoints);
     
-    void removeBreakpoints(List<Breakpoint> breakpoints);
+    void removeBreakpoints(long runId, List<Breakpoint> breakpoints);
     
-    void modifyBreakpoint(Breakpoint breakpoint);
+    void modifyBreakpoint(long runId, Breakpoint breakpoint);
 
-    void setCtlBreakingEnabled(boolean enabled);
+    void setCtlBreakingEnabled(long runId, boolean enabled);
     
-    void stepThread(long threadId, CommandType stepType);
+    void stepThread(long runId, long threadId, CommandType stepType);
     
-    void runToLine(long threadId, RunToMark mark);
+    void runToLine(long runId, long threadId, RunToMark mark);
     
-    ListVariableResult listVariables(long threadId, int stackFrameDepth, boolean includeGlobal);
+    ListVariableResult listVariables(long runId, long threadId, int stackFrameDepth, boolean includeGlobal);
     
-    Object evaluateExpression(String expression, long threadId, int callStackIndex) throws Exception;
+    Object evaluateExpression(long runId, String expression, long threadId, int callStackIndex) throws Exception;
 }

@@ -18,7 +18,6 @@
  */
 package org.jetel.graph;
 
-import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -359,7 +358,7 @@ public abstract class GraphElement implements IGraphElement {
 			for (URLClassLoader classLoader : classLoaders) {
 				try {
 					classLoader.close();
-				} catch (IOException e) {
+				} catch (Exception e) {
 					logger.warn("URLClassLoader allocated for " + this + " cannot be closed.", e);
 				}
 			}
