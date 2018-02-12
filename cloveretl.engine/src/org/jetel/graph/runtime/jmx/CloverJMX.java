@@ -91,7 +91,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
     /**
      * List of listeners, which are interested about the Watchdog is release by an authority.
      */
-    private List<JobListener> jobListeners = new ArrayList<>();
+    private transient List<JobListener> jobListeners = new ArrayList<>();
     
 	/**
 	 * Registers CloverJMX as JMX mBean.
