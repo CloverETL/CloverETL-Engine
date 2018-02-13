@@ -2978,18 +2978,6 @@ public class StringUtils {
 		}
 	}
 
-	/**
-	 * Returns first not empty string. If every strings are empty then returns null.
-	 */
-	public static String firstNotEmpty(String... values) {
-		for (String value : values) {
-			if(!UnicodeBlanks.isBlank(value)) {
-				return value;
-			}
-		}
-		return null;
-	}
-	
 	private static interface VariableResolver{
 		String get(String key);
 	}
