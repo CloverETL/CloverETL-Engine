@@ -390,12 +390,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	public ConfigurationStatus checkConfig(String graphUrl, GraphRuntimeContext runtimeContext) {
 		throw new UnsupportedOperationException("Subgraph configuration check is available only in CloverETL Server environment!");
 	}
-	
-	@Override
-	public File newTempFile(String label, String suffix, int allocationHint, long runId) throws TempFileCreationException {
-		return newTempFile(label, suffix, allocationHint);
-	}
-	
+		
 	@Override
 	public File newTempFile(String label, String suffix, int allocationHint) throws TempFileCreationException {
 		try {
@@ -408,11 +403,6 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		}
 	}
 	
-	@Override
-	public File newTempDir(String label, int allocationHint, long runId) throws TempFileCreationException {
-		return newTempDir(label, allocationHint);
-	}
-
 	@Override
 	public File newTempDir(String label, int allocationHint) throws TempFileCreationException {
 		try {
