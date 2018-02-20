@@ -34,7 +34,7 @@ import org.jetel.graph.ContextProvider;
  */
 public class SafeLogLayout extends PatternLayout {
 
-	private static final int OBFUSCATED_MESSAGE_LENGTH = 512;
+	private static final int OBFUSCATED_MESSAGE_LENGTH = 1024;
 
 	public SafeLogLayout() {
 	}
@@ -69,13 +69,13 @@ public class SafeLogLayout extends PatternLayout {
 		}
 
 		if (event.getMessage() instanceof String) {
-			Level level = null;
+			Level loggerLevel = null;
 			if (ContextProvider.getRuntimeContext() != null) {
-				level = ContextProvider.getRuntimeContext().getLogLevel();
+				loggerLevel = ContextProvider.getRuntimeContext().getLogLevel();
 			}
 
 			// obfuscate password in the message itself
-			String safeMessage = getObfuscatedSensitiveInformation(level, event.getRenderedMessage());
+			String safeMessage = getObfuscatedSensitiveInformation(loggerLevel, event.getLevel(), event.getRenderedMessage());
 
 			// create new log event from obfuscated texts
 			LoggingEvent safeEvent = new LoggingEvent(
@@ -109,14 +109,22 @@ public class SafeLogLayout extends PatternLayout {
 
 		return formattedMessage;
 	}
-	private String getObfuscatedSensitiveInformation(Level level, String message) {
+	
+	private String getObfuscatedSensitiveInformation(Level loggerLevel, Level eventLevel, String message) {
 		StringBuilder builder = new StringBuilder();
-		if (level != null && level.isGreaterOrEqual(Level.INFO) && message.length() > OBFUSCATED_MESSAGE_LENGTH ) {
+		if (canBeMessageTruncated(loggerLevel, eventLevel, message)) {
 			builder.append(SafeLogUtils.obfuscateSensitiveInformation(message.substring(0, OBFUSCATED_MESSAGE_LENGTH)));
 			builder.append(" ...\nMessage has been truncated. To see whole message change the logging level to DEBUG");
 		} else {
 			builder.append(SafeLogUtils.obfuscateSensitiveInformation(message));
 		}
 		return builder.toString();
+	}
+
+	private boolean canBeMessageTruncated(Level loggerLevel, Level eventLevel, String message) {
+		return 
+			loggerLevel != null && loggerLevel.isGreaterOrEqual(Level.INFO) &&
+			eventLevel != null && !eventLevel.isGreaterOrEqual(Level.ERROR) &&
+			message.length() > OBFUSCATED_MESSAGE_LENGTH;
 	}
 }
