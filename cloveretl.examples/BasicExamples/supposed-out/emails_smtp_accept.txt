@@ -3,6 +3,9 @@ sales@opensys.com
 nonexistent@opensys.com
 info@opensys.com
 info@opensys.com
+gooddomain@google.com
+another@google.com
+yetanother@google.com
 test@javlin.eu
 info@javlin.eu
 test@cloveretl.net
