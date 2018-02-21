@@ -2,6 +2,30 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-9-0-M1
+------------
+
+* Job Execution in Separate JVM:
+  * CLO-11461 	Configure the worker
+  * CLO-11479 	Manage worker
+  * CLO-11410 	Extend worker classpath
+  * CLO-11472 	Access worker's stdout and logs
+  * CLO-11463 	Display full command line used to run the worker 
+  * CLO-11466 	Force job execution in core Server 
+  * CLO-11465 	Determine which jobs run in worker and which in core Server 
+  * CLO-12758 	Designer calls to Server are proxied to Worker
+* Changes:
+  * CLO-11163 	Introduce filtering and paging in scheduling tab
+  * CLO-12029 	Add action for sending testing email from Alerts and Notification tab
+* Fixes:
+  * CLO-11441 	Decrypt global secure parameters only once per project
+* Compatibility (Job Execution in Separate JVM):
+  * CLO-12553 	Server property 'server.http.url' is required for multi-jvm
+  * CLO-12796 	JNDI resources need separate configuration for worker 
+  * CLO-12552 	JMS event listener cannot pass non-serializable objects to worker
+  * CLO-12271 	ProfilerProbe cannot persist results in Worker
+
+
 REL-4-8-0
 ------------
 
