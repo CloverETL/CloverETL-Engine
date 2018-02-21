@@ -20,6 +20,7 @@ package org.jetel.graph;
 
 import java.io.IOException;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,7 +46,7 @@ import org.jetel.util.string.StringUtils;
  */
 public class EdgeDebuger {
 
-	private static final int MINIMUM_DELAY_BETWEEN_FLUSHES = 5000;
+	private static final long MINIMUM_DELAY_BETWEEN_FLUSHES = TimeUnit.SECONDS.toMillis(5);
 	
 	private static Log logger = LogFactory.getLog(EdgeDebuger.class);
 

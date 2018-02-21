@@ -24,6 +24,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -53,7 +54,7 @@ import org.jetel.util.file.FileUtils;
  */
 public class EdgeDebugWriter {
 
-	private static final long MINIMUM_DELAY_BETWEEN_FLUSHES = 5000 * 1000 * 1000L; // 5 seconds in ns
+	private static final long MINIMUM_DELAY_BETWEEN_FLUSHES = TimeUnit.SECONDS.toNanos(5);
 	
 	private static Log logger = LogFactory.getLog(EdgeDebugWriter.class);
 
@@ -166,13 +167,17 @@ public class EdgeDebugWriter {
         } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(record)) {
         	debuggedBytes += formatter.writeLong(recordsCounter);
         	debuggedBytes += formatter.write(record);
-        	flushIfNeeded();
         	debuggedRecords++;
+        	flushIfNeeded();
         }
     }
     
     private void flushIfNeeded() throws IOException, InterruptedException {
-    	if (formatter != null && (isJobflow() || lastFlushTime == 0 || (System.nanoTime() - lastFlushTime) > MINIMUM_DELAY_BETWEEN_FLUSHES)) {
+    	if (formatter != null && (
+    			isJobflow() || 
+    			lastFlushTime == 0 ||
+    			(System.nanoTime() - lastFlushTime) > MINIMUM_DELAY_BETWEEN_FLUSHES) ||
+    			debuggedRecordLimitHit()) {
     		flush();
     	}
     }
@@ -215,8 +220,8 @@ public class EdgeDebugWriter {
 	        } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(byteBuffer)) {
 	        	debuggedBytes += formatter.writeLong(recordsCounter);
 	        	debuggedBytes += formatter.writeDirect(byteBuffer); 
-	        	flushIfNeeded();
 	        	debuggedRecords++;
+	        	flushIfNeeded();
 	        }
         }
     }
@@ -232,6 +237,11 @@ public class EdgeDebugWriter {
     private boolean checkNoOfDebuggedRecords() {
     	return (debugMaxRecords == 0 || debuggedRecords < debugMaxRecords)
     			&& (debugMaxBytes == 0 || debuggedBytes < debugMaxBytes);
+    }
+    
+    private boolean debuggedRecordLimitHit() {
+    	return (debugMaxRecords > 0 && debuggedRecords >= debugMaxRecords)
+    			|| (debugMaxBytes > 0 && debuggedBytes >= debugMaxBytes);
     }
 
     public void eof() throws IOException {
