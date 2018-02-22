@@ -25,12 +25,14 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.logger.SafeLogUtils;
 import org.jetel.util.CloverPublicAPI;
 
 /**
@@ -315,9 +317,7 @@ public class Dictionary extends GraphElement {
 	 * @param message - first message introducing the content
 	 */
 	private void printContent(StringBuilder sb, Logger logger, String message) {
-		if (!dictionary.isEmpty() 
-				&& (sb != null || (logger != null && logger.isInfoEnabled()))
-				) {
+		if (!dictionary.isEmpty() && (sb != null || (logger != null && logger.isInfoEnabled())) ) { 
 			if (logger != null)
 				logger.info(message);
 			if (sb != null) {
@@ -331,7 +331,10 @@ public class Dictionary extends GraphElement {
 				if (entry.getType().isFormatPropertiesSupported()) {
 					Properties properties = entry.getType().formatProperties(entry.getValue());
 					if (properties != null) {
-						entryValue = properties.toString();
+						entryValue = SafeLogUtils.getTruncatedMessage(
+								logger != null ? logger.getLevel() : null, 
+								Level.INFO, 
+								properties.toString());
 					}
 				} else {
 					entryValue = "<unprintable_value>";
@@ -341,10 +344,10 @@ public class Dictionary extends GraphElement {
 					logger.info(s);
 				}
 				if (sb != null) {
-					sb.append(s).append("\n");					
+					sb.append(s).append("\n");
 				}
-			}// for
-		}// if not empty
+			}
+		}
 	}
 
 	/**

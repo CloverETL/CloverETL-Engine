@@ -18,23 +18,19 @@
  */
 package org.jetel.logger;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
-import org.jetel.graph.ContextProvider;
 
-/** Layout for logging safe messages (no passwords should be logged). Text of the log message is obfuscated
+/**
+ * Layout for logging safe messages (no passwords should be logged). Text of the log message is obfuscated
  * 
- * @author Tomas Laurincik (info@cloveretl.com)
- *         (c) Javlin, a.s. (www.cloveretl.com)
+ * @author Tomas Laurincik (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 20.2.2012
  */
 public class SafeLogLayout extends PatternLayout {
-
-	private static final int OBFUSCATED_MESSAGE_LENGTH = 1024;
 
 	public SafeLogLayout() {
 	}
@@ -69,26 +65,23 @@ public class SafeLogLayout extends PatternLayout {
 		}
 
 		if (event.getMessage() instanceof String) {
-			Level loggerLevel = null;
-			if (ContextProvider.getRuntimeContext() != null) {
-				loggerLevel = ContextProvider.getRuntimeContext().getLogLevel();
-			}
-
 			// obfuscate password in the message itself
-			String safeMessage = getObfuscatedSensitiveInformation(loggerLevel, event.getLevel(), event.getRenderedMessage());
+			String message = event.getRenderedMessage();
+			String safeMessage = SafeLogUtils.obfuscateSensitiveInformation(message);
 
 			// create new log event from obfuscated texts
 			LoggingEvent safeEvent = new LoggingEvent(
 				event.fqnOfCategoryClass,
-				Logger.getLogger(event.getLoggerName()),
-				event.timeStamp,
-				event.getLevel(),
-				safeMessage,
+				Logger.getLogger(event.getLoggerName()), 
+				event.timeStamp, 
+				event.getLevel(), 
+				safeMessage, 
 				event.getThreadName(),
 				throwableInformation,
 				event.getNDC(),
 				null,
 				event.getProperties());
+
 			// handle the message by parent layout. NOTE: throwable is not handled - we need to do it ourselves
 			formattedMessage = super.format(safeEvent);
 		} else {
@@ -108,23 +101,5 @@ public class SafeLogLayout extends PatternLayout {
 		}
 
 		return formattedMessage;
-	}
-	
-	private String getObfuscatedSensitiveInformation(Level loggerLevel, Level eventLevel, String message) {
-		StringBuilder builder = new StringBuilder();
-		if (canBeMessageTruncated(loggerLevel, eventLevel, message)) {
-			builder.append(SafeLogUtils.obfuscateSensitiveInformation(message.substring(0, OBFUSCATED_MESSAGE_LENGTH)));
-			builder.append(" ...\nMessage has been truncated. To see whole message change the logging level to DEBUG");
-		} else {
-			builder.append(SafeLogUtils.obfuscateSensitiveInformation(message));
-		}
-		return builder.toString();
-	}
-
-	private boolean canBeMessageTruncated(Level loggerLevel, Level eventLevel, String message) {
-		return 
-			loggerLevel != null && loggerLevel.isGreaterOrEqual(Level.INFO) &&
-			eventLevel != null && !eventLevel.isGreaterOrEqual(Level.ERROR) &&
-			message.length() > OBFUSCATED_MESSAGE_LENGTH;
 	}
 }
