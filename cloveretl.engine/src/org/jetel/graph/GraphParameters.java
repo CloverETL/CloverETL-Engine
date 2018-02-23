@@ -19,14 +19,13 @@
 package org.jetel.graph;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.TreeMap;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -37,7 +36,6 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.logger.SafeLogUtils;
 import org.jetel.util.CloverPublicAPI;
-import org.jetel.util.CompareUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 
@@ -128,25 +126,6 @@ public class GraphParameters {
 		synchronized (userParameters) {
 			return new ArrayList<GraphParameter>(userParameters.values());
 		}
-	}
-	
-	/**
-	 * @return map of all graph parameters from this container (only user's graph parameters are considered) 
-	 * ordered by name 
-	 */
-	public Map<String, GraphParameter> getAllGraphParametersMap() {
-		List<GraphParameter> orderedParams = new ArrayList<>(getAllGraphParameters());
-		Collections.sort(orderedParams, new Comparator<GraphParameter>() {
-			@Override
-			public int compare(GraphParameter p1, GraphParameter p2) {
-				return CompareUtils.compare(p1.getName(), p2.getName());
-			}
-		});
-		Map<String, GraphParameter> result = new LinkedHashMap<>();
-		for (GraphParameter parameter : orderedParams) {
-			result.put(parameter.getName(), parameter);
-		}
-		return result;
 	}
 	
 	/**
@@ -279,26 +258,28 @@ public class GraphParameters {
 	 */
 	public String printContent(Level messageLogLevel) {
 		StringBuilder result = new StringBuilder();
-		for (Iterator<Entry<String, GraphParameter>> iter = getAllGraphParametersMap().entrySet().iterator(); iter.hasNext();) {
-			Entry<String, GraphParameter> entry = iter.next();
-			GraphParameter parameter = entry.getValue();
-			result.append(entry.getKey());
-			result.append('=');
-			
-			String paramValue;
-			if (parameter.isSecure()) {
-				paramValue = GraphParameter.HIDDEN_SECURE_PARAMETER;
-			} else {
-				paramValue = SafeLogUtils.getTruncatedMessage(
-					parentGraph != null && parentGraph.getRuntimeContext() != null ? 
-							parentGraph.getRuntimeContext().getLogLevel() : null,
-					messageLogLevel, 
-					parameter.getValue());
-			}
-			result.append(paramValue);
-			
-			if (iter.hasNext()) {
-				result.append('\n');
+		synchronized (userParameters) {
+			for (Iterator<Entry<String, GraphParameter>> iter = getAllGraphParametersMap().entrySet().iterator(); iter.hasNext();) {
+				Entry<String, GraphParameter> entry = iter.next();
+				GraphParameter parameter = entry.getValue();
+				result.append(entry.getKey());
+				result.append('=');
+				
+				String paramValue;
+				if (parameter.isSecure()) {
+					paramValue = GraphParameter.HIDDEN_SECURE_PARAMETER;
+				} else {
+					paramValue = SafeLogUtils.getTruncatedMessage(
+						parentGraph != null && parentGraph.getRuntimeContext() != null ? 
+								parentGraph.getRuntimeContext().getLogLevel() : null,
+						messageLogLevel, 
+						parameter.getValue());
+				}
+				result.append(paramValue);
+				
+				if (iter.hasNext()) {
+					result.append('\n');
+				}
 			}
 		}
 		return result.toString();
@@ -307,14 +288,16 @@ public class GraphParameters {
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
-		for (Iterator<Entry<String, GraphParameter>> iter = getAllGraphParametersMap().entrySet().iterator(); iter.hasNext();) {
-			Entry<String, GraphParameter> entry = iter.next();
-			GraphParameter parameter = entry.getValue();
-			result.append(entry.getKey());
-			result.append('=');
-			result.append(parameter.isSecure() ? GraphParameter.HIDDEN_SECURE_PARAMETER : parameter.getValue());
-			if (iter.hasNext()) {
-				result.append('\n');
+		synchronized (userParameters) {
+			for (Iterator<Entry<String, GraphParameter>> iter = getAllGraphParametersMap().entrySet().iterator(); iter.hasNext();) {
+				Entry<String, GraphParameter> entry = iter.next();
+				GraphParameter parameter = entry.getValue();
+				result.append(entry.getKey());
+				result.append('=');
+				result.append(parameter.isSecure() ? GraphParameter.HIDDEN_SECURE_PARAMETER : parameter.getValue());
+				if (iter.hasNext()) {
+					result.append('\n');
+				}
 			}
 		}
 		return result.toString();
@@ -345,4 +328,17 @@ public class GraphParameters {
 		return status;
 	}
 
+
+	/**
+	 * @return map of all graph parameters from this container (only user's graph parameters are considered) 
+	 * ordered by name 
+	 */
+	private Map<String, GraphParameter> getAllGraphParametersMap() {
+		
+		Map<String, GraphParameter> result = new TreeMap<>();
+		for (GraphParameter param : getAllGraphParameters()) {
+			result.put(param.getName(), param);
+		}
+		return result;
+	}
 }
