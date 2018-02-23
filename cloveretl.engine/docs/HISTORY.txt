@@ -2,7 +2,7 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
-REL-4-8-0
+REL-4-8-1
 ------------
 * CLO-12521 WebServiceClient - support XOP transport
 * CLO-12309 MongoDB Bulk Ops collection input mapping does not work
