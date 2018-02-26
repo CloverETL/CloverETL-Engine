@@ -225,7 +225,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			  	logger.info("Job execution type: " + getGraphRuntimeContext().getJobType());
 			  	
 	    		//print graph properties
-	    		logger.info("Job parameters: \n" + graph.getGraphParameters());
+	    		logger.info("Job parameters: \n" + graph.getGraphParameters().printContent(Level.INFO));
 	    		
 	    		//print runtime classpath
 	    		logger.info("Runtime classpath: " + Arrays.toString(graph.getRuntimeContext().getRuntimeClassPath()));
@@ -243,8 +243,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	    		
 	    		//print initial dictionary content
 	    		graph.getDictionary().printContent(logger, "Initial dictionary content:");
-	    		
-	            if (runtimeContext.isVerboseMode()) {
+
+	    		if (runtimeContext.isVerboseMode()) {
 	                // this can be called only after graph.init()
 	                graph.dumpGraphConfiguration();
 	            }

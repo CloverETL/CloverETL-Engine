@@ -21,6 +21,8 @@ package org.jetel.logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Level;
+
 
 
 /** Utility class providing methods for logging safe messages (password obfuscation in URL, ...)
@@ -32,8 +34,10 @@ import java.util.regex.Pattern;
  * @created 20.2.2012
  */
 public class SafeLogUtils {
-	/** Pattern for identifying URL with password in a given text */
+
 	private static final Pattern URL_PASSWORD_PATTERN = Pattern.compile("\\w+://.*?:([^/]*)@", Pattern.DOTALL);
+
+	private static final int OBFUSCATED_MESSAGE_LENGTH = 1024;
 	
 	/*
 	 * a://b:c@d
@@ -68,6 +72,31 @@ public class SafeLogUtils {
 		result.append(text.substring(pointer, text.length()));
 		
 		return result.toString();
+	}
+	
+	/**
+	 * It returns truncated or original message based on logger level and message log level 
+	 * 
+	 * @param loggerLevel - level of graph logger
+	 * @param messageLogLevel - level of logged message
+	 * @param message - text 
+	 */
+	public static String getTruncatedMessage(Level loggerLevel, Level messageLogLevel, String message) {
+		StringBuilder builder = new StringBuilder();
+		if (shouldTruncate(message, loggerLevel, messageLogLevel)) {
+			builder.append(message.substring(0, OBFUSCATED_MESSAGE_LENGTH));
+			builder.append(" ...\nMessage has been truncated. To see whole message change the logging level to DEBUG");
+		} else {
+			builder.append(message);
+		}
+		return builder.toString();
+	}
+
+	private static boolean shouldTruncate(String message, Level loggerLevel, Level eventLevel) {
+		return 
+			loggerLevel != null && loggerLevel.isGreaterOrEqual(Level.INFO) &&
+			eventLevel != null && !eventLevel.isGreaterOrEqual(Level.ERROR) &&
+			message.length() > OBFUSCATED_MESSAGE_LENGTH;
 	}
 	
 	private SafeLogUtils() {

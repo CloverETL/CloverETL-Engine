@@ -26,6 +26,17 @@ REL-4-9-0-M1
   * CLO-12271 	ProfilerProbe cannot persist results in Worker
 
 
+REL-4-8-1
+------------
+* CLO-12521 WebServiceClient - support XOP transport
+* CLO-12309 MongoDB Bulk Ops collection input mapping does not work
+* CLO-12302 Remote edges produce connections in close_wait state
+* CLO-12237 Improve validation of HTTP status codes considered as endpoint invocation failure
+* CLO-11660 Send success email after change Alerts and Notification settings
+* CLO-11546 Import/export DataService failure indication settings
+* CLO-11146 Data Inspector view does not show records for running graphs
+
+
 REL-4-8-0
 ------------
 
