@@ -167,7 +167,7 @@ PortReadingWriting.DATA_LENGTH = 2048
 # This attribute is <code>true</code> by default due better performance.
 # Since direct memory is out of control java virtual machine, try to turn off 
 # usage of direct memory in case OutOfMemory exception occurs. 
-# USE_DIRECT_MEMORY = true
+USE_DIRECT_MEMORY = false
 
 # Clover engine can use dynamic compiler functionality for runtime compilation
 # of user-defined java code, for example transformation of Reformat component can
