@@ -23,15 +23,15 @@ import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 
-/** Layout for logging safe messages (no passwords should be logged). Text of the log message is obfuscated
+/**
+ * Layout for logging safe messages (no passwords should be logged). Text of the log message is obfuscated
  * 
- * @author Tomas Laurincik (info@cloveretl.com)
- *         (c) Javlin, a.s. (www.cloveretl.com)
+ * @author Tomas Laurincik (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 20.2.2012
  */
 public class SafeLogLayout extends PatternLayout {
-	
+
 	public SafeLogLayout() {
 	}
 
@@ -45,60 +45,61 @@ public class SafeLogLayout extends PatternLayout {
 	}
 
 	@Override
-    public String format(LoggingEvent event) {
+	public String format(LoggingEvent event) {
 		String formattedMessage = null;
 
 		// obfuscate the stack trace, if there is any
 		ThrowableInformation throwableInformation = null;
 		if (event.getThrowableInformation() != null) {
 			String[] stringRepresentation = event.getThrowableInformation().getThrowableStrRep();
-			
+
 			String[] safeStringRepresentation = null;
 			if (stringRepresentation != null) {
 				safeStringRepresentation = new String[stringRepresentation.length];
-				for (int i=0; i < stringRepresentation.length; i++) {
+				for (int i = 0; i < stringRepresentation.length; i++) {
 					safeStringRepresentation[i] = SafeLogUtils.obfuscateSensitiveInformation(stringRepresentation[i]);
 				}
 			}
-			
+
 			throwableInformation = new ThrowableInformation(safeStringRepresentation);
 		}
-		
-        if (event.getMessage() instanceof String) {
-			// obfuscate password in the message itself
-            String message = event.getRenderedMessage();
-    		String safeMessage = SafeLogUtils.obfuscateSensitiveInformation(message);
 
-    		// create new log event from obfuscated texts
-            LoggingEvent safeEvent = new LoggingEvent(event.fqnOfCategoryClass,
-            											Logger.getLogger(event.getLoggerName()), 
-            											event.timeStamp, 
-            											event.getLevel(), 
-            											safeMessage, 
-            											event.getThreadName(),
-            											throwableInformation,
-            											event.getNDC(),
-            											null,
-            											event.getProperties());
-            
-            // handle the message by parent layout. NOTE: throwable is not handled - we need to do it ourselves
-            formattedMessage = super.format(safeEvent);
+		if (event.getMessage() instanceof String) {
+			// obfuscate password in the message itself
+			String message = event.getRenderedMessage();
+			String safeMessage = SafeLogUtils.obfuscateSensitiveInformation(message);
+
+			// create new log event from obfuscated texts
+			LoggingEvent safeEvent = new LoggingEvent(
+				event.fqnOfCategoryClass,
+				Logger.getLogger(event.getLoggerName()), 
+				event.timeStamp, 
+				event.getLevel(), 
+				safeMessage, 
+				event.getThreadName(),
+				throwableInformation,
+				event.getNDC(),
+				null,
+				event.getProperties());
+
+			// handle the message by parent layout. NOTE: throwable is not handled - we need to do it ourselves
+			formattedMessage = super.format(safeEvent);
 		} else {
-            // handle the message by parent layout. NOTE: throwable is not handled - we need to do it ourselves
+			// handle the message by parent layout. NOTE: throwable is not handled - we need to do it ourselves
 			formattedMessage = super.format(event);
 		}
 
-        // ignoresThrowable() returns false, we need to append the stacktrace to the formatted message
-        if (throwableInformation != null) {
-            StringBuilder b = new StringBuilder(formattedMessage);
-        	String[] safeStringRepresentation = throwableInformation.getThrowableStrRep();
-        	
-			for (int i=0; i < safeStringRepresentation.length; i++) {
-    			b.append(safeStringRepresentation[i]).append("\n");
+		// ignoresThrowable() returns false, we need to append the stacktrace to the formatted message
+		if (throwableInformation != null) {
+			StringBuilder b = new StringBuilder(formattedMessage);
+			String[] safeStringRepresentation = throwableInformation.getThrowableStrRep();
+
+			for (int i = 0; i < safeStringRepresentation.length; i++) {
+				b.append(safeStringRepresentation[i]).append("\n");
 			}
 			formattedMessage = b.toString();
-        }
-        
-        return formattedMessage;
-    }
+		}
+
+		return formattedMessage;
+	}
 }

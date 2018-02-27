@@ -249,7 +249,7 @@ public final class Defaults {
         ASSIGN_SIGN = getStringProperties("ASSIGN_SIGN", ":=");
         INCREMENTAL_STORE_KEY = getStringProperties("INCREMENTAL_STORE_KEY", "incremental_store");
         PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING = getStringProperties("PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING", "java.;javax.;sun.misc.");
-        USE_DIRECT_MEMORY = getBooleanProperties("USE_DIRECT_MEMORY", true);
+        USE_DIRECT_MEMORY = getBooleanProperties("USE_DIRECT_MEMORY", false);
         USE_DYNAMIC_COMPILER = getBooleanProperties("USE_DYNAMIC_COMPILER", true);
         MAX_MAPPED_FILE_TRANSFER_SIZE = getIntProperties("MAX_MAPPED_FILE_TRANSFER_SIZE", 8388608);
         CLOVER_BUFFER_DIRECT_MEMORY_LIMIT_SIZE = getLongProperties("CLOVER_BUFFER_DIRECT_MEMORY_LIMIT_SIZE", MemoryUtils.getDirectMemorySize() / 2);

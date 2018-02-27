@@ -307,6 +307,7 @@ public class DataRecordTape implements Closeable {
 		}
 		currentDataChunkIndex=-1;
 		currentDataChunk=null;
+		updatedAfterFlush = false;
 	}
 
 	/**

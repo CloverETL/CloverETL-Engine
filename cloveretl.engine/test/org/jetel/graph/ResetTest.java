@@ -367,6 +367,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("graphJmsSingleXmlField.grf") // can't run without jms broker
 							&& !file.getName().equals("graphJms.grf") // can't run without jms broker
 							&& !file.getName().equals("outPortWriting.grf") // can't run without jms broker
+							&& !file.getName().equals("check-for-unfinished-jobs-cluster.grf") // can't run without jms broker
 							;
 				}
 			};

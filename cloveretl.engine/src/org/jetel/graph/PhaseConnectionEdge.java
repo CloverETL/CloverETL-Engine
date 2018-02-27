@@ -47,7 +47,6 @@ public class PhaseConnectionEdge extends EdgeBase {
     private long writeByteCounter;
     private long readByteCounter;
 	private volatile boolean isReadMode;
-	private boolean wasInitialized;
 
 	private volatile boolean isEmpty;
 	
@@ -68,7 +67,6 @@ public class PhaseConnectionEdge extends EdgeBase {
 		dataTape = new DataRecordTape();
 		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 		isReadMode=false;
-		wasInitialized = false;
 		isEmpty = false;
 	}
 
@@ -128,14 +126,8 @@ public class PhaseConnectionEdge extends EdgeBase {
         writeByteCounter = 0;
         readByteCounter = 0;
 		try {
-			if (!wasInitialized) {
-				dataTape.open(-1);
-				dataTape.addDataChunk();
-				wasInitialized = true;
-			} else {
-				dataTape.clear();
-				dataTape.addDataChunk();
-			}
+			dataTape.open(-1);
+			dataTape.addDataChunk();
 		} catch (Exception e) {
 			throw new JetelRuntimeException("Phase edge preExecute operation failed.", e);
 		}

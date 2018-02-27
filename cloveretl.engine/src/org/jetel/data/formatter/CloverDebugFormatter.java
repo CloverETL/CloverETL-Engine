@@ -112,5 +112,4 @@ public class CloverDebugFormatter extends CloverDataFormatter {
 		output.write(longBuffer);
 		longBuffer.flip();
 	}
-
 }

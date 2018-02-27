@@ -21,6 +21,8 @@ package org.jetel.exception;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jetel.util.ExceptionUtils;
+
 /**
  * This exception should be used whenever you want to be sure an existing exception
  * is really serializable. This exception implementation wraps another existing exception
@@ -60,7 +62,9 @@ public class SerializableException extends JetelRuntimeException {
 	 */
 	public static SerializableException wrap(Throwable e) {
 		SerializableException result;
-		if (e instanceof ConfigurationException) {
+		if (e instanceof SerializableException) {
+			result = (SerializableException) e; 
+		} else if (e instanceof ConfigurationException) {
 			result = new GraphElementSerializableException((ConfigurationException) e);
 		} else if (e instanceof ComponentNotReadyException) {
 			result = new GraphElementSerializableException((ComponentNotReadyException) e);
