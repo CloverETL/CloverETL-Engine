@@ -32,6 +32,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.JMXNotificationMessage;
+import org.jetel.graph.runtime.jmx.CloverJMX;
 
 /**
  * A JMX bean for CTL debugging. It manages debugging of CTL threads - passes debugging
@@ -48,8 +49,6 @@ import org.jetel.graph.runtime.JMXNotificationMessage;
 public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMXMBean {
 
 	public static final String MBEAN_NAME = "org.jetel.ctl:type=DebugJMX";
-
-	private int notificationSequence;
 
 	private static Map<Long, GraphDebugger> graphDebuggerCache = new ConcurrentHashMap<>();
 
@@ -171,7 +170,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	}
 
 	public synchronized void sendNotification(GraphDebugger sender, String type, Object userData) {
-		Notification suspendNotification = new Notification(type, this, ++notificationSequence);
+		Notification suspendNotification = new Notification(type, this, CloverJMX.getNotificationSequence());
 		suspendNotification.setUserData(new JMXNotificationMessage(sender.getRunId(), userData));
 		sendNotification(suspendNotification);
 	}
