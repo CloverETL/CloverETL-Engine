@@ -33,14 +33,17 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.logger.SafeLogUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -154,7 +157,8 @@ public final class DictionaryValuesContainer implements Serializable {
 							result.dirtyKeys.add(entryName);
 						}
 					} else {
-						log.warn("Non-serializable dictionary entry: key: "+entryName+", value: "+val);
+						log.warn("Non-serializable dictionary entry: key: " + entryName + ", value: " + 
+							SafeLogUtils.getTruncatedMessage(log.getEffectiveLevel(), Level.WARN, Objects.toString(val)));
 						result.nonPersistableKeys.add(entryName);
 					}
 				}

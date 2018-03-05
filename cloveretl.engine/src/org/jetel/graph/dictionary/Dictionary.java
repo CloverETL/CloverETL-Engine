@@ -332,7 +332,7 @@ public class Dictionary extends GraphElement {
 					Properties properties = entry.getType().formatProperties(entry.getValue());
 					if (properties != null) {
 						entryValue = SafeLogUtils.getTruncatedMessage(
-								logger != null ? logger.getLevel() : null, 
+								logger != null ? logger.getEffectiveLevel() : null, 
 								Level.INFO, 
 								properties.toString());
 					}

@@ -32,6 +32,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.logger.SafeLogUtils;
@@ -256,8 +257,12 @@ public class GraphParameters {
 	 * 
 	 * @param messageLogLevel - level of logged message
 	 */
-	public String printContent(Level messageLogLevel) {
+	public void printContent(Logger logger, String message) {
+		if (logger == null) {
+			return;
+		}
 		StringBuilder result = new StringBuilder();
+		result.append(message);
 		synchronized (userParameters) {
 			for (Iterator<Entry<String, GraphParameter>> iter = getAllGraphParametersMap().entrySet().iterator(); iter.hasNext();) {
 				Entry<String, GraphParameter> entry = iter.next();
@@ -270,10 +275,7 @@ public class GraphParameters {
 					paramValue = GraphParameter.HIDDEN_SECURE_PARAMETER;
 				} else {
 					paramValue = SafeLogUtils.getTruncatedMessage(
-						parentGraph != null && parentGraph.getRuntimeContext() != null ? 
-								parentGraph.getRuntimeContext().getLogLevel() : null,
-						messageLogLevel, 
-						parameter.getValue());
+						logger.getEffectiveLevel(), Level.INFO, parameter.getValue());
 				}
 				result.append(paramValue);
 				
@@ -282,7 +284,7 @@ public class GraphParameters {
 				}
 			}
 		}
-		return result.toString();
+		logger.info(result.toString());
 	}
 	
 	@Override
