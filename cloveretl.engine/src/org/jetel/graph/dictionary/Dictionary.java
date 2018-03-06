@@ -331,10 +331,9 @@ public class Dictionary extends GraphElement {
 				if (entry.getType().isFormatPropertiesSupported()) {
 					Properties properties = entry.getType().formatProperties(entry.getValue());
 					if (properties != null) {
-						entryValue = SafeLogUtils.getTruncatedMessage(
-								logger != null ? logger.getEffectiveLevel() : null, 
-								Level.INFO, 
-								properties.toString());
+						Level level = getGraph() != null && getGraph().getRuntimeContext() != null ? 
+								getGraph().getRuntimeContext().getLogLevel() : null;
+						entryValue = SafeLogUtils.getTruncatedMessage(level, Level.INFO, properties.toString());
 					}
 				} else {
 					entryValue = "<unprintable_value>";

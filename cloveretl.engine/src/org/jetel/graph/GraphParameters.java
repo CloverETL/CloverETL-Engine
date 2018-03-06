@@ -274,8 +274,9 @@ public class GraphParameters {
 				if (parameter.isSecure()) {
 					paramValue = GraphParameter.HIDDEN_SECURE_PARAMETER;
 				} else {
-					paramValue = SafeLogUtils.getTruncatedMessage(
-						logger.getEffectiveLevel(), Level.INFO, parameter.getValue());
+					Level level = parentGraph != null && parentGraph.getRuntimeContext() != null ? 
+							parentGraph.getRuntimeContext().getLogLevel() : null;
+					paramValue = SafeLogUtils.getTruncatedMessage(level, Level.INFO, parameter.getValue());
 				}
 				result.append(paramValue);
 				
