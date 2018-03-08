@@ -157,22 +157,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 
 	@Override
 	public boolean abortGraphExecution(long runId) {
-		Object oldRunId = MDC.get(LogUtils.MDC_RUNID_KEY);
-		MDC.put(LogUtils.MDC_RUNID_KEY, runId);
-		try {
-			WatchDog watchDog = watchDogCache.get(runId);
-			if (watchDog != null) {
-				watchDog.abort();
-				return true;
-			}
-			return false;
-		} finally {
-			if (oldRunId == null) {
-				MDC.remove(LogUtils.MDC_RUNID_KEY);
-			} else {
-				MDC.put(LogUtils.MDC_RUNID_KEY, oldRunId);
-			}
-		}
+		return abortGraphExecution(runId, false);
 	}
 
 	@Override
