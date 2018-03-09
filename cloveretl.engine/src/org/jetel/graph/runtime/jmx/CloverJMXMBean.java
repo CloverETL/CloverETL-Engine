@@ -31,6 +31,11 @@ import org.jetel.graph.dictionary.DictionaryValuesContainer;
 public interface CloverJMXMBean {
 
     /**
+     * Notification identifier - initialization ends with an error.
+     */
+    public static final String INITIALIZE_ERROR = "clover.init.error";
+	
+	/**
      * Notification identifier - graph was started.
      */
     public static final String GRAPH_STARTED = "clover.graph.started";
