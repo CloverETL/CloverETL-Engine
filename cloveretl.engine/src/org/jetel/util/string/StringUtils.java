@@ -233,19 +233,15 @@ public class StringUtils {
 	 *
 	 * @since 17th October 2013
 	 */
-    public static String stringToHexString(String string, String charsetName) {
+    public static String stringToHexString(String string, Charset charset) {
         if (string == null) {
             throw new NullPointerException("string");
         }
-
-        StringBuilder stringBuilder = new StringBuilder();
-        byte[] stringBytes = null;
-        
-        try {
-            stringBytes = string.getBytes(charsetName);
-        } catch (UnsupportedEncodingException exception) {
-        	throw new IllegalArgumentException("Unsupported charsetName " + charsetName);
+        if (charset == null) {
+        	charset = Charset.defaultCharset();
         }
+        StringBuilder stringBuilder = new StringBuilder();
+        byte[] stringBytes = string.getBytes(charset);
 
         int lineSpacesForNextRow = 0;//count of spaces added to beginning of the row (if previous char is greater than one byte)
         int stringPosition = 0;//current absolute position within given string parameter
@@ -275,22 +271,18 @@ public class StringUtils {
             while(j<lineLength && (stringPosition<string.length())) {
             	String currentCharacter = String.valueOf(string.charAt(stringPosition++));
             	stringBuilder.append(!Character.isWhitespace(currentCharacter.charAt(0)) ? currentCharacter : ' ');
-            	try {
-            		charBytes = currentCharacter.getBytes(charsetName);
-            		j++;
-            		if(charBytes.length>1) {
-            			for(int k=0; k<charBytes.length-1; k++) {
-            				if(j<lineLength) {
-            					stringBuilder.append(' ');
-            				} else {
-            					lineSpacesForNextRow++;
-            				}
-            				j++;
-            			}
-            		}
-	            } catch (UnsupportedEncodingException exception) {
-	            	throw new IllegalArgumentException("Unsupported charsetName " + charsetName);
-	            }
+            	charBytes = currentCharacter.getBytes(charset);
+        		j++;
+        		if(charBytes.length>1) {
+        			for(int k=0; k<charBytes.length-1; k++) {
+        				if(j<lineLength) {
+        					stringBuilder.append(' ');
+        				} else {
+        					lineSpacesForNextRow++;
+        				}
+        				j++;
+        			}
+        		}
             }
             stringBuilder.append(HEX_STRING_LINE_SEPARATOR);
         }
