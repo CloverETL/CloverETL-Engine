@@ -283,20 +283,7 @@ public abstract class IAuthorityProxy {
 	 * @throws InterruptedException if the thread is interrupted while waiting for final event 
 	 */
 	public abstract RunStatus executeGraphSync(String graphUrl, GraphRuntimeContext runtimeContext, Long timeout) throws InterruptedException;
-	
-	/**
-	 * Executes graph synchronously. 
-	 * Thus it waits until the graph is finished or until the timeout expires.
-	 * If the graph isn't finished until timeout, it's aborted.
-	 * @param graph
-	 * @param givenRuntimeContext
-	 * @param timeout
-	 * @param useJmx
-	 * @return
-	 * @throws InterruptedException
-	 */
-	public abstract RunStatus executeGraphSync(TransformationGraph graph, GraphRuntimeContext givenRuntimeContext, Long timeout, boolean useJmx) throws InterruptedException;	
-	
+		
 	/**
 	 * Executes graph synchronously. 
 	 * Thus it waits until the graph is finished or until the timeout expires.

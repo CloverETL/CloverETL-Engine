@@ -109,6 +109,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
         runtimeContext.setRuntimeClassPath(givenRuntimeContext.getRuntimeClassPath());
         runtimeContext.setCompileClassPath(givenRuntimeContext.getCompileClassPath());
         runtimeContext.setJobUrl(givenRuntimeContext.getJobUrl());
+        runtimeContext.setUseJMX(givenRuntimeContext.useJMX());
         
         // debug mode has to be turned off, parallel edge debugging is not available for non-server graph processing 
         runtimeContext.setEdgeDebugging(false);
@@ -238,15 +239,9 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 		return executeGraphSync(rr, graph, runtimeContext, timeout);
 	}
-	
+		
 	@Override
-	public RunStatus executeGraphSync(TransformationGraph graph, GraphRuntimeContext givenRuntimeContext, Long timeout) 
-			throws InterruptedException {
-		return executeGraphSync(graph, givenRuntimeContext, timeout, true);
-	}
-	
-	@Override
-	public RunStatus executeGraphSync(TransformationGraph graph, GraphRuntimeContext givenRuntimeContext, Long timeout, boolean useJmx)
+	public RunStatus executeGraphSync(TransformationGraph graph, GraphRuntimeContext givenRuntimeContext, Long timeout)
 			throws InterruptedException {
 		RunStatus rr = new RunStatus();
         
@@ -254,7 +249,6 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		rr.startTime = new Date(startTime);
 
 		GraphRuntimeContext runtimeContext = prepareRuntimeContext(givenRuntimeContext, rr.runId = getUniqueRunId());
-		runtimeContext.setUseJMX(useJmx);
 
 		return executeGraphSync(rr, graph, runtimeContext, timeout);
 	}
