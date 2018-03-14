@@ -240,7 +240,13 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 	
 	@Override
-	public RunStatus executeGraphSync(TransformationGraph graph, GraphRuntimeContext givenRuntimeContext, Long timeout)
+	public RunStatus executeGraphSync(TransformationGraph graph, GraphRuntimeContext givenRuntimeContext, Long timeout) 
+			throws InterruptedException {
+		return executeGraphSync(graph, givenRuntimeContext, timeout, true);
+	}
+	
+	@Override
+	public RunStatus executeGraphSync(TransformationGraph graph, GraphRuntimeContext givenRuntimeContext, Long timeout, boolean useJmx)
 			throws InterruptedException {
 		RunStatus rr = new RunStatus();
         
@@ -248,6 +254,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		rr.startTime = new Date(startTime);
 
 		GraphRuntimeContext runtimeContext = prepareRuntimeContext(givenRuntimeContext, rr.runId = getUniqueRunId());
+		runtimeContext.setUseJMX(useJmx);
 
 		return executeGraphSync(rr, graph, runtimeContext, timeout);
 	}
