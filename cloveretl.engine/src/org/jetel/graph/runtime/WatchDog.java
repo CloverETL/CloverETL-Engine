@@ -946,6 +946,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		}
 		if (provideJMX) {
 			Properties props = graph.getGraphParameters().asProperties();
+			logger.error("WatchDog sending JMX message GRAPH_STARTED with runId " + getGraphRuntimeContext().getRunId());
 			CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.GRAPH_STARTED, null, props);
 		}
 	}
@@ -985,6 +986,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			int runningPhaseNum = graphTracking.getRunningPhaseTracking().getPhaseNum();
 			DictionaryValuesContainer dictionary = DictionaryValuesContainer.getDictionaryValuesContainer(graph.getDictionary(), true, true, true);
 			JMXNotificationData data = new JMXNotificationData(runningPhaseNum, dictionary);
+			logger.error("WatchDog sending JMX message PHASE_FINISHED with runId " + getGraphRuntimeContext().getRunId());
 			CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.PHASE_FINISHED, null, data);
 		}
 	}
