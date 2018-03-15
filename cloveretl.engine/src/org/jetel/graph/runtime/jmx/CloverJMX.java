@@ -272,7 +272,6 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	public void sendNotification(long runId, String type, String message, Object userData) {
 		Notification notification = new Notification(type, this, notificationSequence.getAndIncrement());
 		notification.setUserData(new JMXNotificationMessage(runId, userData));
-		log.warn("Sending JMX message " + type + " with runId " + runId + " #" + notification.getSequenceNumber() + " for runId #" + runId);
 		sendNotification(notification);
 	}
 	
