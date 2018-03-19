@@ -50,6 +50,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
+import org.jetel.graph.runtime.IAuthorityProxy.RunStatus;
 import org.jetel.graph.runtime.jmx.GraphTracking;
 import org.jetel.graph.runtime.jmx.TrackingEvent;
 import org.jetel.util.ExceptionUtils;
@@ -282,7 +283,7 @@ public abstract class IAuthorityProxy {
 	 * @throws InterruptedException if the thread is interrupted while waiting for final event 
 	 */
 	public abstract RunStatus executeGraphSync(String graphUrl, GraphRuntimeContext runtimeContext, Long timeout) throws InterruptedException;
-	
+		
 	/**
 	 * Executes graph synchronously. 
 	 * Thus it waits until the graph is finished or until the timeout expires.
