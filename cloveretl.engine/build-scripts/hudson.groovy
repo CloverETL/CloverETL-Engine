@@ -192,7 +192,6 @@ if( !runTests ){
 		// prevent OutOfMemoryError and Segmentation error on IBM Java
 		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
 		antArgs += "-Drunscenarios.Xmso=-Xmso2048k" // CLO-4730, CLO-4567
-		antArgs += "-Dadditional.jvmargs=-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=33333 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=172.22.2.11"
 	}
 
 	// trustStore file path set separately from the other arguments
