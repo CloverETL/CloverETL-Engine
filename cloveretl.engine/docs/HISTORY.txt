@@ -6,6 +6,7 @@ REL-4-9-0-M2
 ------------
 
 * Job Execution in Separate JVM:
+	* CLO-13022 server.http.url property is not used anymore
 	* CLO-12837 Use Jetty for communication from Worker to Server
 	* CLO-11464 Access information about workers in Cluster
 	* CLO-11462 See Worker load in performance graphs
