@@ -2,6 +2,29 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-9-0-M2
+------------
+
+* Job Execution in Separate JVM:
+	* CLO-13022 server.http.url property is not used anymore
+	* CLO-12837 Use Jetty for communication from Worker to Server
+	* CLO-11464 Access information about workers in Cluster
+	* CLO-11462 See Worker load in performance graphs
+* CLO-12734 Disable direct memory usage by default
+* CLO-12634 Support tcServer with Tomcat 8.5
+* CLO-12632 Support Tomcat 8.5
+* CLO-12870 Improve performance of password obfuscation of dictionary in job log
+* CLO-12560 Designer: Add 80% zoom option
+* Fixes:
+	* CLO-12883 WebServiceClient does not send credentials for URL via input mapping
+	* CLO-12523 Plus + sign in the password to FTP in File Event Listener does not work
+	* Job Execution in Separate JVM:
+		* CLO-12949 Restart now action - Worker stays in STARTING state
+		* CLO-12821 Status page info.jsp is broken
+		* CLO-12778 CTL debugging does not work on Worker
+		* CLO-12725 Notification from CloverJMX mbean are not correctly ordered
+		* CLO-12697	Worker process remains if OutOfMemoryError happens on Worker
+
 REL-4-9-0-M1
 ------------
 
