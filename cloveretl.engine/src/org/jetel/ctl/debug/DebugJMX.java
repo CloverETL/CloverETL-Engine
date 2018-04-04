@@ -172,7 +172,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	}
 
 	public synchronized void sendNotification(GraphDebugger sender, String type, Object userData) {
-		Notification suspendNotification = new Notification(type, this, notificationSequence.getAndIncrement());
+		Notification suspendNotification = new Notification(type, MBEAN_NAME, notificationSequence.getAndIncrement());
 		suspendNotification.setUserData(new JMXNotificationMessage(sender.getRunId(), userData));
 		sendNotification(suspendNotification);
 	}
