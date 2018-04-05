@@ -22,7 +22,6 @@ import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
@@ -33,6 +32,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.JMXNotificationMessage;
+import org.jetel.graph.runtime.jmx.JmxUtils;
 
 /**
  * A JMX bean for CTL debugging. It manages debugging of CTL threads - passes debugging
@@ -50,8 +50,6 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 
 	public static final String MBEAN_NAME = "org.jetel.ctl:type=DebugJMX";
 
-	private AtomicLong notificationSequence = new AtomicLong();
-	
 	private static Map<Long, GraphDebugger> graphDebuggerCache = new ConcurrentHashMap<>();
 
 	/** The only instance of DebugJMX	 */
@@ -172,7 +170,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	}
 
 	public synchronized void sendNotification(GraphDebugger sender, String type, Object userData) {
-		Notification suspendNotification = new Notification(type, MBEAN_NAME, notificationSequence.getAndIncrement());
+		Notification suspendNotification = new Notification(type, MBEAN_NAME, JmxUtils.getNextSequenceNumber());
 		suspendNotification.setUserData(new JMXNotificationMessage(sender.getRunId(), userData));
 		sendNotification(suspendNotification);
 	}
