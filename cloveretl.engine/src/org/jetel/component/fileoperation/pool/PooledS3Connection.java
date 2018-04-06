@@ -187,7 +187,10 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 		String accessKey = getAccessKey(authority);
 		String secretKey = getSecretKey(authority);
 
-		AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
+		AWSCredentials credentials = null;
+		if (!StringUtils.isEmpty(accessKey)) { // CLO-13093
+			credentials = new BasicAWSCredentials(accessKey, secretKey);
+		}
 		
 		ClientConfiguration properties = new ClientConfiguration(DEFAULTS);
 		
@@ -206,7 +209,7 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 		}
 		
 //		properties.setSignerOverride("AWSS3V4SignerType");
-		AmazonS3Client amazonS3Client = new AmazonS3Client(credentials, properties);
+		AmazonS3Client amazonS3Client = (credentials != null) ? new AmazonS3Client(credentials, properties) : new AmazonS3Client(properties);
 		amazonS3Client.setEndpoint(authority.getHost());
 //		amazonS3Client.setRegion(Region.EU_Frankfurt.toAWSRegion());
 //		amazonS3Client.setSignerRegionOverride(Region.EU_Frankfurt.toString());
@@ -282,5 +285,5 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 	public OutputStream getOutputStream(URI uri) throws IOException {
 		return PrimitiveS3OperationHandler.getOutputStream(uri, this);
 	}
-
+	
 }
