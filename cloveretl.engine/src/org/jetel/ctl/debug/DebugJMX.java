@@ -32,7 +32,6 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.JMXNotificationMessage;
-import org.jetel.graph.runtime.jmx.JmxUtils;
 
 /**
  * A JMX bean for CTL debugging. It manages debugging of CTL threads - passes debugging
@@ -170,7 +169,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	}
 
 	public synchronized void sendNotification(GraphDebugger sender, String type, Object userData) {
-		Notification suspendNotification = new Notification(type, MBEAN_NAME, JmxUtils.getNextSequenceNumber());
+		Notification suspendNotification = new Notification(type, MBEAN_NAME, 0); // CLO-13065: the sequence number will be set by JmxNotificationSender
 		suspendNotification.setUserData(new JMXNotificationMessage(sender.getRunId(), userData));
 		sendNotification(suspendNotification);
 	}

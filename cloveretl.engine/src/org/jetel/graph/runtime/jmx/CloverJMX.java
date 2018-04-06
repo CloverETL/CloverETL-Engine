@@ -252,7 +252,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	}
 	
 	public void sendNotification(long runId, String type, String message, Object userData) {
-		Notification notification = new Notification(type, MBEAN_NAME, JmxUtils.getNextSequenceNumber());
+		Notification notification = new Notification(type, MBEAN_NAME, 0); // CLO-13065: the sequence number will be set by JmxNotificationSender
 		notification.setUserData(new JMXNotificationMessage(runId, userData));
 		sendNotification(notification);
 	}
