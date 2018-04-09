@@ -147,6 +147,12 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 			}
 		}
 	}
+	
+	public void abortAllGraphExecutions() {
+		for (long runId : watchDogCache.keySet()) {
+			abortGraphExecution(runId);
+		}
+	}
 
 	@Override
 	public boolean abortGraphExecution(long runId) {
