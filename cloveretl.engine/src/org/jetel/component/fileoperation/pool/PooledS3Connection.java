@@ -28,15 +28,21 @@ import java.net.URL;
 
 import org.jetel.component.fileoperation.PrimitiveS3OperationHandler;
 import org.jetel.component.fileoperation.URIUtils;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.runtime.IAuthorityProxy;
+import org.jetel.graph.runtime.IGuiAuthorityProxy;
 import org.jetel.util.protocols.ProxyConfiguration;
 import org.jetel.util.protocols.URLValidator;
 import org.jetel.util.protocols.Validable;
 import org.jetel.util.protocols.amazon.S3Utils;
 import org.jetel.util.string.StringUtils;
 
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.PredefinedClientConfigurations;
 import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.AWSCredentialsProviderChain;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
@@ -209,16 +215,18 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 		}
 		
 //		properties.setSignerOverride("AWSS3V4SignerType");
-		AmazonS3Client amazonS3Client = (credentials != null) ? new AmazonS3Client(credentials, properties) : new AmazonS3Client(properties);
-		amazonS3Client.setEndpoint(authority.getHost());
-//		amazonS3Client.setRegion(Region.EU_Frankfurt.toAWSRegion());
-//		amazonS3Client.setSignerRegionOverride(Region.EU_Frankfurt.toString());
+		AmazonS3Client amazonS3Client;
+		if (credentials != null) {
+			amazonS3Client = new AmazonS3Client(credentials, properties); // static credentials
+		} else { // CLO-13093:
+			// FIXME currently, pooled connections may use a credentials provider from another Server instance;
+			// this may cause in Designer that the user can browse buckets that are not accessible from the current Server project 
 
-//		int port = authority.getPort();
-//		if (port > -1) {
-//			String portStr = String.valueOf(port);
-//		}
-		// TODO https
+			// create a new chain, AWSCredentialsProviderChain saves last used provider and it may be called from a different project
+			AWSCredentialsProvider credentialsProvider = new CredentialsProviderChain(GuiCredentialsProvider.INSTANCE, S3Utils.getDefaultCredentialsProvider());
+			amazonS3Client = new AmazonS3Client(credentialsProvider, properties); // default credentials providers
+		}
+		amazonS3Client.setEndpoint(authority.getHost());
 		
 		return amazonS3Client;
 	}
@@ -284,6 +292,76 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 	 */
 	public OutputStream getOutputStream(URI uri) throws IOException {
 		return PrimitiveS3OperationHandler.getOutputStream(uri, this);
+	}
+	
+	private static class CredentialsProviderChain extends AWSCredentialsProviderChain {
+
+		public CredentialsProviderChain(AWSCredentialsProvider... providers) {
+			super(providers);
+		}
+
+		@Override
+		public AWSCredentials getCredentials() {
+            try {
+                return super.getCredentials();
+            } catch (AmazonClientException ace) {
+                return null; // fall back to anonymous
+            }
+		}
+		
+	}
+	
+	/**
+	 * CLO-13093:
+	 * 
+	 * Returns {@link AWSCredentials} from GuiAuthorityProxy registered via {@link ContextProvider}.
+	 * This allows us to load default credentials from CloverETL Server in remote projects.
+	 * 
+	 * @author krivanekm (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created 10. 4. 2018
+	 */
+	private static class GuiCredentialsProvider implements AWSCredentialsProvider {
+
+		private static final GuiCredentialsProvider INSTANCE = new GuiCredentialsProvider();
+
+		@Override
+		public AWSCredentials getCredentials() {
+			AWSCredentials result = null;
+			
+			AWSCredentialsProvider delegate = getProjectCredentialsProvider();
+			if (delegate != null) {
+				result = delegate.getCredentials();
+			}
+			
+			if (result == null) {
+				result = S3Utils.NULL_CREDENTIALS; // used in a chain, prevent NPE
+			}
+			
+			return result;
+		}
+		
+		@Override
+		public void refresh() {
+			AWSCredentialsProvider delegate = getProjectCredentialsProvider();
+			if (delegate != null) {
+				delegate.refresh();
+			}
+		}
+		
+		private AWSCredentialsProvider getProjectCredentialsProvider() {
+			AWSCredentialsProvider result = null;
+			
+        	IAuthorityProxy authorityProxy = ContextProvider.getAuthorityProxy();
+        	if (authorityProxy instanceof IGuiAuthorityProxy) {
+        		IGuiAuthorityProxy guiAuthorityProxy = (IGuiAuthorityProxy) authorityProxy;
+        		result = guiAuthorityProxy.getCredentialsProvider();
+        	}
+        	
+        	return result;
+		}
+
 	}
 	
 }
