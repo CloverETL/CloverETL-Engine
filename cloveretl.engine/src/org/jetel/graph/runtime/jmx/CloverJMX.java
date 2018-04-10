@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
@@ -77,8 +76,6 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
      */
     private transient Map<Long, WatchDog> watchDogCache = new ConcurrentHashMap<>();
 
-    private AtomicLong notificationSequence = new AtomicLong();
-    
     /**
      * Obsolete timeout can be changed due junit tests.
      */
@@ -261,7 +258,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	}
 	
 	public void sendNotification(long runId, String type, String message, Object userData) {
-		Notification notification = new Notification(type, this, notificationSequence.getAndIncrement());
+		Notification notification = new Notification(type, MBEAN_NAME, 0); // CLO-13065: the sequence number will be set by JmxNotificationSender
 		notification.setUserData(new JMXNotificationMessage(runId, userData));
 		sendNotification(notification);
 	}

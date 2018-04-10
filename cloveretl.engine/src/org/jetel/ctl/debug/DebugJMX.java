@@ -22,7 +22,6 @@ import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
@@ -50,8 +49,6 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 
 	public static final String MBEAN_NAME = "org.jetel.ctl:type=DebugJMX";
 
-	private AtomicLong notificationSequence = new AtomicLong();
-	
 	private static Map<Long, GraphDebugger> graphDebuggerCache = new ConcurrentHashMap<>();
 
 	/** The only instance of DebugJMX	 */
@@ -172,7 +169,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	}
 
 	public synchronized void sendNotification(GraphDebugger sender, String type, Object userData) {
-		Notification suspendNotification = new Notification(type, this, notificationSequence.getAndIncrement());
+		Notification suspendNotification = new Notification(type, MBEAN_NAME, 0); // CLO-13065: the sequence number will be set by JmxNotificationSender
 		suspendNotification.setUserData(new JMXNotificationMessage(sender.getRunId(), userData));
 		sendNotification(suspendNotification);
 	}
