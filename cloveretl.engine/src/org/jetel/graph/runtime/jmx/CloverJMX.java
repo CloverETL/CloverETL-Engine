@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
@@ -77,8 +76,6 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
      */
     private transient Map<Long, WatchDog> watchDogCache = new ConcurrentHashMap<>();
 
-    private static volatile AtomicInteger notificationSequence = new AtomicInteger(0);
-    
     /**
      * Obsolete timeout can be changed due junit tests.
      */
@@ -107,10 +104,6 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	        	throw new JetelRuntimeException("CloverJMX mBean cannot be published.", e);
 	        }
 		}
-	}
-	
-	public static int getNotificationSequence() {
-		return notificationSequence.incrementAndGet();
 	}
 
 	/**
@@ -154,25 +147,16 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 			}
 		}
 	}
+	
+	public void abortAllGraphExecutions() {
+		for (long runId : watchDogCache.keySet()) {
+			abortGraphExecution(runId);
+		}
+	}
 
 	@Override
 	public boolean abortGraphExecution(long runId) {
-		Object oldRunId = MDC.get(LogUtils.MDC_RUNID_KEY);
-		MDC.put(LogUtils.MDC_RUNID_KEY, runId);
-		try {
-			WatchDog watchDog = watchDogCache.get(runId);
-			if (watchDog != null) {
-				watchDog.abort();
-				return true;
-			}
-			return false;
-		} finally {
-			if (oldRunId == null) {
-				MDC.remove(LogUtils.MDC_RUNID_KEY);
-			} else {
-				MDC.put(LogUtils.MDC_RUNID_KEY, oldRunId);
-			}
-		}
+		return abortGraphExecution(runId, false);
 	}
 
 	@Override
@@ -274,7 +258,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	}
 	
 	public void sendNotification(long runId, String type, String message, Object userData) {
-		Notification notification = new Notification(type, this, getNotificationSequence());
+		Notification notification = new Notification(type, MBEAN_NAME, 0); // CLO-13065: the sequence number will be set by JmxNotificationSender
 		notification.setUserData(new JMXNotificationMessage(runId, userData));
 		sendNotification(notification);
 	}
