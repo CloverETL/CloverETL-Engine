@@ -44,6 +44,7 @@ public class CLVFLookupNode extends SimpleNode {
 	private /* final */ int lookupIndex;
 	private /* final */ DataRecord lookupRecord;
 	private /* final */ TLType[] paramTypes;
+	private boolean canonicalParamTypes;
 	private /* final */ List<Integer> decimalPrecisions;
 	private /* final */ Lookup lookup;
 	private SyntacticPosition nameBegin;
@@ -103,12 +104,17 @@ public class CLVFLookupNode extends SimpleNode {
 		this.lookupTable = lookupTable;
 	}
 
-	public void setFormalParameters(TLType[] paramTypes) {
+	public void setFormalParameters(TLType[] paramTypes, boolean canonical) {
 		this.paramTypes = paramTypes;
+		this.canonicalParamTypes = canonical;
 	}
 	
 	public TLType[] getFormalParameters() {
 		return this.paramTypes;
+	}
+	
+	public boolean isFormalParametersCanonical() {
+		return canonicalParamTypes;
 	}
 
 	@Override
