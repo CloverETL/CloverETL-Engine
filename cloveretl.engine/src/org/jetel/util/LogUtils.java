@@ -19,6 +19,7 @@
 package org.jetel.util;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.MDC;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.graph.ContextProvider;
@@ -73,4 +74,24 @@ public class LogUtils {
 		return str.toString();
 	}
 	
+	/**
+	 * Executes the Runnable with the MDC context set to <code>runId</code> and restores the original context afterwards.
+	 * 
+	 * @param runId		context job runId
+	 * @param runnable
+	 */
+	public static void runWithRunIdContext(long runId, Runnable runnable) {
+		Object oldRunId = MDC.get(LogUtils.MDC_RUNID_KEY);
+		MDC.put(LogUtils.MDC_RUNID_KEY, runId);
+		try {
+			runnable.run();
+		} finally {
+			if (oldRunId == null) {
+				MDC.remove(LogUtils.MDC_RUNID_KEY);
+			} else {
+				MDC.put(LogUtils.MDC_RUNID_KEY, oldRunId);
+			}
+		}
+	}
+
 }
