@@ -696,6 +696,12 @@ public class FileUtilsTest extends CloverTestCase {
 		input = "response:body";
 		result = FileUtils.getAbsoluteURL(contextUrl, input);
 		assertEquals(input, result);
+
+		// CLO-13153:
+		contextUrl = FileUtils.getFileURL("sandbox://sub2sub/");
+		input = "zip:(gzip:(sandbox://sub2sub/data-in/data.zip.gz)#)#????????_CurveMapping_GL.csv";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(input, result);
 	}
 	
 	private static String[][] paths = new String[][] {
