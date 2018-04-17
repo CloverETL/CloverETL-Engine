@@ -57,6 +57,7 @@ import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.ctl.data.UnknownTypeException;
 import org.jetel.data.Defaults;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.data.lookup.LookupTable2;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.NotInitializedException;
@@ -515,7 +516,11 @@ public class ASTBuilder extends NavigatingVisitor {
 					// fail safe step in case getKey() does not work properly -> exception is caught below
 					throw new UnsupportedOperationException();
 				}
-				
+				boolean canonicalMetadata = true;
+				if (node.getLookupTable() instanceof LookupTable2) {
+					LookupTable2 table2 = (LookupTable2)node.getLookupTable();
+					canonicalMetadata = table2.isKeyMetadataCanonical();
+				}
 				// extract lookup parameter types
 				TLType[] formal = new TLType[keyRecordMetadata.getNumFields()];
 				try {
@@ -527,7 +532,7 @@ public class ASTBuilder extends NavigatingVisitor {
 							decimalInfo.add(f.getFieldProperties().getIntProperty(DataFieldMetadata.SCALE_ATTR));
 						}
 					}
-					node.setFormalParameters(formal);
+					node.setFormalParameters(formal, canonicalMetadata);
 					node.setDecimalPrecisions(decimalInfo);
 				} catch (UnknownTypeException e) {
 					error(node,"Lookup returned an unknown parameter type: '" + e.getType() + "'");
@@ -589,7 +594,7 @@ public class ASTBuilder extends NavigatingVisitor {
 				node.setType(TLType.ERROR);
 				return node;
 			}
-			node.setFormalParameters(new TLType[] {TLType.forRecord(ret)});
+			node.setFormalParameters(new TLType[] {TLType.forRecord(ret)}, true);
 			node.setType(TLTypePrimitive.BOOLEAN);
 			break;
 			
