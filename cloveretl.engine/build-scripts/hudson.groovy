@@ -94,6 +94,7 @@ if( !runTests ){
 		"-Ddir.examples=../cloveretl.examples",
 		"-Djavaversion=${javaVersion}",
 		"-Dcloveretl.smb2.bouncycastle.jar.file=${bouncyPath}/bcprov-jdk15on-1.57.jar",
+		"-Djdk.nio.maxCachedBufferSize=262144",
 		"-Drunscenarios.trustStore=-Djavax.net.ssl.trustStore=${trustStoreF}"
 	]
 	if( jobGoal == "after-commit" ) {
@@ -155,6 +156,7 @@ if( !runTests ){
 		"-Ddir.examples=../cloveretl.examples",
 		"-Dtestenv.etlenvironment=engine",
 		"-Dcloveretl.smb2.bouncycastle.jar.file=${bouncyPath}/bcprov-jdk15on-1.57.jar",
+		"-Djdk.nio.maxCachedBufferSize=262144",
 		"-Djavaversion=${javaVersion}"
 	]
 
