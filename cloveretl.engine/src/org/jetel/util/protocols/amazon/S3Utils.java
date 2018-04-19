@@ -32,11 +32,16 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
+import org.apache.log4j.Logger;
 import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.component.fileoperation.pool.PooledS3Connection;
 import org.jetel.util.ExceptionUtils;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.AnonymousAWSCredentials;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
@@ -56,6 +61,8 @@ import com.amazonaws.services.s3.transfer.Upload;
  */
 public class S3Utils {
 	
+	private static final Logger log = Logger.getLogger(PooledS3Connection.class);
+	
 	public static final String FORWARD_SLASH = "/";
 	
 	private static String JETS3T_PROPERTIES_FILENAME = "jets3t.properties";
@@ -68,6 +75,8 @@ public class S3Utils {
 	private static final long END_OF_FILE = Long.MAX_VALUE - 1;
 
 	private static Boolean sse = null;
+	
+	public static final AWSCredentials NULL_CREDENTIALS = new AnonymousAWSCredentials();
 	
 	private S3Utils() {
 		throw new UnsupportedOperationException();
@@ -327,5 +336,47 @@ public class S3Utils {
 			throw S3Utils.getIOException(e);
 		}
 	}
+	
+	/**
+	 * Default credentials provider from the local VM.
+	 * Returns anonymous credential as a fallback.
+	 * 
+	 * @author krivanekm (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created 10. 4. 2018
+	 */
+	private static class LocalCredentialsProvider extends DefaultAWSCredentialsProviderChain {
+		
+		private static final LocalCredentialsProvider INSTANCE = new LocalCredentialsProvider();
 
+        @Override
+        public AWSCredentials getCredentials() {
+            try {
+                return super.getCredentials();
+            } catch (AmazonClientException ace) {
+            	log.debug("No AWS credentials available, falling back to anonymous access");
+            	return S3Utils.NULL_CREDENTIALS;
+            }
+        }
+		
+	}
+	
+	/**
+	 * Return default AWS credentials provider.
+	 *  
+	 * @return default AWS credentials provider
+	 */
+	public static AWSCredentialsProvider getDefaultCredentialsProvider() {
+		return LocalCredentialsProvider.INSTANCE;
+	}
+
+	/**
+	 * Return default AWS credentials.
+	 *  
+	 * @return default AWS credentials
+	 */
+	public static AWSCredentials getDefaultCredentials() {
+		return getDefaultCredentialsProvider().getCredentials();
+	}
 }

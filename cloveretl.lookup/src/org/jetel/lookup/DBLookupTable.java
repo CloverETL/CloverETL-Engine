@@ -37,7 +37,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
-import org.jetel.data.lookup.LookupTable;
+import org.jetel.data.lookup.LookupTable2;
 import org.jetel.database.sql.CopySQLData;
 import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.JdbcSpecific;
@@ -80,7 +80,7 @@ import org.w3c.dom.Element;
  *@author     dpavlis
  *@since      May 22, 2003
  */
-public class DBLookupTable extends GraphElement implements LookupTable {
+public class DBLookupTable extends GraphElement implements LookupTable2 {
 
     private static final String XML_LOOKUP_TYPE_DB_LOOKUP = "DBLookup"; 
     private static final String XML_SQL_QUERY = "sqlQuery";
@@ -189,7 +189,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		if (connection == null) {
 			connection = (DBConnection) getGraph().getConnection(connectionId);
 			if (connection == null) {
-				throw new ComponentNotReadyException("Connection " + StringUtils.quote(connectionId) + " does not exist!!!");
+				throw new ComponentNotReadyException("Connection " + StringUtils.quote(connectionId) + " does not exist");
 			}
 			connection.init();
 		}
@@ -234,7 +234,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         
     	String type = properties.getStringProperty(XML_TYPE_ATTRIBUTE);
     	if (!type.equalsIgnoreCase(XML_LOOKUP_TYPE_DB_LOOKUP)){
-    		throw new GraphConfigurationException("Can't create db lookup table from type " + type);
+    		throw new GraphConfigurationException("Cannot create db lookup table from type " + type);
     	}
     	
         DBLookupTable lookupTable = new DBLookupTable(properties.getProperty(XML_ID_ATTRIBUTE), 
@@ -267,7 +267,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         
         //check type
         if (!type.equalsIgnoreCase(XML_LOOKUP_TYPE_DB_LOOKUP)) {
-            throw new XMLConfigurationException("Can't create db lookup table from type " + type);
+            throw new XMLConfigurationException("Cannot create db lookup table from type " + type);
         }
         
         //create db lookup table
@@ -344,7 +344,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		if (connection == null) {
 			DBConnection tmp = (DBConnection)getGraph().getConnection(connectionId);
 			if (tmp == null) {
-				status.addError(this, XML_DBCONNECTION, "Connection " + StringUtils.quote(connectionId) + " does not exist!!!");
+				status.addError(this, XML_DBCONNECTION, "Connection " + StringUtils.quote(connectionId) + " does not exist");
 			}
 		}
 
@@ -352,7 +352,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 			dbMetadata = getGraph().getDataRecordMetadata(metadataId, false);
 			if (dbMetadata == null) {
 				status.addWarning(this, XML_METADATA_ID, "Metadata " + StringUtils.quote(metadataId) + 
-						" does not exist. DB metadata will be created from sql query.");
+						" does not exist. Database metadata will be created from the SQL query.");
 			}
 		}
         return status;
@@ -363,7 +363,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         if (!isInitialized()) {
             throw new NotInitializedException(this);
         } else if (sqlConnection == null) {
-        	throw new NotInitializedException("No DB connection! (pre-execute initialization not performed?)", this);
+        	throw new NotInitializedException("No database connection (pre-execute initialization not performed?)", this);
         }
         
     	//remove WHERE condidion from sql query
@@ -384,7 +384,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     }
     
     private String[] parseSQLWhereClause(String queryString, DataRecordMetadata recordMetadata) {
-    	ArrayList<String> keys = new ArrayList<String>(); 
+    	List<String> keys = new ArrayList<String>(); 
     	
     	StringBuilder query = new StringBuilder(queryString);
     	int whereIndex = query.toString().toLowerCase().indexOf("where");
@@ -407,7 +407,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     	if (keys.isEmpty()) {
     		return null;
     	} else {
-    		return keys.toArray(new String[0]);
+    		return keys.toArray(new String[keys.size()]);
     	}
     }     
     
@@ -477,12 +477,12 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         if (!isInitialized()) {
             throw new NotInitializedException(this);
         } else if ((sqlConnection == null) && (connection == null)) {
-        	throw new NotInitializedException("No DB connection! (pre-execute initialization not performed?)", this);
+        	throw new NotInitializedException("No database connection (pre-execute initialization not performed?)", this);
         } else if ((sqlConnection == null) && (connection != null)) {
         	try {
         		sqlConnection = connection.getConnection(getId(), OperationType.READ);
         	} catch (JetelException e) {
-        		throw new ComponentNotReadyException("Can't connect to database", e);
+        		throw new ComponentNotReadyException("Cannot connect to the database", e);
         	}
         }
 
@@ -508,6 +508,11 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		} else {
 			throw new UnsupportedOperationException("DBLookupTable does not provide key metadata.");
 		}
+	}
+	
+	@Override
+	public boolean isKeyMetadataCanonical() {
+		return false;
 	}
 	
 	@Override

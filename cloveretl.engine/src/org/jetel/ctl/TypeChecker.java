@@ -86,12 +86,11 @@ import org.jetel.ctl.ASTnode.CLVFWhileStatement;
 import org.jetel.ctl.ASTnode.CastNode;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.data.TLType;
-import org.jetel.ctl.data.TLTypePrimitive;
-import org.jetel.ctl.data.TLType.TLTypeByteArray;
 import org.jetel.ctl.data.TLType.TLTypeList;
 import org.jetel.ctl.data.TLType.TLTypeMap;
 import org.jetel.ctl.data.TLType.TLTypeRecord;
 import org.jetel.ctl.data.TLType.TLTypeSymbol;
+import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.ctl.extensions.TLFunctionCallContext;
 import org.jetel.ctl.extensions.TLFunctionDescriptor;
 import org.jetel.metadata.DataFieldMetadata;
@@ -1206,15 +1205,23 @@ public class TypeChecker extends NavigatingVisitor {
 				}
 	
 				if (formal.length != actual.length) {
-					error(node,functionErrorMessage(opName, formal, actual));
-					node.setType(TLType.ERROR);
+					if (node.isFormalParametersCanonical()) {
+						error(node, functionErrorMessage(opName, formal, actual));
+						node.setType(TLType.ERROR);
+					} else {
+						warn(node, functionWarnMessage(opName, formal, actual));
+					}
 					return data;
 				}
 				
-				for (int i=0; i<formal.length; i++) {
-					if (! formal[i].canAssign(actual[i])) {
-						error(node,functionErrorMessage(opName, formal, actual));
-						node.setType(TLType.ERROR);
+				for (int i = 0; i < formal.length; i++) {
+					if (!formal[i].canAssign(actual[i])) {
+						if (node.isFormalParametersCanonical()) {
+							error(node, functionErrorMessage(opName, formal, actual));
+							node.setType(TLType.ERROR);
+						} else {
+							warn(node, functionWarnMessage(opName, formal, actual));
+						}
 						return data;
 					} else {
 						castIfNeeded(args, i, formal[i]);
@@ -2224,11 +2231,11 @@ public class TypeChecker extends NavigatingVisitor {
 	}
 
 	private String functionErrorMessage(String name, TLType[] formal, TLType[] actual) {
-		StringBuffer msg = new StringBuffer("Function ").append(name).append("(");
+		StringBuilder msg = new StringBuilder("Function ").append(name).append("(");
 		for (int i = 0; i < formal.length; i++) {
 			msg.append(formal[i].name());
 			if (i < formal.length - 1) {
-				msg.append(',');
+				msg.append(", ");
 			}
 		}
 		
@@ -2236,7 +2243,22 @@ public class TypeChecker extends NavigatingVisitor {
 		for (int i = 0; i < actual.length; i++) {
 			msg.append(actual[i].name());
 			if (i < actual.length - 1) {
-				msg.append(',');
+				msg.append(", ");
+			}
+		}
+		msg.append(')');
+
+		return msg.toString();
+	}
+	
+	private String functionWarnMessage(String name, TLType[] formal, TLType[] actual) {
+		StringBuilder msg = new StringBuilder("Function ").append(name).append("(");
+		msg.append(") may be not applicable for the arguments (");
+		
+		for (int i = 0; i < actual.length; i++) {
+			msg.append(actual[i].name());
+			if (i < actual.length - 1) {
+				msg.append(", ");
 			}
 		}
 		msg.append(')');
@@ -2252,7 +2274,6 @@ public class TypeChecker extends NavigatingVisitor {
 		}
 
 		return TLType.ERROR;
-
 	}
 	
 	
