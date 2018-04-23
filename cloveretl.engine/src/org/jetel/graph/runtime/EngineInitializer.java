@@ -265,7 +265,6 @@ public class EngineInitializer {
 		}
 		
 		//initialize the graph
-		logger.info("Graph initialization (" + graph.getName() + ")");
         graph.init();
 	}
 
