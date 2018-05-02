@@ -20,6 +20,7 @@
  */
 package org.jetel.util.string;
 
+import java.math.BigDecimal;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -262,42 +263,151 @@ public class StringUtilsTest extends CloverTestCase {
 	public void test_isNumber() {
 		String str = "123456789";
 		assertTrue(StringUtils.isNumber(str));
-		System.out.println("Oryginal: " + str + ", parsed: " + Double.parseDouble(str));
+		assertTrue(isDouble(str));
+		assertTrue(isDecimal(str));
+		System.out.println("Original: " + str + ", parsed: " + Double.parseDouble(str));
 
 		str = "1234.56789";
 		assertTrue(StringUtils.isNumber(str));
-		System.out.println("Oryginal: " + str + ", parsed: " + Double.parseDouble(str));
-
-		assertFalse(StringUtils.isNumber("123,456789"));
-		assertFalse(StringUtils.isNumber("123.45678.9"));
+		assertTrue(isDouble(str));
+		assertTrue(isDecimal(str));
+		System.out.println("Original: " + str + ", parsed: " + Double.parseDouble(str));
 
 		str = "1234e56789";
 		assertTrue(StringUtils.isNumber(str));
-		System.out.println("Oryginal: " + str + ", parsed: " + Double.parseDouble(str));
+		assertTrue(isDouble(str));
+		assertTrue(isDecimal(str));
+		System.out.println("Original: " + str + ", parsed: " + Double.parseDouble(str));
 
 		str = "1234E+56789";
 		assertTrue(StringUtils.isNumber(str));
-		System.out.println("Oryginal: " + str + ", parsed: " + Double.parseDouble(str));
+		assertTrue(isDouble(str));
+		assertTrue(isDecimal(str));
+		System.out.println("Original: " + str + ", parsed: " + Double.parseDouble(str));
 
 		str = "1234e-56789";
 		assertTrue(StringUtils.isNumber(str));
-		System.out.println("Oryginal: " + str + ", parsed: " + Double.parseDouble(str));
+		assertTrue(isDouble(str));
+		assertTrue(isDecimal(str));
+		System.out.println("Original: " + str + ", parsed: " + Double.parseDouble(str));
 
 		str = "-1234E+56789";
 		assertTrue(StringUtils.isNumber(str));
-		System.out.println("Oryginal: " + str + ", parsed: " + Double.parseDouble(str));
+		assertTrue(isDouble(str));
+		assertTrue(isDecimal(str));
+		System.out.println("Original: " + str + ", parsed: " + Double.parseDouble(str));
 
-		assertFalse(StringUtils.isNumber("123456789e"));
-		assertFalse(StringUtils.isNumber("123456789e-"));
-		assertFalse(StringUtils.isNumber("123456dj789e"));
-		assertFalse(StringUtils.isNumber("d123456789"));
+		str = "1.E0258";
+		assertTrue(StringUtils.isNumber(str));
+		assertTrue(isDouble(str));
+		assertTrue(isDecimal(str));
+		str = "1E0258";
+		assertTrue(StringUtils.isNumber(str));
+		assertTrue(isDouble(str));
+		assertTrue(isDecimal(str));
+		str = "-.332e2";
+		assertTrue(StringUtils.isNumber(str));
+		assertTrue(isDouble(str));
+		assertTrue(isDecimal(str));
+		
+		str = "+.332e2";
+		assertTrue(StringUtils.isNumber(str));
+		assertTrue(isDouble(str));
+		assertTrue(isDecimal(str));
+		str = ".332e2";
+		assertTrue(StringUtils.isNumber(str));
+		assertTrue(isDouble(str));
+		assertTrue(isDecimal(str));
+
+		str = "1,234e-56789";
+		assertFalse(StringUtils.isNumber(str));
+		assertFalse(isDouble(str));
+		assertFalse(isDecimal(str));
+		str = "123,456789";
+		assertFalse(StringUtils.isNumber(str));
+		assertFalse(isDouble(str));
+		assertFalse(isDecimal(str));
+		str = "123.45678.9";
+		assertFalse(StringUtils.isNumber(str));
+		assertFalse(isDouble(str));
+		assertFalse(isDecimal(str));
+		str = "123456789e";
+		assertFalse(StringUtils.isNumber(str));
+		assertFalse(isDouble(str));
+		assertFalse(isDecimal(str));
+		str = "123456789e-";
+		assertFalse(StringUtils.isNumber(str));
+		assertFalse(isDouble(str));
+		assertFalse(isDecimal(str));
+		str = "123456dj789e";
+		assertFalse(StringUtils.isNumber(str));
+		assertFalse(isDouble(str));
+		assertFalse(isDecimal(str));
+		str = "d123456789";
+		assertFalse(StringUtils.isNumber(str));
+		assertFalse(isDouble(str));
+		assertFalse(isDecimal(str));
+		str = "";
+		assertFalse(StringUtils.isNumber(str));
+		assertFalse(isDouble(str));
+		assertFalse(isDecimal(str));
 
 		str = "1234E+56";
 		assertTrue(StringUtils.isNumber(str));
-		System.out.println("Oryginal: " + str + ", parsed: " + Double.parseDouble(str));
+		assertTrue(isDouble(str));
+		assertTrue(isDecimal(str));
+		System.out.println("Original: " + str + ", parsed: " + Double.parseDouble(str));
 		
-		assertFalse(StringUtils.isNumber(""));
 		assertEquals(-1, StringUtils.isInteger(""));
+		
+		//CLO-8756
+		str = "E0258";
+		assertFalse(StringUtils.isNumber(str));
+		assertFalse(isDouble(str));
+		assertFalse(isDecimal(str));
+		
+		str = ".E0258";
+		assertFalse(StringUtils.isNumber(str));
+		assertFalse(isDouble(str));
+		assertFalse(isDecimal(str));
+		str = "+E0258";
+		assertFalse(StringUtils.isNumber(str));
+		assertFalse(isDouble(str));
+		assertFalse(isDecimal(str));
+		str = "-E0258";
+		assertFalse(StringUtils.isNumber(str));
+		assertFalse(isDouble(str));
+		assertFalse(isDecimal(str));
+		str = "-.E0258";
+		assertFalse(StringUtils.isNumber(str));
+		assertFalse(isDouble(str));
+		assertFalse(isDecimal(str));
+		str = "A0258";
+		assertFalse(StringUtils.isNumber(str));
+		assertFalse(isDouble(str));
+		assertFalse(isDecimal(str));
+		str = "+-.332e2";
+		assertFalse(StringUtils.isNumber(str));
+		assertFalse(isDouble(str));
+		assertFalse(isDecimal(str));
+	}
+	
+	private boolean isDouble(String s) {
+		try {
+			Double.parseDouble(s);
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
+	private boolean isDecimal(String s) {
+		try {
+			new BigDecimal(s);
+			return true;
+		} catch (NumberFormatException e) {
+			return false;
+		}
 	}
 
 	public void testSplit() throws Exception {

@@ -675,7 +675,12 @@ public class FileUtils {
                 innerInput.append(input.substring(input.indexOf(':') + 1));
         	}
         } else if (archiveType == ArchiveType.GZIP) {
-        	innerInput.append(input.substring(input.indexOf(':') + 1));
+        	int beginIndex = input.indexOf(':') + 1;
+        	if (input.endsWith(")#")) { // CLO-13153: gzip:(sandbox://sub2sub/data-in/data.zip.gz)#
+        		innerInput.append(input.substring(beginIndex, input.length() - 1)); // delete trailing "#"
+        	} else {
+        		innerInput.append(input.substring(beginIndex));
+        	}
         } else {
         	innerInput.append(input);
         }

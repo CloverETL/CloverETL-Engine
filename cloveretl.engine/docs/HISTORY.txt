@@ -2,6 +2,17 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-8-2
+------------
+* CLO-13157	LZ4 compression for remote edges
+* CLO-13093	S3: enable the default credentials provider chain
+* CLO-12921	Support Tomcat 8.5
+* CLO-12918	Support tcServer with Tomcat 8.5
+* Fixes:
+  * CLO-13006	Fixed: Function get() fails in DB lookup
+  * CLO-13153	Fixed: URL with GZIP protocol is ruined when passed to a subgraph
+  * CLO-11848	Fixed: SocketTimeoutException is thrown from remote edge in clustered graph
+
 REL-4-9-0-M2
 ------------
 

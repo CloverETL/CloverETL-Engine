@@ -51,7 +51,6 @@ public class SafeLogUtils {
 
 	/**
 	 * Obfuscates passwords in URLs in given text.
-	 * Moreover secure parameters are backward resolved if it is possible.
 	 * 
 	 * @param text - text to obfuscate passwords
 	 * @return obfuscated text

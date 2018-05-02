@@ -2024,31 +2024,36 @@ public class StringUtils {
 			return false;
 		}
 		int start = 0;
-		if (str.charAt(0) == '-') {
+		if (str.charAt(0) == '-' || str.charAt(0) == '+') {
 			if (str.length() == 1) { // CLO-3856
 				return false;
 			}
 			start = 1;
 		}
-		boolean decimalPiontIndex = false;
-		boolean wasE = false;
+		boolean number = false;
+		boolean decimalPoint = false;
+		boolean exponent = false;
 		char c;
 		for (int index = start; index < str.length(); index++) {
 			c = str.charAt(index);
 			if (!Character.isDigit(c)) {
 				switch (c) {
 				case DECIMAL_POINT:
-					if (decimalPiontIndex) {
+					if (decimalPoint) {
 						return false; // second decimal point
 					}
-					decimalPiontIndex = true;
+					decimalPoint = true;
 					break;
 				case EXPONENT_SYMBOL:
 				case EXPONENT_SYMBOL_C:
-					if (wasE) {
-						return false; // second E
+					if (exponent) {
+						return false; // second exponent
 					}
-					if (++index == str.length()) {
+					if (!number) {
+						return false; // no number before exponent
+					}
+					++index;
+					if (index == str.length()) {
 						return false;// last char is 'e'
 					} else {
 						c = str.charAt(index);
@@ -2060,12 +2065,14 @@ public class StringUtils {
 							return false;// last char is '+' or '-'
 						}
 					}
-					decimalPiontIndex = true;
-					wasE = true;
+					decimalPoint = true;
+					exponent = true;
 					break;
 				default:
 					return false; // not digit, '.', 'e' nor 'E'
 				}
+			} else if(!number) {
+				number = true;
 			}
 		}
 		return true;
