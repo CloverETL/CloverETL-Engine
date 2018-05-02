@@ -281,8 +281,9 @@ public class StringUtilsTest extends CloverTestCase {
 			assertTrue(str + " failed isDecimal consistency check", isDecimal(str));
 		}
 		
-		String[] mustFail = {"1,234e-56789", "123,456789", "123.45678.9", "123456789e", "123456789e-", "123456dj789e",
-				"d123456789", "", "e", ".", "..", ".e", "e1", "E0258", "A0258", ".E0258", "+E0258", "-E0258","-.E0258", "+-.332e2"};
+		String[] mustFail = {"", "e", "ee", ".", "..", ".e", "e1", "E", "EE", "E1", "1e", "1E", "d123", "123qe",
+				"-e25", "-e25", "+E25", "+E25",".e25", ".E25", "-.E0258", "+.e0258", "+-.332e2", "1,234e-56789",
+				"123,456789", "123.45678.9", "123456789e", "123456789e-", "123456dj789e", "d123456789"};
 		
 		for (String str : mustFail) {
 			assertFalse(str + " wrongly passed isNumber test", StringUtils.isNumber(str));
