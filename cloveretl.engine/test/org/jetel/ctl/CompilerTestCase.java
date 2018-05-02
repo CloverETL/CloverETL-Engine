@@ -7200,7 +7200,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isNumber1", false);
 		check("isNumber2", true);
 		check("isNumber3", true);
-		check("isNumber4", false);
+		check("isNumber4", true);
 		check("isNumber5", true);
 		check("isNumber6", true);
 		check("isNumber7", false);
@@ -7271,7 +7271,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isDecimal1", false);
 		check("isDecimal2", true);
 		check("isDecimal3", true);
-		check("isDecimal4", false);
+		check("isDecimal4", true);
 		check("isDecimal5", true);
 		check("isDecimal6", true);
 		check("isDecimal7", false);
