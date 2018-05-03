@@ -18,10 +18,14 @@
  */
 package org.jetel.graph.runtime.jmx;
 
+import javax.management.Notification;
+import javax.management.NotificationListener;
+
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.graph.runtime.JMXNotificationMessage;
 import org.jetel.graph.runtime.WatchDog;
 import org.jetel.test.CloverTestCase;
 
@@ -34,6 +38,8 @@ import org.jetel.test.CloverTestCase;
 public class CloverJMXTest extends CloverTestCase {
 
 	public void testCleanObsoleteWatchDogs() throws InterruptedException, ComponentNotReadyException {
+		CloverJMX.getInstance().addNotificationListener(createJMXNotificationListener(), null, null);
+		
 		//register new watchdog, but not execute
 		registerWatchDog(123);
 
@@ -87,12 +93,7 @@ public class CloverJMXTest extends CloverTestCase {
 		assertNotNull(CloverJMX.getInstance().getGraphTracking(124));
 		assertNotNull(CloverJMX.getInstance().getGraphTracking(125));
 
-		/** waiting 10 seconds because
-		 * cleanup thread starts after 10 seconds
-		 * See CLO-13263
-		 * TODO The test might be improved by using mocks 
-		 */
-		Thread.sleep(10010L); 
+		Thread.sleep(200); 
 
 		//register one more watchdog to trigger obsolete jobs cleanup
 		registerWatchDog(126);
@@ -117,4 +118,15 @@ public class CloverJMXTest extends CloverTestCase {
 		watchDog.init();
 	}
 	
+	private NotificationListener createJMXNotificationListener() {
+		return new NotificationListener() {
+			@Override
+			public void handleNotification(Notification notification, Object handback) {
+				if (CloverJMX.GRAPH_FINISHED.equals(notification.getType())) {
+					JMXNotificationMessage notificationMessage = (JMXNotificationMessage) notification.getUserData();					
+					CloverJMX.getInstance().relaseJob(notificationMessage.getRunId());
+				}
+			}
+		};
+	}
 }
