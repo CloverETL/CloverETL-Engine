@@ -87,7 +87,12 @@ public class CloverJMXTest extends CloverTestCase {
 		assertNotNull(CloverJMX.getInstance().getGraphTracking(124));
 		assertNotNull(CloverJMX.getInstance().getGraphTracking(125));
 
-		Thread.sleep(200);
+		/** waiting 10 seconds because
+		 * cleanup thread starts after 10 seconds
+		 * See CLO-13263
+		 * TODO The test might be improved by using mocks 
+		 */
+		Thread.sleep(10010L); 
 
 		//register one more watchdog to trigger obsolete jobs cleanup
 		registerWatchDog(126);
