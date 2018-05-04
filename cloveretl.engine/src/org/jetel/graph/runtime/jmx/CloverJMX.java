@@ -95,7 +95,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
      */
     private transient List<JobListener> jobListeners = new ArrayList<>();
     
-    private ScheduledExecutorService cleanupExecutor = Executors.newScheduledThreadPool(1, 
+    private transient ScheduledExecutorService cleanupExecutor = Executors.newScheduledThreadPool(1, 
     		new ThreadFactory() {
     			@Override
     			public Thread newThread(Runnable r) {
