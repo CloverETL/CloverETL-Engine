@@ -2075,6 +2075,9 @@ public class StringUtils {
 				number = true;
 			}
 		}
+		if (decimalPoint) {
+			return number;
+		}
 		return true;
 	}
 

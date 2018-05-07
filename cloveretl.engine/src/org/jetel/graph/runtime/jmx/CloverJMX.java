@@ -30,6 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
@@ -91,6 +95,17 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
      */
     private transient List<JobListener> jobListeners = new ArrayList<>();
     
+    private transient ScheduledExecutorService cleanupExecutor = Executors.newScheduledThreadPool(1, 
+    		new ThreadFactory() {
+    			@Override
+    			public Thread newThread(Runnable r) {
+    				Thread t = Executors.defaultThreadFactory().newThread(r);
+    				t.setDaemon(true);
+    				return t;
+    			}
+    		}
+    );
+    
 	/**
 	 * Registers CloverJMX as JMX mBean.
 	 */
@@ -115,13 +130,23 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 		}
 		return cloverJMX;
 	}
-    
+	
+	public CloverJMX() {
+		super();
+	
+		cleanupExecutor.scheduleWithFixedDelay(new Runnable() {
+			
+			@Override
+			public void run() {
+				cleanObsoleteWatchDogs();
+			}
+		}, 10, 10, TimeUnit.SECONDS);
+	}
+
 	/**
 	 * Registers a running watchdog. Each watchdog should register yourself to allow be monitored using this mBean.
 	 */
 	public void registerWatchDog(WatchDog watchDog) {
-		//first clean old watchdogs, which seems to be forgot
-		cleanObsoleteWatchDogs();
 		
 		GraphRuntimeContext runtimeContext = watchDog.getGraphRuntimeContext();
 		long runId = runtimeContext.getRunId();
@@ -266,7 +291,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	/**
 	 * Removes all finished jobs older than 10s from watchDogCache.
 	 */
-	private synchronized void cleanObsoleteWatchDogs() {
+	private void cleanObsoleteWatchDogs() {
 		List<Long> watchdogsToRelease = new ArrayList<>();
 		long currentTime = System.currentTimeMillis();
 		for (Iterator<Map.Entry<Long, WatchDog>> iterator = watchDogCache.entrySet().iterator(); iterator.hasNext(); ) {
