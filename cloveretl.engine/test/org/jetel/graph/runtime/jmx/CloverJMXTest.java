@@ -93,7 +93,7 @@ public class CloverJMXTest extends CloverTestCase {
 		assertNotNull(CloverJMX.getInstance().getGraphTracking(124));
 		assertNotNull(CloverJMX.getInstance().getGraphTracking(125));
 
-		Thread.sleep(200); 
+		Thread.sleep(1000); 
 
 		//register one more watchdog to trigger obsolete jobs cleanup
 		registerWatchDog(126);
