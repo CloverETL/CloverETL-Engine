@@ -100,6 +100,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
     			@Override
     			public Thread newThread(Runnable r) {
     				Thread t = Executors.defaultThreadFactory().newThread(r);
+    				t.setName("ObsoleteWatchDogsCleaner");
     				t.setDaemon(true);
     				return t;
     			}
