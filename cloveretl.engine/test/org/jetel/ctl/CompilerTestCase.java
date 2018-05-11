@@ -11101,29 +11101,56 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_convertlib_str2decimal() {
 		doCompile("test_convertlib_str2decimal");
 		check("parsedDecimal1", new BigDecimal("100.13"));
+		check("isDecimal1", true);
 		check("parsedDecimal2", new BigDecimal("123123123.123"));
+		check("isDecimal2", true);
 		check("parsedDecimal3", new BigDecimal("-350000.01"));
+		check("isDecimal3", true);
 		check("parsedDecimal4", new BigDecimal("1000000"));
+		check("isDecimal4", true);
 		check("parsedDecimal5", new BigDecimal("1000000.99"));
+		check("isDecimal5", true);
 		check("parsedDecimal6", new BigDecimal("123123123.123"));
+		check("isDecimal6", true);
 		check("parsedDecimal7", new BigDecimal("5.01"));
+		check("isDecimal7", true);
+
 		check("nullRet1", null);
 		check("nullRet2", null);
 		check("nullRet3", null);
 		check("nullRet4", null);
 		check("nullRet5", null);
 		check("nullRet6", null);
-		check("nullRet7", new BigDecimal("5.05"));
+
 //		CLO-1614
-		check("nullRet8", new BigDecimal("5.05"));
-		check("nullRet9", new BigDecimal("5.05"));
-		check("nullRet10", new BigDecimal("5.05"));
-		check("nullRet11", new BigDecimal("5.05"));
-		check("nullRet12", new BigDecimal("5.05"));
-		check("nullRet13", new BigDecimal("5.05"));
-		check("nullRet14", new BigDecimal("5.05"));
-		check("nullRet15", new BigDecimal("5.05"));
-		check("nullRet16", new BigDecimal("5.05"));
+		check("parsedDecimal8", new BigDecimal("5.05"));
+		check("parsedDecimal9", new BigDecimal("5.05"));
+		check("parsedDecimal10", new BigDecimal("5.05"));
+		check("parsedDecimal11", new BigDecimal("5.05"));
+		check("parsedDecimal12", new BigDecimal("5.05"));
+		check("parsedDecimal13", new BigDecimal("5.05"));
+		check("parsedDecimal14", new BigDecimal("5.05"));
+		check("parsedDecimal15", new BigDecimal("5.05"));
+		check("parsedDecimal16", new BigDecimal("5.05"));
+		check("parsedDecimal17", new BigDecimal("5.05"));
+		check("notDecimal1", false);
+		check("notDecimal2", false);
+		check("notDecimal3", false);
+		check("notDecimal4", false);
+		check("notDecimal5", false);
+		check("notDecimal6", false);
+		
+		check("isDecimal8", true);
+//		CLO-1614
+		check("isDecimal9", true);
+		check("isDecimal10", true);
+		check("isDecimal11", true);
+		check("isDecimal12", true);
+		check("isDecimal13", true);
+		check("isDecimal14", true);
+		check("isDecimal15", true);
+		check("isDecimal16", true);
+		check("isDecimal16", true);
 	}
 	
 	public void test_convertlib_str2decimal_expect_result(){
