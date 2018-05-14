@@ -57,6 +57,7 @@ import org.jetel.util.string.StringUtils;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
+import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 
@@ -444,7 +445,15 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 			return new SFTPInfo(attrs, targetUri);
 		} catch (SftpException sftpe) {
 			if (sftpe.id != ChannelSftp.SSH_FX_NO_SUCH_FILE) { // other than No such file
-				throw new IOException("Failed to get SFTP file info", sftpe);
+				String serverVersion = "";
+				try {
+					serverVersion = channel.getSession().getServerVersion();
+				} catch (JSchException e) {
+				}
+				// CLO-13275 workaround for AWS SFTP Server
+				if (!(sftpe.id == ChannelSftp.SSH_FX_FAILURE && "SSH-2.0-Go".equals(serverVersion))) {
+					throw new IOException("Failed to get SFTP file info", sftpe);
+				}
 			}
 		} catch (Exception e) {
 			throw new IOException("Failed to get SFTP file info", e);
