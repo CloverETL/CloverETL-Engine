@@ -237,16 +237,10 @@ public class DataFormatter extends AbstractFormatter {
 	@Override
 	public void flush() throws IOException {
 		dataBuffer.flip();
-		int remaining = dataBuffer.buf().remaining();
-		int written = writer.write(dataBuffer.buf());
-		if (written != remaining) {
-			byte[] dst = new byte[remaining - written];
-			dataBuffer.buf().get(dst, written, remaining - written);
-			dataBuffer = CloverBuffer.wrap(dst);
-			logger.warn("Attempt to write data from buffer is incomplete. Attempted to write " + remaining + "b. Written " + written + "b.");
-		} else {
-			dataBuffer.clear();
+		while (dataBuffer.remaining() > 0) {
+			writer.write(dataBuffer.buf());
 		}
+		dataBuffer.clear();
 	}
 
 	/**
