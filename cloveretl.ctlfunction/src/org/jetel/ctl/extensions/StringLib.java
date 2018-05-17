@@ -675,16 +675,48 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.isNumber(value);
 	}
 	
+	@TLFunctionAnnotation("Test if string represents a decimal number with given format.")
+	public static boolean isDecimal(TLFunctionCallContext context, String value, String format) {
+		return isDecimal(context, value, format, null);
+	}
+	
+	@TLFunctionAnnotation("Test if string represents a decimal number with given format and local.")
+	public static boolean isDecimal(TLFunctionCallContext context, String value, String format, String locale) {
+		try {
+			return ConvertLib.str2decimal(context, value, format, locale) != null;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
 	public static class IsDecimalFunction implements TLFunctionPrototype {
 
 		@Override
-		public void execute(Stack stack, TLFunctionCallContext context) {
-			stack.push(isDecimal(context, stack.popString()));
+		public void init(TLFunctionCallContext context) {
+			isDecimalInit(context);
 		}
 
 		@Override
-		public void init(TLFunctionCallContext context) {
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams().length > 1) {
+				String locale = null;
+				if (context.getParams().length == 3) {
+					locale = stack.popString(); 
+				}
+				String format = stack.popString();
+				final String input = stack.popString();
+				stack.push(isDecimal(context, input, format, locale));
+			} else {
+				stack.push(isDecimal(context, stack.popString()));
+			}
 		}
+	}
+	
+	@TLFunctionInitAnnotation
+	public static final void isDecimalInit(TLFunctionCallContext context) {
+		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(context, true);
+		cache.createCachedLocaleFormat(context, 1, 2);
+		context.setCache(cache);
 	}
 
 	// IS INTEGER
