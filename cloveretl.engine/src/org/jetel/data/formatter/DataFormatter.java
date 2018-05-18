@@ -216,6 +216,10 @@ public class DataFormatter extends AbstractFormatter {
 		try {
 			flush();
 		} finally {
+			//This is just a test for CLO-13314 
+			if (writer instanceof java.nio.channels.FileChannel) {
+				((java.nio.channels.FileChannel)writer).force(true);
+			}
 			writer.close();
 			writer = null;
 		}
