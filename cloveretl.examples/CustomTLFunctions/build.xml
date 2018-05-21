@@ -25,7 +25,7 @@
 	<target name="compile" description="Compile sources" depends="check-engine">
 		<!-- Create directory for binaries. -->
 		<mkdir dir="${dir.bin}"/>
-		<echo>CloverDX Engine's path: ${dir.engine}/lib/cloveretl.engine.jar</echo>
+		<echo>CloverETL Engine's path: ${dir.engine}/lib/cloveretl.engine.jar</echo>
 		<!-- Compile sources -->
 		<javac debug="true" destdir="${dir.bin}" verbose="${verbose}">
 			<classpath>
@@ -42,7 +42,7 @@
 		</jar>
 	</target>
 	
-	<target name="install" description="Copies all needed files to CloverDX plugins directory" depends="package">
+	<target name="install" description="Copies all needed files to CloverETL plugins directory" depends="package">
 		<mkdir dir="${dir.engine}/plugins/${package.name}"/>
 		<copy file="${basedir}/${library.name}" todir="${dir.engine}/plugins/${package.name}"/>
 		<copy file="${basedir}/${ctl_version}_plugin.xml" tofile="${dir.engine}/plugins/${package.name}/plugin.xml"/>
