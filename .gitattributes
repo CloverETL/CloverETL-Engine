@@ -297,6 +297,8 @@ cloveretl.http.server.jetty/lib/jsp/jetty-jsp-jdt-2.3.3.jar filter=lfs diff=lfs 
 cloveretl.http.server.jetty/lib/setuid/jetty-setuid-java-1.0.1.jar filter=lfs diff=lfs merge=lfs -text
 cloveretl.http.server.jetty/lib/setuid/libsetuid-linux.so filter=lfs diff=lfs merge=lfs -text
 cloveretl.http.server.jetty/lib/setuid/libsetuid-osx.so filter=lfs diff=lfs merge=lfs -text
+cloveretl.server/web/WEB-INF/lib/jgroups-3.6.15.Final.jar filter=lfs diff=lfs merge=lfs -text
+cloveretl.server/lib.src/jgroups-3.6.15.Final-sources.jar filter=lfs diff=lfs merge=lfs -text
 cloveretl.doc.integration.guide/Topics/LicenseVerifier.java2.xml	filter=lfs diff=lfs merge=lfs -text
 cloveretl.doc/issue-CLO-108/tools/docbook-xsl/doc/reference.pdf.gz	filter=lfs diff=lfs merge=lfs -text
 cloveretl.doc/issue-CLO-108/tools/docbook-xsl/docsrc/reference.xml.included	filter=lfs diff=lfs merge=lfs -text
