@@ -216,10 +216,6 @@ public class DataFormatter extends AbstractFormatter {
 		try {
 			flush();
 		} finally {
-			//This is just a test for CLO-13314 
-			if (writer instanceof java.nio.channels.FileChannel) {
-				((java.nio.channels.FileChannel)writer).force(true);
-			}
 			writer.close();
 			writer = null;
 		}
@@ -242,9 +238,7 @@ public class DataFormatter extends AbstractFormatter {
 	public void flush() throws IOException {
 		dataBuffer.flip();
 		while (dataBuffer.remaining() > 0) {
-			logger.trace("Flush method writing remaing " + dataBuffer.remaining() + " bytes.");
-			int written = writer.write(dataBuffer.buf());
-			logger.trace("Flush method wrote " + written + " bytes.");
+			writer.write(dataBuffer.buf());
 		}
 		dataBuffer.clear();
 	}
