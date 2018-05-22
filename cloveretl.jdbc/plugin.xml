@@ -173,7 +173,7 @@
 		<parameter id="database" value="POSTGRE"/>
 		<parameter id="name" value="PostgreSQL"/>
 		<parameter id="dbDriver" value="org.postgresql.Driver"/>
-		<parameter id="driverLibrary" value="lib/postgre/postgresql-9.3-1102.jdbc41.jar"/>
+		<parameter id="driverLibrary" value="lib/postgre/postgresql-42.2.2.jre7.jar"/>
 		<parameter id="urlHint" value="jdbc:postgresql://hostname/database"/>
 		<parameter id="jdbcSpecific" value="POSTGRE"/>
 	</extension>
