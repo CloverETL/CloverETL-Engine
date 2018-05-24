@@ -2,7 +2,7 @@
    id="org.jetel.smb2"
    version="0.0.0.devel"
    greedyClassLoader="true"
-   provider-name="Javlin a.s."
+   provider-name="CloverDX"
    class="org.jetel.util.protocols.smb2.Activator">
 
 	<runtime>
