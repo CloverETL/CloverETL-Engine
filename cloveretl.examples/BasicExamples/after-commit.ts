@@ -83,7 +83,7 @@
 		<FlatFile outputFile="data-out/orders_late.txt" supposedFile="supposed-out/orders_late.txt"/>
 	</FunctionalTest>
 			
-	<FunctionalTest ident="MetadataWriting" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine" excludedJavaVersions="1.7" excludedContainers="tomcat7,tomcat8,tomcat85,tomcat9,jetty9,glassfish3,websphere85,jboss6,jboss7,jboss7-eap-6-4,tcserver329">
+	<FunctionalTest ident="MetadataWriting" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine,serverWorker,clusterWorker" excludedJavaVersions="1.7" excludedContainers="tomcat7,tomcat8,tomcat85,tomcat9,jetty9,glassfish3,websphere85,jboss6,jboss7,jboss7-eap-6-4,tcserver329">
 		<FlatFile outputFile="data-out/employees_txt.fmt" supposedFile="supposed-out/employees_txt.fmt"/>
 		<FlatFile outputFile="data-out/departments_txt.fmt" supposedFile="supposed-out/departments_txt.fmt"/>
 	</FunctionalTest>
@@ -93,7 +93,7 @@
 		<FlatFile outputFile="data-out/departments_txt.fmt" supposedFile="supposed-out/departments_txt_version2.fmt"/>
 	</FunctionalTest>
 	
-	<FunctionalTest ident="MetadataWriting_version3" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine,serverWorker,clusterWorker" excludedJavaVersions="1.7" excludedContainers="tomcat7,tomcat8,tomcat85,tomcat9,jetty9,weblogic12,weblogic-12-1-3,glassfish3,websphere85,tcserver329,tcserver319">
+	<FunctionalTest ident="MetadataWriting_version3" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine,serverWorker,clusterWorker" excludedJavaVersions="1.7" excludedContainers="tomcat7,tomcat8,tomcat85,tomcat9,jetty9,weblogic12,weblogic-12-1-3,glassfish3,websphere85,tcserver329">
 		<FlatFile outputFile="data-out/employees_txt.fmt" supposedFile="supposed-out/employees_txt_version3.fmt"/>
 		<FlatFile outputFile="data-out/departments_txt.fmt" supposedFile="supposed-out/departments_txt_version3.fmt"/>
 	</FunctionalTest>

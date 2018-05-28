@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.log4j.Logger;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -100,6 +101,23 @@ public class DynamicRecordBuffer {
      */
     private boolean sequentialUsage = false;
     
+    /**
+     * Fix CLO-13173.
+     * <p>
+     * The only point of this field is to override a graph that will be used as context
+     * while creating temp files for this object.
+     * <p>
+     * Normally, the temp files are created with context of the graph that is writing
+     * to this object. But sometimes the temp files must be kept for a longer
+     * time than just runtime of graph that wrote them - e.g. when temp file is still
+     * being read from by parent job. In such cases the graph that will be the last one
+     * still needing the temp files should be assigned to this field.
+     * <p>
+     * If this field is null when temp files need to be created, the temp files will be
+     * created with context of the graph that writes to this object.
+     */
+    private TransformationGraph contextGraph;
+    
 	/**
 	 * Constructor of the DynamicRecordBuffer with tmp file
      * created under java.io.tmpdir dir.
@@ -112,8 +130,6 @@ public class DynamicRecordBuffer {
 	/**
 	 *  Constructor of the DynamicRecordBuffer object
 	 *
-	 *@param  tmpFilePath     Name of the subdirectory where to create TMP files or
-	 *      NULL (the system default will be used)
 	 *@param  initialBufferSize  The initial size of internal in memory buffer - two
      *          buffers of exactly the same size are created - one for reading, one
      *          for writing.
@@ -143,6 +159,13 @@ public class DynamicRecordBuffer {
      */
 	public void setSequentialReading(boolean sequentialReading) {
 		this.sequentialUsage = sequentialReading;
+	}
+	
+	/**
+	 * @param contextGraph that should be used for creating temp files
+	 */
+	public void setContextGraph(TransformationGraph contextGraph) {
+		this.contextGraph = contextGraph;
 	}
 	
 	/**
@@ -373,7 +396,7 @@ public class DynamicRecordBuffer {
 			if (tempFile != null) {
 				obsoleteTempFiles.addLast(tempFile);
 			}
-			tempFile = new TempFile(requestedSlotSize);
+			tempFile = new TempFile(requestedSlotSize, contextGraph);
 			tempFile.open();
 
 			return tempFile.getDiskSlotForWrite();
@@ -606,17 +629,23 @@ public class DynamicRecordBuffer {
     	private LinkedList<DiskSlot> emptyFileBuffers;
         private LinkedList<DiskSlot> fullFileBuffers;
         private int lastSlot;
+        private TransformationGraph contextGraph; // context graph for creating the temp file (it's used for choosing temp dir on server)
 
-		public TempFile(int slotSize) {
+		public TempFile(int slotSize, TransformationGraph contextGraph) {
 	        emptyFileBuffers = new LinkedList<DiskSlot>();
 	        fullFileBuffers=new LinkedList<DiskSlot>();
 	        lastSlot = -1;
 	        this.slotSize = slotSize;
+	        if (contextGraph == null) {
+	        	// fallback, use context of the caller (writing component)
+	        	contextGraph = ContextProvider.getGraph();
+	        }
+	        this.contextGraph = contextGraph;
 		}
 		
 		private void open() {
 			try {
-				tempFile = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph()).newTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX, -1);
+				tempFile = IAuthorityProxy.getAuthorityProxy(contextGraph).newTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX, -1);
 				tempFileChannel = new RandomAccessFile(tempFile, TMP_FILE_MODE).getChannel();
 			} catch (Exception e) {
 				throw new JetelRuntimeException("Can't open TMP file in", e);

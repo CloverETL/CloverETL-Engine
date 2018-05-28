@@ -30,6 +30,8 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
@@ -75,6 +77,8 @@ public class DataFormatter extends AbstractFormatter {
 	private int[] includedFieldIndices;
 
 	private QuotingDecoder quotingDecoder = new QuotingDecoder();
+	
+	static Log logger = LogFactory.getLog(DataFormatter.class);
 	
 	// use space (' ') to fill/pad field
 	private final static char DEFAULT_FILLER_CHAR = ' ';
@@ -233,7 +237,9 @@ public class DataFormatter extends AbstractFormatter {
 	@Override
 	public void flush() throws IOException {
 		dataBuffer.flip();
-		writer.write(dataBuffer.buf());
+		while (dataBuffer.remaining() > 0) {
+			writer.write(dataBuffer.buf());
+		}
 		dataBuffer.clear();
 	}
 

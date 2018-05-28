@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import org.apache.log4j.Logger;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.util.bytes.CloverBuffer;
 
@@ -60,6 +61,30 @@ public class PersistentBufferQueue {
      * For each buffer.capacity() different temporary file is used.
      */
     private LinkedList<TempFile> tempFiles = new LinkedList<TempFile>();
+    
+    /**
+     * Fix CLO-13173.
+     * <p>
+     * The only point of this field is to override a graph that will be used as context
+     * while creating temp files for this object.
+     * <p>
+     * Normally, the temp files are created with context of the graph that is writing
+     * to this object. But sometimes the temp files must be kept for a longer
+     * time than just runtime of graph that wrote them - e.g. when temp file is still
+     * being read from by parent job. In such cases the graph that will be the last one
+     * still needing the temp files should be assigned to this field.
+     * <p>
+     * If this field is null when temp files need to be created, the temp files will be
+     * created with context of the graph that writes to this object.
+     */
+    private TransformationGraph contextGraph;
+    
+    /**
+     * @param contextGraph that should be used for creating temp files
+     */
+    public void setContextGraph(TransformationGraph contextGraph) {
+		this.contextGraph = contextGraph;
+	}
 
     /**
      * Writes a {@link CloverBuffer} to this queue, this operation should success all the time.
@@ -102,7 +127,7 @@ public class PersistentBufferQueue {
 	}
 
 	private TempFile createTempFile(int requestedSlotSize) {
-		TempFile tempFile = new TempFile(requestedSlotSize);
+		TempFile tempFile = new TempFile(requestedSlotSize, contextGraph);
 		tempFile.open();
 		tempFiles.addLast(tempFile);
 		return tempFile;
@@ -157,19 +182,25 @@ public class PersistentBufferQueue {
     	private LinkedList<DiskSlot> emptyFileBuffers;
         private LinkedList<DiskSlot> fullFileBuffers;
         private int lastSlot;
+        private TransformationGraph contextGraph; // context graph for creating the temp file (it's used for choosing temp dir on server)
 
-		public TempFile(int slotSize) {
+		public TempFile(int slotSize, TransformationGraph contextGraph) {
 	        emptyFileBuffers = new LinkedList<DiskSlot>();
 	        fullFileBuffers=new LinkedList<DiskSlot>();
 	        lastSlot = -1;
 	        this.slotSize = slotSize;
+	        if (contextGraph == null) {
+	        	// fallback, use context of the caller (writing component)
+	        	contextGraph = ContextProvider.getGraph();
+	        }
+	        this.contextGraph = contextGraph;
 		}
 		
 		private void open() {
 			try {
 				//graph id is part of temp file name
-				String graphId = ContextProvider.getGraph() != null ? ContextProvider.getGraph().getId() : "null";
-				tempFile = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph()).newTempFile(TMP_FILE_PREFIX + "_" + graphId + "_", TMP_FILE_SUFFIX, -1);
+				String graphId = contextGraph != null ? contextGraph.getId() : "null";
+				tempFile = IAuthorityProxy.getAuthorityProxy(contextGraph).newTempFile(TMP_FILE_PREFIX + "_" + graphId + "_", TMP_FILE_SUFFIX, -1);
 				tempFileChannel = new RandomAccessFile(tempFile, TMP_FILE_MODE).getChannel();
 			} catch (Exception e) {
 				throw new JetelRuntimeException("Can't open TMP file in", e);

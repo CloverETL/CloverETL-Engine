@@ -108,6 +108,8 @@ public class BufferedEdge extends EdgeBase {
 		if (proxy != null && proxy.getGraph() != null) {
 			//for single thread execution we can say that the usage of record buffer is sequential - first all write operation and then all read operations
 			recordBuffer.setSequentialReading(proxy.getGraph().getRuntimeContext().getExecutionType() == ExecutionType.SINGLE_THREAD_EXECUTION);
+			
+			recordBuffer.setContextGraph(proxy.getGraph()); // fix CLO-13173 (set parent graph as context for temp files)
 		}
 		recordBuffer.init();
 	}
