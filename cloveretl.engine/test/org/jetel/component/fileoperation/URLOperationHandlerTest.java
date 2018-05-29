@@ -165,11 +165,11 @@ public class URLOperationHandlerTest extends OperationHandlerTestTemplate {
 		channel = manager.getInput(uri).channel();
 		assertEquals(text, read(channel));
 
-		uri = createURI("http://www.cloverdx.com");
+		uri = createURI("http://www.cloveretl.com");
 		channel = manager.getInput(uri).channel();
 		assertTrue(read(channel).length() > 0);
 
-		uri = createURI("http:(direct:)//www.cloverdx.com");
+		uri = createURI("http:(direct:)//www.cloveretl.com");
 		channel = manager.getInput(uri).channel();
 		assertTrue(read(channel).length() > 0);
 
