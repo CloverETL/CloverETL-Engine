@@ -788,7 +788,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 				<param name="-tag" value="revision" />
 			</doclet>
 			<doctitle>
-				<![CDATA[<h1>CloverETL: Java ETL framework</h1>
+				<![CDATA[<h1>CloverDX: Java ETL framework</h1>
 			<h3>version: ]]>${version.major}.${version.minor}<![CDATA[</h3>]]></doctitle>
 			<bottom>
 				<![CDATA[<address>Copyright &#169; 2002-${build.year} Javlin a.s.</address>]]>

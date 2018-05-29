@@ -501,7 +501,7 @@ public class runGraph {
     
 	public static String getInfo(){
 		final StringBuilder ret = new StringBuilder();
-		ret.append("CloverETL version ");
+		ret.append("CloverDX version ");
 		ret.append(JetelVersion.MAJOR_VERSION );
 		ret.append(".");
 		ret.append(JetelVersion.MINOR_VERSION);
@@ -527,7 +527,7 @@ public class runGraph {
 	}
 
 	private static void printHelp() {
-		System.out.println("***  CloverETL, (c) 2002-" + JetelVersion.LIBRARY_BUILD_YEAR + " Javlin a.s. info@cloveretl.com ***");
+		System.out.println("***  CloverDX, (c) 2002-" + JetelVersion.LIBRARY_BUILD_YEAR + " Javlin a.s. info@cloverdx.com ***");
 		System.out.println("\nusage: runGraph [options] <graph definition file>");
 		System.out.println("\noptions:");
 		System.out.println("\t-v\t\t\tVerbose mode - print extended runtime information");
@@ -536,7 +536,7 @@ public class runGraph {
 		System.out.println("\t-logcfg <filename>\tLoad log4j configuration from specified file; \n\t\t\t\tIf not specified, \"log4j.properties\" should be in classpath");
 		System.out.println("\t-loglevel <level>\tOverrides log4j configuration and sets specified logging level for rootLogger; \n\t\t\t\tpossible levels are: ALL | TRACE | DEBUG | INFO | WARN | ERROR | FATAL | OFF");
 		System.out.println("\t-tracking <seconds>\tFrequency (seconds) of outputting the processing status of transformation graph");
-		System.out.println("\t-info\t\t\tPrint info about CloverETL library version");
+		System.out.println("\t-info\t\t\tPrint info about CloverDX library version");
         System.out.println("\t-plugins\t\tDirectory where to look for engine plugins/components");
         System.out.println("\t-pass\t\t\tPassword for decrypting of hidden connections passwords");
         System.out.println("\t-stdin\t\t\tLoad graph definition from STDIN instead of file");
@@ -555,7 +555,7 @@ public class runGraph {
         
 	}
 
-	private static MessageFormat RUNTIME_HEADER_1 = new MessageFormat("***  CloverETL, (c) 2002-{0} Javlin a.s.  ***");
+	private static MessageFormat RUNTIME_HEADER_1 = new MessageFormat("***  CloverDX, (c) 2002-{0} Javlin a.s.  ***");
 	private static MessageFormat RUNTIME_HEADER_2 = new MessageFormat("Running with {0}");
 	private static MessageFormat RUNTIME_HEADER_3 = new MessageFormat(
 			"Running on {0} CPU(s)" +

@@ -60,7 +60,7 @@ public final class HadoopJobRunner {
 			+ "due to external exception. The exception was: %s";
 	public static final String CANNOT_KILL_JOB_MESSAGE_FORMAT = "Exception occured while killing Hadoop"
 			+ " map/reduce job '%s' (id=%s).";
-	public static final String JOB_KILLED_MESSAGE_FORMAT = "Hadoop map/reduce job '%s' (id=%s) has been killed by CloverETL.";
+	public static final String JOB_KILLED_MESSAGE_FORMAT = "Hadoop map/reduce job '%s' (id=%s) has been killed by CloverDX.";
 	public static final char MARGIN_CHARACTER = '=';
 
 	private final int progressLookupInterval; // in miliseconds

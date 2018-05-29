@@ -27,7 +27,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 
 /**
- *  Class for creating mappings between CloverETL's DataRecords and JDBC's
+ *  Class for creating mappings between CloverDX's DataRecords and JDBC's
  *  ResultSets.<br>
  *
  * @author      dpavlis

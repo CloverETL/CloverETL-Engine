@@ -37,7 +37,7 @@ import org.jetel.util.ExceptionUtils;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
- * Class for executing partition function written in CloverETL language
+ * Class for executing partition function written in CloverDX language
  * 
  * @author avackova (agata.vackova@javlinconsulting.cz)
  * @author Michal Tomcanyi <michal.tomcanyi@javlin.cz> ; (c) JavlinConsulting s.r.o. www.javlinconsulting.cz

@@ -59,7 +59,7 @@ public class HadoopCloverConvert {
 		case STRING:
 			return Text.class;
 		default:
-			throw new IOException(String.format("Unsupported CloverETL data type \"%s\" of field \"%s\" in conversion to Hadoop.",field.getDataType().getName(),field.getName()));
+			throw new IOException(String.format("Unsupported CloverDX data type \"%s\" of field \"%s\" in conversion to Hadoop.",field.getDataType().getName(),field.getName()));
 			
 		}
 	}
@@ -148,7 +148,7 @@ public class HadoopCloverConvert {
 				void setValue(DataField src){ ((BooleanWritable)dest).set(((BooleanDataField)src).getBoolean());}
 			}).init();
 		default:
-			throw new IOException(String.format("Unsupported CloverETL data type \"%s\" of field \"%s\" in conversion to Hadoop.",field.getDataType().getName(),field.getName()));
+			throw new IOException(String.format("Unsupported CloverDX data type \"%s\" of field \"%s\" in conversion to Hadoop.",field.getDataType().getName(),field.getName()));
 		}
 	}
 	

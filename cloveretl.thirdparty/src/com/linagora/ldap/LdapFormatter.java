@@ -50,7 +50,7 @@ import com.linagora.ldap.Jetel2LdapData.Jetel2LdapString;
 /**
  * This class is used by LdapWriter component to actually
  * create connection and managed update on the LDAP directory
- * and transform CloverETL internal data representation to
+ * and transform CloverDX internal data representation to
  * LDAP objects.
  * @see com.linagora.component.LdapWriter
  * @since september 2006

@@ -82,7 +82,7 @@ import org.w3c.dom.Element;
  * There is created mysql command (LOAD DATA INFILE) depending on input parameters. Data are read from given input file or 
  * from the input port and loaded to database.<br>
  * Any generated commands/files can be optionally logged to help diagnose problems.<br>
- * Before you use this component, make sure that mysql client is installed and configured on the machine where CloverETL runs and
+ * Before you use this component, make sure that mysql client is installed and configured on the machine where CloverDX runs and
  * mysql command line tool available. </td>
  * </tr>
  * <tr>
