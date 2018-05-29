@@ -1,6 +1,6 @@
 /*
- * jETeL/CloverETL - Java based ETL application framework.
- * Copyright (c) Javlin, a.s. (info@cloveretl.com)
+ * CloverDX - Java based ETL application framework.
+ * Copyright (c) CloverDX by Javlin, a.s. (info@cloverdx.com)
  *  
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -43,8 +43,8 @@ import org.jetel.interpreter.extensions.TLFunctionPrototype;
  * <i>plugin.xml</i> file (see <i>ctl1_plugin.xml</i>, that is renamed 
  * to <i>plugin.xml</i> during installation - {@link readme.html})
  * 
- * @author Agata Vackova (info@cloveretl.com)
- *         (c) Javlin, a.s. (www.cloveretl.com)
+ * @author Agata Vackova (info@cloverdx.com)
+ *         (c) CloverDX by Javlin, a.s. (www.cloverdx.com)
  *
  * @created 2010-07-01
  */
@@ -209,8 +209,8 @@ public class MyFunctionsLib_ctl1 extends TLFunctionLibrary {
  * In context you should store objects that can be reused in every execution of your function.
  * This saves time when executing the same function many times.
  * 
- * @author Agata Vackova (info@cloveretl.com)
- *         (c) Javlin, a.s. (www.cloveretl.com)
+ * @author Agata Vackova (info@cloverdx.com)
+ *         (c) CloverDX by Javlin, a.s. (www.cloverdx.com)
  *
  * @created 2010-07-01
  */

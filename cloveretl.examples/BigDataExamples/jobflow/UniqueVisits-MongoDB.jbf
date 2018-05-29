@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="krivanekm" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="4.2.0.M1" id="1361360543511" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Mar 25 15:58:34 CET 2014" modifiedBy="User" name="ProcessLog_CloverETL" nature="jobflow" revision="1.52" showComponentDetails="true">
+<Graph author="krivanekm" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="4.2.0.M1" id="1361360543511" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Mar 25 15:58:34 CET 2014" modifiedBy="User" name="ProcessLog_CloverDX" nature="jobflow" revision="1.52" showComponentDetails="true">
 <Global>
 <MetadataGroup name="Implicit metadata" type="implicit">
 <Metadata id="__static_metadata_EXECUTE_GRAPH_ExecuteGraph_RunStatus">
@@ -26,7 +26,7 @@
 <RichTextNote backgroundColor="404040" enabled="true" folded="false" fontSize="medium" height="106" id="Note3" textColor="FFFFFF" width="929" x="19" y="17">
 <attr name="text"><![CDATA[h3. Big Data - Processing Web Access Log (Unique Visitors):  MongoDB Solution
 Report the number of unique visitors per month from a potentially huge web access log using different methods.
-(CloverETL, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
+(CloverDX, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="254" id="Note2" textColor="000000" width="310" x="19" y="122">
 <attr name="text"><![CDATA[h3. Scenario
@@ -39,7 +39,7 @@ In this example we demonstrate how to produce a simple "uniques per month" repor
 ]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="254" id="Note5" textColor="000000" width="394" x="328" y="122">
-<attr name="text"><![CDATA[h3. CloverETL feeding data to MongoDB
+<attr name="text"><![CDATA[h3. CloverDX feeding data to MongoDB
 
 The end-to-end solution is composed of the following steps:
 

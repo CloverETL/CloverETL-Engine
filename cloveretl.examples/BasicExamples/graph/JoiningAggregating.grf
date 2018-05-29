@@ -52,7 +52,7 @@
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
 <RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="101" id="Note5" textColor="000000" width="1204" x="6" y="3">
-<attr name="text"><![CDATA[h3. Welcome to CloverETL
+<attr name="text"><![CDATA[h3. Welcome to CloverDX
 
 This example shows various operations on multiple data sets which are combined/joined and worked on to produce reports & statistics.]]></attr>
 </RichTextNote>

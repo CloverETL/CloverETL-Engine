@@ -35,7 +35,7 @@ import org.jetel.main.runGraph;
  * Usage: XMLGraph [-plugins pluginsDirectory] [-config propertiesFile] graphFile
  * 
  * This example illustrates how run from java code transformation graph stored in xml file.
- * All examples require to provide CloverETL plugins. Plugins directory can be set as program argument or 
+ * All examples require to provide CloverDX plugins. Plugins directory can be set as program argument or 
  * in params.txt file as plugins parameter or required plugins have to be set on classpath when running the program. 
  * When set in params.txt, the same directory is used for all examples and musn't be set 
  * for each example separately.

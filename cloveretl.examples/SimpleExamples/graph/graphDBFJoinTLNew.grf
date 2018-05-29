@@ -16,7 +16,7 @@ Both Joiners use this new language to define the transformation.
 
 CTL2 is strongly typed language with type control. Arguments and return values of the functions are strictly typed. 
 
-CTL2 has many advantages as compared with CTL1. See CloverETL Designer Users Guide for details.]]></attr>
+CTL2 has many advantages as compared with CTL1. See CloverDX Designer Users Guide for details.]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Equivalent in CTL2" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="274" x="18" y="281">
 <attr name="text"><![CDATA[

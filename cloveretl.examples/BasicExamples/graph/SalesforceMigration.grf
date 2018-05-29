@@ -59,11 +59,11 @@
 
 In this CRM migration example we start with three datasets ([Accounts|element://ACCOUNTS],  [Contacts|element://CONTACTS] and [Attachments|element://ATTACHMENTS]) that are linked by foreign keys exported from a source CRM. We need to migrate those datasets to Salesforce, retaining the relationships using Salesforce ObjectId's. The attachments show how to upload binary files to Salesforce, e.g. purchase orders.
 
-You will see you can do this in one go, using CloverETL's capability to pass new ObjectId's from one writer to another down the stream.
+You will see you can do this in one go, using CloverDX's capability to pass new ObjectId's from one writer to another down the stream.
 
 See also the [SalesforceRead|open://BasicExamples/graph/SalesforceRead.grf] example.
 
-*Important:* this example uploads 100 new Accounts and 200 new Contacts to the Salesforce account. These new objects are tagged - the accounts have their Website field set to "CloverETL", the contacts have their Department field set to "CloverETL". You can use these tags later to find and delete the objects to clean-up after running this example. Deleting the Accounts automatically deletes their Attachments.]]></attr>
+*Important:* this example uploads 100 new Accounts and 200 new Contacts to the Salesforce account. These new objects are tagged - the accounts have their Website field set to "CloverDX", the contacts have their Department field set to "CloverDX". You can use these tags later to find and delete the objects to clean-up after running this example. Deleting the Accounts automatically deletes their Attachments.]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="208" id="Note4" textColor="444444" width="585" x="226" y="693">
 <attr name="text"><![CDATA[h3. Writing Accounts
@@ -204,7 +204,7 @@ function integer transform() {
 function integer transform() {
 	$out.0.Name = $in.0.name;
 	$out.0.BillingCountry = $in.0.country;
-	$out.0.Website = "CloverETL";
+	$out.0.Website = "CloverDX";
 
 	return ALL;
 }
@@ -237,7 +237,7 @@ function integer transform() {
 	$out.0.Email = $in.0.email;
 	$out.0.Phone = $in.0.phone;
 	$out.0.AccountId = $in.0.account_sf_id;
-	$out.0.Department = "CloverETL";
+	$out.0.Department = "CloverDX";
 
 	return ALL;
 }
@@ -310,7 +310,7 @@ function integer transform() {
 </Phase>
 <Phase number="1">
 <Node guiName="Salesforce: Read Attachments" guiX="612" guiY="1627" id="SALESFORCE_READ_ATTACHMENTS" sfConnection="SALESFORCE0" type="SALESFORCE_READER">
-<attr name="soqlQuery"><![CDATA[SELECT Name, Body FROM Attachment WHERE ParentId IN ( SELECT Id FROM Account WHERE Website = 'CloverETL')]]></attr>
+<attr name="soqlQuery"><![CDATA[SELECT Name, Body FROM Attachment WHERE ParentId IN ( SELECT Id FROM Account WHERE Website = 'CloverDX')]]></attr>
 <attr name="outputMapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.

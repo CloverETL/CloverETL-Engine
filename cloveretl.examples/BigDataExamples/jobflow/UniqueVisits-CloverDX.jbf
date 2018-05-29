@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="4.2.0.M1" id="1361360543511" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Mar 25 15:55:57 CET 2014" modifiedBy="User" name="ProcessLog_CloverETL" nature="jobflow" revision="1.31" showComponentDetails="true">
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="4.2.0.M1" id="1361360543511" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Mar 25 15:55:57 CET 2014" modifiedBy="User" name="ProcessLog_CloverDX" nature="jobflow" revision="1.31" showComponentDetails="true">
 <Global>
 <MetadataGroup name="Implicit metadata" type="implicit">
 <Metadata id="__static_metadata_EXECUTE_GRAPH_ExecuteGraph_RunStatus">
@@ -23,9 +23,9 @@
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
 <RichTextNote backgroundColor="404040" enabled="true" folded="false" fontSize="medium" height="100" id="Note3" textColor="FFFFFF" width="929" x="20" y="20">
-<attr name="text"><![CDATA[h3. Big Data - Processing Web Access Log (Unique Visitors):  Pure CloverETL Solution
+<attr name="text"><![CDATA[h3. Big Data - Processing Web Access Log (Unique Visitors):  Pure CloverDX Solution
 Report the number of unique visitors per month from a potentially huge web access log using different methods.
-(CloverETL, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
+(CloverDX, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="263" id="Note2" textColor="000000" width="288" x="20" y="119">
 <attr name="text"><![CDATA[h3. Scenario
@@ -38,11 +38,11 @@ In this example we demonstrate how to produce a simple "uniques per month" repor
 ]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="263" id="Note5" textColor="000000" width="284" x="307" y="119">
-<attr name="text"><![CDATA[h3. Pure CloverETL approach
+<attr name="text"><![CDATA[h3. Pure CloverDX approach
 
 The processing is split into two steps. 
 
-Step 1: The first step calculates number of unique visits using built-in CloverETL components and outputs a text file with aggregated counts. 
+Step 1: The first step calculates number of unique visits using built-in CloverDX components and outputs a text file with aggregated counts. 
 
 Step 2: The second step is common to all three solutions - it sorts and converts the generated file into an Excel report.]]></attr>
 </RichTextNote>
@@ -55,13 +55,13 @@ However, we wanted to reuse the "Generate Report" step for all the example imple
 ]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="60FF60" enabled="true" folded="false" fontSize="medium" height="198" id="Note0" textColor="000000" width="333" x="212" y="411">
-<attr name="text"><![CDATA[h3. Read input and process it directly in CloverETL
+<attr name="text"><![CDATA[h3. Read input and process it directly in CloverDX
 ]]></attr>
 </RichTextNote>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiName="Count Unique Visitors using CloverETL" guiX="259" guiY="496" id="COUNT_UNIQUE_VISITORS_USING_CLOVER_ETL" jobURL="${GRAPH_DIR}/CloverETL-CountVisits.grf" type="EXECUTE_GRAPH">
+<Node enabled="enabled" guiName="Count Unique Visitors using CloverDX" guiX="259" guiY="496" id="COUNT_UNIQUE_VISITORS_USING_CLOVER_ETL" jobURL="${GRAPH_DIR}/CloverDX-CountVisits.grf" type="EXECUTE_GRAPH">
 <attr name="outputMapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.

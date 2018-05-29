@@ -10,7 +10,7 @@
 <RichTextNote backgroundColor="404040" enabled="true" folded="false" fontSize="medium" height="107" id="Note4" textColor="FFFFFF" width="929" x="30" y="17">
 <attr name="text"><![CDATA[h3. Big Data - Processing Web Access Log (Unique Visitors): MongoDB Solution
 Report the number of unique visitors per month from a potentially huge web access log using different methods.
-(CloverETL, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
+(CloverDX, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="49" id="Note5" textColor="000000" width="929" x="30" y="123">
 <attr name="text"><![CDATA[h3. This graph is part of the "[UniqueVisits-MongoDB.jbf|navigator://BigDataExamples/jobflow/UniqueVisits-MongoDB.jbf]" jobflow.]]></attr>
