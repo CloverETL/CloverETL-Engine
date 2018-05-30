@@ -740,11 +740,17 @@ public class PrimitiveS3OperationHandler implements RecursiveDeleteHandler {
 					result = new ArrayList<Info>(buckets.size());
 					for (Bucket bucket: buckets) {
 						result.add(getBucketInfo(bucket.getName(), baseUri));
-					}
+					}				
 				} catch (AmazonS3Exception e) {
 					// CLO-9194: provide more detailed error message
 					if (Objects.equals(e.getErrorCode(), "AccessDenied")) {
 						throw new IOException("Failed to list all buckets. Check that the user has s3:ListAllMyBuckets permission.", S3Utils.getIOException(e));
+					} else {
+						throw e;
+					}
+				} catch (AmazonClientException e) {
+					if (StringUtils.isEmpty(PooledS3Connection.getAccessKey((S3Authority)connection.getAuthority()))) {
+						throw new IOException("Failed to list all buckets. No credentials provided.");
 					} else {
 						throw e;
 					}
