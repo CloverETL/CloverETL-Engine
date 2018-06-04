@@ -206,7 +206,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	}
 
 	@Override
-	public void relaseJob(long runId) {
+	public void releaseJob(long runId) {
 		Object oldRunId = MDC.get(LogUtils.MDC_RUNID_KEY);
 		MDC.put(LogUtils.MDC_RUNID_KEY, runId);
 		try {
