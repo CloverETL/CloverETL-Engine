@@ -948,6 +948,11 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			} catch (IOException e) {
 				assumeNoException(e);
 			}
+			if (channel != null) {
+				try {
+					channel.close();
+				} catch (IOException ioe) {}
+			}
 		}
 		return new String(output.toByteArray(), charset);
 	}
@@ -966,6 +971,11 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 				FileUtils.closeAll(input, output);
 			} catch (IOException e) {
 				return false;
+			}
+			if (channel != null) {
+				try {
+					channel.close();
+				} catch (IOException ioe) {}
 			}
 		}
 		return true;

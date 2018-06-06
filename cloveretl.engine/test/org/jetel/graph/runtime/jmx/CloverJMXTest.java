@@ -124,7 +124,7 @@ public class CloverJMXTest extends CloverTestCase {
 			public void handleNotification(Notification notification, Object handback) {
 				if (CloverJMX.GRAPH_FINISHED.equals(notification.getType())) {
 					JMXNotificationMessage notificationMessage = (JMXNotificationMessage) notification.getUserData();					
-					CloverJMX.getInstance().relaseJob(notificationMessage.getRunId());
+					CloverJMX.getInstance().releaseJob(notificationMessage.getRunId());
 				}
 			}
 		};
