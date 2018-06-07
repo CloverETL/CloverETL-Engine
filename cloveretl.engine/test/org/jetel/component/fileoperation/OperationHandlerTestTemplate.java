@@ -968,14 +968,9 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			return false;
 		} finally {
 			try {
-				FileUtils.closeAll(input, output);
+				FileUtils.closeAll(input, output, channel);
 			} catch (IOException e) {
 				return false;
-			}
-			if (channel != null) {
-				try {
-					channel.close();
-				} catch (IOException ioe) {}
 			}
 		}
 		return true;
