@@ -113,7 +113,7 @@ public interface CloverJMXMBean {
     /**
      * Client should call this method immediately after all tracking information have been received.
      */
-    public void relaseJob(long runId);
+    public void releaseJob(long runId);
     
     public void setApprovedPhaseNumber(long runId, int approvedPhaseNumber, DictionaryValuesContainer mergedDictionary);
 }

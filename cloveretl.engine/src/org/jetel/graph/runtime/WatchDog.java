@@ -970,7 +970,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		}
 		
 		if (provideJMX) {
-			CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.TRACKING_UPDATED);
+			CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.TRACKING_UPDATED, null, graphTracking);
 		}
 	}
 
