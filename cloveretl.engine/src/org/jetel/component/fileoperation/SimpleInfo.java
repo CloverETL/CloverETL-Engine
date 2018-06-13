@@ -155,7 +155,7 @@ public class SimpleInfo implements Info, Serializable {
 
 	@Override
 	public Type getType() {
-		return null;
+		return type; // CLO-13627
 	}
 
 	@Override
