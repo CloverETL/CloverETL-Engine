@@ -1321,8 +1321,8 @@ public final class TransformationGraph extends GraphElement {
     	        
     	        //check connections configuration
     	        for(IConnection connection : connections.values()) {
+	        		checkInterrupt();
     	        	try {
-    	        		checkInterrupt();
     	        		connection.checkConfig(status);
     	        	} catch (Exception e) {
     	        		status.addError(connection, null, e);
@@ -1331,8 +1331,8 @@ public final class TransformationGraph extends GraphElement {
     	
     	        //check lookup tables configuration
     	        for(LookupTable lookupTable : lookupTables.values()) {
+	        		checkInterrupt();
     	        	try {
-    	        		checkInterrupt();
     	        		lookupTable.checkConfig(status);
     	        	} catch (Exception e) {
     	        		status.addError(lookupTable, null, e);
@@ -1341,8 +1341,8 @@ public final class TransformationGraph extends GraphElement {
     	
     	        //check sequences configuration
     	        for(Sequence sequence : sequences.values()) {
+	        		checkInterrupt();
     	        	try {
-    	        		checkInterrupt();
     	        		sequence.checkConfig(status);
     	        	} catch (Exception e) {
     	        		status.addError(sequence, null, e);
@@ -1403,7 +1403,7 @@ public final class TransformationGraph extends GraphElement {
     }
     
     private void checkInterrupt() {
-		if (Thread.interrupted()) {
+		if (Thread.currentThread().isInterrupted()) {
 			throw new JetelRuntimeException(new InterruptedException());
 		}
 	}
