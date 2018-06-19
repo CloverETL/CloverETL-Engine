@@ -69,5 +69,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="tools/mockito-all-1.9.5.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
