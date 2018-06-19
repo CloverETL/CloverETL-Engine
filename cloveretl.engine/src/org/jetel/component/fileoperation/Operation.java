@@ -62,8 +62,6 @@ public class Operation {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
 		Operation other = (Operation) obj;
 		if (kind != other.kind)
 			return false;
