@@ -62,6 +62,8 @@ public class Operation {
 			return true;
 		if (obj == null)
 			return false;
+		if (!(obj instanceof Operation))
+			return false;
 		Operation other = (Operation) obj;
 		if (kind != other.kind)
 			return false;
