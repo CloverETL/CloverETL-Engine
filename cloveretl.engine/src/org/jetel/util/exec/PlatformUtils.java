@@ -89,7 +89,7 @@ public class PlatformUtils {
 	/**
      * This method determine platform type.
      * 
-     * @return          true if the platform is MAC OS else false
+     * @return          true if the platform is Linux else false
      * @since 23.8.2007
      */
 	public static boolean isLinuxPlatform() {

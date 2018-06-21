@@ -2,7 +2,7 @@
 <!DOCTYPE TestScenario SYSTEM "testscenario.dtd">
 <TestScenario ident="ext-examples" description="Engine extended examples" useJMX="true">
 
-	<DBConnection ident="postgre_foodmart" type="POSTGRE" user="test" password="test" URL="jdbc:postgresql://koule/foodmart" driver="org.postgresql.Driver" />
+	<DBConnection ident="postgre_foodmart" type="POSTGRE" user="test" password="semafor" URL="jdbc:postgresql://virt-postgres:5432/foodmart" driver="org.postgresql.Driver" />
 	<DBConnection ident="infobright" type="MYSQL" user="root" password="" URL="jdbc:mysql://koule:5029/test" driver="org.gjt.mm.mysql.Driver" />
 	<DBConnection ident="infobright_3_5" type="MYSQL" user="root" password="" URL="jdbc:mysql://koule:5030/test" driver="org.gjt.mm.mysql.Driver" />
 	<DBConnection ident="derby" type="DERBY" user="app" password="derby" 

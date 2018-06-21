@@ -161,7 +161,7 @@ public class FileManager {
 		}
 		candidates.trimToSize(); // the list will never grow, minimize the consumed memory
 
-		if (!candidates.isEmpty()) {
+		if (candidates.size() > 1) {
 			Collections.sort(candidates, new HandlerComparator(operation));
 		}
 		

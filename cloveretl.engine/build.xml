@@ -957,6 +957,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 				<pathelement path="${dir.bin}"/>
 				<pathelement path="${dir.tools}/junit-4.11.jar"/>
 				<pathelement path="${dir.tools}/hamcrest-core-1.3.jar"/>
+				<pathelement path="${dir.tools}/mockito-all-1.9.5.jar"/>
 			</classpath>
 			<src path="${dir.src.test}"/>
 		</javac>
@@ -1006,6 +1007,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 					<pathelement path="${dir.examples}/ExtExamples/lib/derby/lib/derby.jar"/>
 					<pathelement path="${dir.tools}/junit-4.11.jar"/>
 					<pathelement path="${dir.tools}/hamcrest-core-1.3.jar"/>
+					<pathelement path="${dir.tools}/mockito-all-1.9.5.jar"/>
 					<pathelement path="${dir.tools}/junit.xml.formatter.jar"/>
 				</classpath>
 				<batchtest todir="${dir.testsresult}">

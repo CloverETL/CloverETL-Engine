@@ -2,7 +2,7 @@
 <!DOCTYPE TestScenario SYSTEM "testscenario.dtd">
 <TestScenario ident="advanced-examples" description="Engine advanced examples" useJMX="true">
 
-	<DBConnection ident="postgre_foodmart" type="POSTGRE" user="test" password="test" URL="jdbc:postgresql://koule/foodmart" driver="org.postgresql.Driver" />
+	<DBConnection ident="postgre_foodmart" type="POSTGRE" user="test" password="semafor" URL="jdbc:postgresql://virt-postgres:5432/foodmart" driver="org.postgresql.Driver" />
 
     <FunctionalTest ident="AccessLogParsing" graphFile="graph/AccessLogParsing.grf">
         <FlatFile outputFile="data-out/irrelevant.txt" supposedFile="supposed-out/irrelevant.txt"/>
