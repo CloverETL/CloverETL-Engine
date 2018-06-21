@@ -527,6 +527,12 @@ public class TransformationGraphXMLReaderWriter {
 		return null;
 	}
 	
+	private void checkInterrupted() {
+		if (Thread.currentThread().isInterrupted()) {
+			throw new JetelRuntimeException(new InterruptedException());
+		}
+	}
+
 	/**
 	 *Constructor for the read object
 	 *
@@ -536,6 +542,7 @@ public class TransformationGraphXMLReaderWriter {
 	 * @since         May 21, 2002
 	 */
 	public TransformationGraph read(Document document) throws XMLConfigurationException,GraphConfigurationException {
+		checkInterrupted();
 		Context c = null;
 		try {
 			Map<String, Object> metadata = new HashMap<String, Object>(ALLOCATE_MAP_SIZE);
@@ -717,6 +724,7 @@ public class TransformationGraphXMLReaderWriter {
 
 		// loop through all Metadata elements & create appropriate Metadata objects
 		for (int i = 0; i < metadataElements.size(); i++) {
+			checkInterrupted();
 			ComponentXMLAttributes attributes = new ComponentXMLAttributes(metadataElements.get(i), graph);
 			recordMetadata = null;
 			try {
@@ -813,6 +821,7 @@ public class TransformationGraphXMLReaderWriter {
         
 		// loop through all Node elements & create appropriate Metadata objects
 		for (int i = 0; i < nodeElements.getLength(); i++) {
+			checkInterrupted();
 			if (NODE_ELEMENT.compareToIgnoreCase(nodeElements.item(i)
 					.getNodeName()) != 0) {
 				continue;
@@ -890,6 +899,7 @@ public class TransformationGraphXMLReaderWriter {
 
 		// loop through all Node elements & create appropriate Metadata objects
 		for (int i = 0; i < edgeElements.getLength(); i++) {
+			checkInterrupted();
 			ComponentXMLAttributes attributes = new ComponentXMLAttributes((Element)edgeElements.item(i), graph);
 
 			// process edge element attributes "id" & "fileURL"
@@ -1049,6 +1059,7 @@ public class TransformationGraphXMLReaderWriter {
         String connectionType;
         
         for (int i = 0; i < connectionElements.getLength(); i++) {
+			checkInterrupted();
         	try {
 	            Element connectionElement = (Element) connectionElements.item(i);
 	            ComponentXMLAttributes attributes = new ComponentXMLAttributes(connectionElement, graph);
@@ -1085,6 +1096,7 @@ public class TransformationGraphXMLReaderWriter {
         String sequenceType;
         
 		for (int i = 0; i < sequenceElements.getLength(); i++) {
+			checkInterrupted();
 			try {
 	            Element sequenceElement = (Element) sequenceElements.item(i);
 	            ComponentXMLAttributes attributes = new ComponentXMLAttributes(sequenceElement, graph);
@@ -1120,6 +1132,7 @@ public class TransformationGraphXMLReaderWriter {
         LookupTable lookup = null;
         
         for (int i = 0; i < lookupElements.getLength(); i++) {
+			checkInterrupted();
         	try {
 	            Element lookupElement = (Element) lookupElements.item(i);
 	            lookup = LookupTableFactory.createLookupTable(graph, lookupElement);
@@ -1215,6 +1228,7 @@ public class TransformationGraphXMLReaderWriter {
 		List<Element> unresolvedGraphParametersFiles = new ArrayList<Element>();
 		List<Element> graphParameterElements = getChildElements(graphParametersElements.get(0), null);
 		for (Element graphParameterElement : graphParameterElements) {
+			checkInterrupted();
 			if (graphParameterElement.getNodeName().equals(GRAPH_PARAMETER_ELEMENT)) {
 				instantiateGraphParameter(graphParameters, graphParameterElement);
 			} else if (graphParameterElement.getNodeName().equals(GRAPH_PARAMETER_FILE_ELEMENT)) {
@@ -1328,6 +1342,7 @@ public class TransformationGraphXMLReaderWriter {
 		final Dictionary dictionary = graph.getDictionary();
 		
 	    for (int i = 0; i < dictionaryElements.getLength(); i++) {
+			checkInterrupted();
 	    	NodeList dicEntryElements = dictionaryElements.item(i).getChildNodes();
 		    for (int j = 0; j < dicEntryElements.getLength(); j++) {
 		    	if(dicEntryElements.item(j).getNodeName().equals(DICTIONARY_ENTRY_ELEMENT)) {

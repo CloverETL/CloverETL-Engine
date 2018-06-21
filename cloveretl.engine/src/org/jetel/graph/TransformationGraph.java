@@ -1321,6 +1321,7 @@ public final class TransformationGraph extends GraphElement {
     	        
     	        //check connections configuration
     	        for(IConnection connection : connections.values()) {
+	        		checkInterrupt();
     	        	try {
     	        		connection.checkConfig(status);
     	        	} catch (Exception e) {
@@ -1330,6 +1331,7 @@ public final class TransformationGraph extends GraphElement {
     	
     	        //check lookup tables configuration
     	        for(LookupTable lookupTable : lookupTables.values()) {
+	        		checkInterrupt();
     	        	try {
     	        		lookupTable.checkConfig(status);
     	        	} catch (Exception e) {
@@ -1339,6 +1341,7 @@ public final class TransformationGraph extends GraphElement {
     	
     	        //check sequences configuration
     	        for(Sequence sequence : sequences.values()) {
+	        		checkInterrupt();
     	        	try {
     	        		sequence.checkConfig(status);
     	        	} catch (Exception e) {
@@ -1348,11 +1351,13 @@ public final class TransformationGraph extends GraphElement {
     	
     	        //check metadatas configuration
     	        for(Object oDataRecordMetadata : dataRecordMetadata.values()) {
+	        		checkInterrupt();
     	            if (oDataRecordMetadata instanceof DataRecordMetadata) ((DataRecordMetadata)oDataRecordMetadata).checkConfig(status);
     	        }
     	
     	        //check phases configuration
     	        for(Phase phase : getPhases()) {
+	        		checkInterrupt();
     	            phase.checkConfig(status);
     	        }
     	        
@@ -1360,6 +1365,7 @@ public final class TransformationGraph extends GraphElement {
     	        List<Node> subgraphInputComponents = new ArrayList<>();
     	        List<Node> subgraphOutputComponents = new ArrayList<>();
     	        for (Node component : getNodes().values()) {
+	        		checkInterrupt();
     	        	if (SubgraphUtils.isSubJobInputComponent(component.getType())) {
     	        		subgraphInputComponents.add(component);
     	        	}
@@ -1369,11 +1375,13 @@ public final class TransformationGraph extends GraphElement {
     	        }
     	        if (subgraphInputComponents.size() > 1) {
     	    		for (Node subgraphInputComponent : subgraphInputComponents) {
+    	        		checkInterrupt();
     	    			status.addError(subgraphInputComponent, null, "Multiple SubgraphInput component detected in the graph.");
     	    		}
     	        }
     	        if (subgraphOutputComponents.size() > 1) {
     	    		for (Node subgraphOutputComponent : subgraphOutputComponents) {
+    	        		checkInterrupt();
     	    			status.addError(subgraphOutputComponent, null, "Multiple SubgraphOutput component detected in the graph.");
     	    		}
     	        }
@@ -1393,6 +1401,12 @@ public final class TransformationGraph extends GraphElement {
     	}
 
     }
+    
+    private void checkInterrupt() {
+		if (Thread.currentThread().isInterrupted()) {
+			throw new JetelRuntimeException(new InterruptedException());
+		}
+	}
     
     public CloverPost getPost(){
         return watchDog;
