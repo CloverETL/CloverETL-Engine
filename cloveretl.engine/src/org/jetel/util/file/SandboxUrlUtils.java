@@ -220,7 +220,7 @@ public final class SandboxUrlUtils {
 		if (filePath.startsWith("/")) {
 			filePath = filePath.substring(1);
 		}
-		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
+		IAuthorityProxy authorityProxy = getProxy();
 		try {
 			return authorityProxy.getSandboxResourceOutput(ContextProvider.getComponentId(), getSandboxName(url), filePath, appendData);
 		} catch (UnsupportedOperationException uoe) {
@@ -240,13 +240,22 @@ public final class SandboxUrlUtils {
 		if (filePath.startsWith("/")) {
 			filePath = filePath.substring(1);
 		}
-		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
+		IAuthorityProxy authorityProxy = getProxy();
 		try {
 			return authorityProxy.getSandboxResourceInput(ContextProvider.getComponentId(), getSandboxName(url), filePath);
 		} catch (UnsupportedOperationException uoe) {
 			throw new IOException("Failed to open sandbox input stream", uoe);
 		}
     }
+
+	private static IAuthorityProxy getProxy() {
+		Object authorityProxy = ContextProvider.getContextParameter(ContextProvider.AUTHORITY_PROXY_CONTEXT_PROVIDER_ATTR);
+		if (authorityProxy != null && authorityProxy instanceof IAuthorityProxy) {
+			return (IAuthorityProxy) authorityProxy;
+		}
+
+		return IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
+	}
 
 	private SandboxUrlUtils() {
 		throw new UnsupportedOperationException();

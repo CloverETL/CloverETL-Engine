@@ -630,4 +630,10 @@ public abstract class IAuthorityProxy {
 	 */
 	public abstract boolean isHttpContextAvailable();
 	
+	/**
+	 * Write file from rest job output 
+	 * @throws Exception
+	 */
+	public abstract void performFileWrite(String fileUrl, String contentType, String encoding, boolean attachment, GraphRuntimeContext givenRuntimeContext) throws Exception;
+	
 }
