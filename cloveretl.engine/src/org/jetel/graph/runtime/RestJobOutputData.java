@@ -8,11 +8,11 @@ package org.jetel.graph.runtime;
 
 import java.io.Serializable;
 
-/**
- * @author Jiri (info@cloveretl.com)
- *         (c) Javlin, a.s. (www.cloveretl.com)
+/*
+ * CloverETL Engine - Java based ETL application framework.
+ * Copyright (c) Javlin, a.s. (info@cloveretl.com).  Use is subject to license terms.
  *
- * @created Jun 26, 2018
+ * www.cloveretl.com
  */
 public class RestJobOutputData implements Serializable {
 
