@@ -516,9 +516,5 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	@Override
 	public boolean isHttpContextAvailable() {
 		return false;
-	}
-
-	@Override
-	public void performFileWrite(String fileUrl, String contentType, String encoding, boolean attachment, GraphRuntimeContext givenRuntimeContext) throws Exception { 		
 	}	
 }

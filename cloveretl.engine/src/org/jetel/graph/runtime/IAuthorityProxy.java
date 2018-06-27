@@ -50,7 +50,6 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
-import org.jetel.graph.runtime.IAuthorityProxy.RunStatus;
 import org.jetel.graph.runtime.jmx.GraphTracking;
 import org.jetel.graph.runtime.jmx.TrackingEvent;
 import org.jetel.util.ExceptionUtils;
@@ -629,11 +628,5 @@ public abstract class IAuthorityProxy {
 	 * Returns <tt>true</tt> if HTTP context is available, i.e. the job is serving an HTTP request.
 	 */
 	public abstract boolean isHttpContextAvailable();
-	
-	/**
-	 * Write file from rest job output 
-	 * @throws Exception
-	 */
-	public abstract void performFileWrite(String fileUrl, String contentType, String encoding, boolean attachment, GraphRuntimeContext givenRuntimeContext) throws Exception;
 	
 }

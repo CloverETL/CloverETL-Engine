@@ -209,5 +209,11 @@ public interface HttpContext {
 	 * @throws IOException
 	 */
 	OutputStream getResponseOutputStream() throws IOException;
+
+	/**
+	 * @param restJobOutputData
+	 * @throws IOException 
+	 */
+	void performFileWrite(RestJobOutputData fileData) throws Exception;
 	
 }
