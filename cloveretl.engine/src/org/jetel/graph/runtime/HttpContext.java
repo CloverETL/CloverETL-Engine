@@ -214,6 +214,6 @@ public interface HttpContext {
 	 * @param restJobOutputData
 	 * @throws IOException 
 	 */
-	void performFileWrite(RestJobOutputData fileData) throws Exception;
+	void performFileWrite(RestJobOutputData fileData) throws IOException;
 	
 }
