@@ -250,7 +250,7 @@ public final class SandboxUrlUtils {
 
 	private static IAuthorityProxy getProxy() {
 		Object authorityProxy = ContextProvider.getContextParameter(ContextProvider.AUTHORITY_PROXY_CONTEXT_PROVIDER_ATTR);
-		if (authorityProxy != null && authorityProxy instanceof IAuthorityProxy) {
+		if (authorityProxy instanceof IAuthorityProxy) {
 			return (IAuthorityProxy) authorityProxy;
 		}
 
