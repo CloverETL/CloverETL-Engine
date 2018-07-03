@@ -227,7 +227,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 		try {
 			WatchDog watchDog = watchDogCache.remove(runId);
 			if (watchDog == null) {
-				log.error("Released WatchDog does not found for runId #" + runId);
+				log.error("Released WatchDog not found for runId #" + runId);
 			} else {
 				sendReleaseWatchdogNotification(watchDog);
 				log.debug("WatchDog unregistered from CloverJMX #" + runId);
