@@ -498,32 +498,9 @@ public class runGraph {
         threadManager.initWatchDog(watchDog);
 		return threadManager.executeWatchDog(watchDog);
 	}
-    
-	public static String getInfo(){
-		final StringBuilder ret = new StringBuilder();
-		ret.append("CloverETL version ");
-		ret.append(JetelVersion.MAJOR_VERSION );
-		ret.append(".");
-		ret.append(JetelVersion.MINOR_VERSION);
-		ret.append(".");
-		ret.append(JetelVersion.REVISION_VERSION);
-		if( ! "".equals(JetelVersion.VERSION_SUFFIX) ) {
-			ret.append(".");
-			ret.append(JetelVersion.VERSION_SUFFIX);
-	 	}
-		if( ! "0".equals(JetelVersion.BUILD_NUMBER) ) {
-			ret.append(" build#");
-			ret.append(JetelVersion.BUILD_NUMBER);
-		}
-		if( JetelVersion.LIBRARY_BUILD_DATETIME.length() != 0 ){
-			ret.append(" compiled ");
-			ret.append( JetelVersion.LIBRARY_BUILD_DATETIME );
-		}
-		return ret.toString();
-	}
 	
 	public static void printInfo(){
-	    System.out.println(getInfo());
+	    System.out.println(JetelVersion.getProductName());
 	}
 
 	private static void printHelp() {
@@ -565,7 +542,7 @@ public class runGraph {
 	
 	public static void printRuntimeHeader() {
         logger.info(RUNTIME_HEADER_1.format(new Object[] {JetelVersion.LIBRARY_BUILD_YEAR}));
-        logger.info(RUNTIME_HEADER_2.format(new Object[] {getInfo()}));
+        logger.info(RUNTIME_HEADER_2.format(new Object[] {JetelVersion.getProductName()}));
         logger.info(RUNTIME_HEADER_3.format(new Object[] {
         		Runtime.getRuntime().availableProcessors(),
         		System.getProperty("os.name"),
