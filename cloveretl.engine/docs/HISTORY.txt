@@ -2,6 +2,16 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-8-3
+------------
+
+* CLO-13820 Checkconfig from Designer can overload the Server for huge graphs
+* CLO-13818 Freezing Designer when developing huge graphs
+* CLO-13751 Retrieving execution history via API with Data Service run records doesn't work
+* CLO-12464 Autorejoin in cluster doesn't work
+* Compatibility:
+  * CLO-13819 Designer requires Eclipse 4.5
+  
 REL-4-8-2
 ------------
 * CLO-13157	LZ4 compression for remote edges
