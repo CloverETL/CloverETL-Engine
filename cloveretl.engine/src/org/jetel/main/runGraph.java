@@ -532,6 +532,7 @@ public class runGraph {
         
 	}
 
+	// See also com.cloveretl.server.utils.LogUtils where this code was temporarily duplicated.
 	private static MessageFormat RUNTIME_HEADER_1 = new MessageFormat("***  CloverETL, (c) 2002-{0} Javlin a.s.  ***");
 	private static MessageFormat RUNTIME_HEADER_2 = new MessageFormat("Running with {0}");
 	private static MessageFormat RUNTIME_HEADER_3 = new MessageFormat(
