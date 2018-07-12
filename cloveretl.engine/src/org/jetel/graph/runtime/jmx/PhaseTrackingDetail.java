@@ -81,12 +81,11 @@ public class PhaseTrackingDetail implements PhaseTracking {
 		
 	}
 	
-	void copyFrom(PhaseTrackingDetail phaseDetail) {
+	public void copyFrom(PhaseTrackingDetail phaseDetail) {
 		this.startTime = phaseDetail.startTime;
 		this.endTime = phaseDetail.endTime;
 		this.memoryUtilization = phaseDetail.memoryUtilization;
 		this.result = phaseDetail.result;
-		this.phaseNum = phaseDetail.phaseNum;
 		
 		int i = 0;
 		for (NodeTrackingDetail nodeDetail : nodesDetails) {

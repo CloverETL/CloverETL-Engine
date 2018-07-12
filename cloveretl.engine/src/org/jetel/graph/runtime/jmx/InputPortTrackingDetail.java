@@ -49,10 +49,14 @@ public class InputPortTrackingDetail extends PortTrackingDetail implements Input
 		inputPort = null;
 	}
 
-	void copyFrom(InputPortTrackingDetail portDetail) {
+	public void copyFrom(InputPortTrackingDetail portDetail) {
 		super.copyFrom(portDetail);
 
 		this.readerWaitingTime = portDetail.readerWaitingTime;
+	}
+	
+	InputPort getInputPort() {
+		return inputPort;
 	}
 
 	@Override
@@ -74,7 +78,7 @@ public class InputPortTrackingDetail extends PortTrackingDetail implements Input
 	
 	//******************* EVENTS ********************/
 	@Override
-	void gatherTrackingDetails() {
+	public void gatherTrackingDetails() {
 		gatherTrackingDetails0(
 				inputPort.getInputRecordCounter(), 
 				inputPort.getInputByteCounter(),

@@ -50,10 +50,14 @@ public class OutputPortTrackingDetail extends PortTrackingDetail implements Outp
 		
 	}
 
-	void copyFrom(OutputPortTrackingDetail portDetail) {
+	public void copyFrom(OutputPortTrackingDetail portDetail) {
 		super.copyFrom(portDetail);
 
 		this.writerWaitingTime = portDetail.writerWaitingTime;
+	}
+
+	OutputPort getOutputPort() {
+		return outputPort;
 	}
 
 	@Override
@@ -75,7 +79,7 @@ public class OutputPortTrackingDetail extends PortTrackingDetail implements Outp
 
 	//******************* EVENTS ********************/
 	@Override
-	void gatherTrackingDetails() {
+	public void gatherTrackingDetails() {
 		gatherTrackingDetails0(
 				outputPort.getOutputRecordCounter(), 
 				outputPort.getOutputByteCounter(),

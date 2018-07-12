@@ -812,8 +812,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
     	return tokenTracker;
     }
     
-	public synchronized GraphTrackingDetail getGraphTracking() {
-		return graphTracking != null ? graphTracking.createCopy() : null;
+	public GraphTrackingDetail getGraphTracking() {
+		return graphTracking;
 	}
 
 	public void setApprovedPhaseNumber(int approvedPhaseNumber) {
