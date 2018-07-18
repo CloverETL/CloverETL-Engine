@@ -54,9 +54,6 @@ public class GraphTrackingDetail implements GraphTracking {
     private String nodeId;
     
     private long runId;
-
-    @SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
-    private transient Result lastPhaseResult;
     
 	/**
 	 * Constructor.
@@ -82,16 +79,28 @@ public class GraphTrackingDetail implements GraphTracking {
 		graph = null;
 	}
 	
-	public void copyFrom(GraphTrackingDetail graphDetail) {
-		this.runningPhaseDetail = getPhaseDetail(graphDetail.getRunningPhaseTracking().getPhaseNum());
+	private void copyFrom(GraphTrackingDetail graphDetail) {
 		this.startTime = graphDetail.startTime;
 		this.endTime = graphDetail.endTime;
 		this.result = graphDetail.result;
+		this.graphError = graphDetail.graphError;
+		this.nodeId = graphDetail.nodeId;
+		this.runId = graphDetail.runId;
+
+		if (graphDetail.getRunningPhaseTracking() != null) {
+			this.runningPhaseDetail = getPhaseDetail(graphDetail.getRunningPhaseTracking().getPhaseNum());
+		}
 		
 		int i = 0;
 		for (PhaseTrackingDetail phaseDetail : phasesDetails) {
 			phaseDetail.copyFrom(graphDetail.phasesDetails[i++]);
 		}
+	}
+	
+	public GraphTrackingDetail createCopy() {
+		GraphTrackingDetail detail = new GraphTrackingDetail(this.graph);
+		detail.copyFrom(this);
+		return detail;
 	}
 	
 	TransformationGraph getGraph() {
@@ -233,10 +242,6 @@ public class GraphTrackingDetail implements GraphTracking {
 		this.runId = runId;
 	}
 	
-	public void setLastPhaseResult(Result lastPhaseResult) {
-		this.lastPhaseResult = lastPhaseResult;
-	}
-
 	//******************* EVENTS ********************/
 	public void graphStarted() {
 		startTime = System.currentTimeMillis();
@@ -260,8 +265,6 @@ public class GraphTrackingDetail implements GraphTracking {
 	public void phaseFinished() {
 		gatherTrackingDetails();
 		runningPhaseDetail.phaseFinished();
-		
-		lastPhaseResult = runningPhaseDetail.getResult();
 	}
 
 	public void graphFinished() {

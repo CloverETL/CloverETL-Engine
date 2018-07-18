@@ -94,7 +94,7 @@ public class NodeTrackingDetail implements NodeTracking {
 		this.node = null;
 	}
 
-	public void copyFrom(NodeTrackingDetail nodeDetail) {
+	void copyFrom(NodeTrackingDetail nodeDetail) {
 		this.result = nodeDetail.result;
 	    this.nodeId = nodeDetail.getNodeID();
 	    this.nodeName = nodeDetail.getNodeName();
@@ -315,7 +315,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	}
 
 	//******************* EVENTS ********************/
-	public void gatherTrackingDetails() {
+	void gatherTrackingDetails() {
 		//get the node result (SubgraphInput and SubgraphOutput is handled in special way
 		if (SubgraphUtils.isSubJobInputComponent(node.getType())) {
 			result = getResultOfSubgraphInput(node);
