@@ -176,8 +176,23 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	
 	public void abortAllGraphExecutions() {
 		for (long runId : watchDogCache.keySet()) {
-			abortGraphExecution(runId);
+			abortJob(runId);
 		}
+	}
+	
+	private void abortJob(Long runId) {
+		if (runId == null) {
+			return;
+		}
+		
+		WatchDog watchDog = watchDogCache.get(runId);
+		if (watchDog != null
+				&& watchDog.getGraphRuntimeContext() != null) {
+			//abort parent first
+			abortJob(watchDog.getGraphRuntimeContext().getParentRunId());
+		}
+		
+		abortGraphExecution(runId);	
 	}
 
 	@Override
@@ -206,7 +221,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	}
 
 	@Override
-	public void relaseJob(long runId) {
+	public void releaseJob(long runId) {
 		Object oldRunId = MDC.get(LogUtils.MDC_RUNID_KEY);
 		MDC.put(LogUtils.MDC_RUNID_KEY, runId);
 		try {

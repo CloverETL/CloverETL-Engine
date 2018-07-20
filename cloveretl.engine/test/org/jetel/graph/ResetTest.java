@@ -228,6 +228,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("TypedProperties_CLO-1997.grf") // server test
 							&& !file.getName().equals("EmptySubGraph.grf") // server test
 							&& !file.getName().equals("ParallelReader_HDFS.grf") // cluster test
+							&& !file.getName().equals("ParallelReader_CLO-13541.grf") // server test
 							&& !file.getName().equals("SubgraphsReuse.grf") // contains subgraphs
 							&& !file.getName().startsWith("Issues") // contains subgraphs
 							&& !file.getName().equals("SubgraphsSimplifyingGraph.grf") // contains subgraphs

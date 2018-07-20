@@ -30,7 +30,7 @@ import java.util.Date;
  */
 public class SimpleInfo implements Info, Serializable {
 	
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 6160134203435753196L;
 
 	private final String name;
 	
@@ -138,6 +138,22 @@ public class SimpleInfo implements Info, Serializable {
 		return this;
 	}
 	
+	/**
+	 * @param created the created to set
+	 */
+	public SimpleInfo setCreated(Date created) {
+		this.created = created;
+		return this;
+	}
+
+	/**
+	 * @param lastAccessed the lastAccessed to set
+	 */
+	public SimpleInfo setLastAccessed(Date lastAccessed) {
+		this.lastAccessed = lastAccessed;
+		return this;
+	}
+
 	public SimpleInfo setParentDir(URI parentDir) {
 		this.parentDir = parentDir;
 		return this;
@@ -155,7 +171,7 @@ public class SimpleInfo implements Info, Serializable {
 
 	@Override
 	public Type getType() {
-		return null;
+		return type; // CLO-13627
 	}
 
 	@Override

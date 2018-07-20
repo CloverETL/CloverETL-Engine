@@ -83,7 +83,7 @@ public class BasicSqlConnection implements SqlConnection {
 			optimizeConnection(operationType);
 		} catch (Exception e1) {
 			logger.warn("Optimizing connection failed: " + e1.getMessage());
-			logger.warn("Try to use another jdbc specific");
+			logger.warn("Try to use other JDBC specific");
 		}
 		
 		try {
@@ -94,7 +94,7 @@ public class BasicSqlConnection implements SqlConnection {
 				setTransactionIsolation(dbConnection.getTransactionIsolation());
 			}
 		} catch (SQLException e) {
-			throw new JetelException("Wrong connection configuration.", e);
+			throw new JetelException("Incorrect connection configuration.", e);
 		}
 	}
 
@@ -228,6 +228,9 @@ public class BasicSqlConnection implements SqlConnection {
 	public void commit() throws SQLException {
 		if (isTransactionsSupported()) {
 			connection.commit();
+			if (logger.isDebugEnabled()) {
+				logger.debug("Transaction committed");
+			}
 		}
 	}
 
@@ -414,7 +417,7 @@ public class BasicSqlConnection implements SqlConnection {
 				statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 			}else{
 				logger.warn("Columns are null");
-				logger.info("Getting generated keys switched off !");
+				logger.info("Returning generated keys switched off");
 				statement = connection.prepareStatement(sql);
 			}
 		}else{
@@ -435,7 +438,7 @@ public class BasicSqlConnection implements SqlConnection {
 				statement =  connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 			}else{
 				logger.warn("Columns are null");
-				logger.info("Getting generated keys switched off !");
+				logger.info("Returning generated keys switched off");
 				statement =  connection.prepareStatement(sql);
 			}
 		}else{
@@ -482,6 +485,9 @@ public class BasicSqlConnection implements SqlConnection {
 	@Override
 	public void releaseSavepoint(Savepoint savepoint) throws SQLException {
 		connection.releaseSavepoint(savepoint);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Savepoint released: " + savepoint);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -491,6 +497,9 @@ public class BasicSqlConnection implements SqlConnection {
 	public void rollback() throws SQLException {
 		if (isTransactionsSupported()) {
 			connection.rollback();
+			if (logger.isDebugEnabled()) {
+				logger.debug("Transaction rolled back");
+			}
 		}
 	}
 
@@ -501,6 +510,9 @@ public class BasicSqlConnection implements SqlConnection {
 	public void rollback(Savepoint savepoint) throws SQLException {
 		if (isTransactionsSupported()) {
 			connection.rollback(savepoint);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Transaction rolled back to savepoint: " + savepoint);
+			}
 		}
 	}
 
@@ -509,12 +521,8 @@ public class BasicSqlConnection implements SqlConnection {
 	 */
 	@Override
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
-// pnajvar-
-// following check for transactions support causes problems and it seems to work fine without it
-// even on non-transactions-enabled servers
-//		if (isTransactionsSupported()) {
-			connection.setAutoCommit(autoCommit);
-//		}
+		connection.setAutoCommit(autoCommit);
+		logAutocommit(autoCommit);
 	}
 
 	/* (non-Javadoc)
@@ -601,26 +609,41 @@ public class BasicSqlConnection implements SqlConnection {
 	 */
 	protected void optimizeConnection(OperationType operationType) throws Exception {
 		switch (operationType) {
-		case READ:
-			connection.setAutoCommit(false);
+		case READ: {
+			boolean autocommit = false;
+			connection.setAutoCommit(autocommit);
+			logAutocommit(autocommit);
 			connection.setReadOnly(true);
 			connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
 			connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
 			break;
+		}
 		case WRITE:
-		case CALL:
-			connection.setAutoCommit(false);
+		case CALL: {
+			boolean autocommit = false;
+			connection.setAutoCommit(autocommit);
+			logAutocommit(autocommit);
+			connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+			connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
+			logAutocommit(true);
+			break;
+		}
+		case TRANSACTION: {
+			boolean autocommit = true;
+			connection.setAutoCommit(autocommit);
+			logAutocommit(autocommit);
 			connection.setReadOnly(false);
 			connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
 			connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
+			logAutocommit(true);
 			break;
-
-		case TRANSACTION:
-			connection.setAutoCommit(true);
-			connection.setReadOnly(false);
-			connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-			connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
-			break;
+		}
+		}
+	}
+	
+	protected void logAutocommit(final boolean value) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("Auto commit set: " + value);
 		}
 	}
 
@@ -740,5 +763,4 @@ public class BasicSqlConnection implements SqlConnection {
 	public int getNetworkTimeout() throws SQLException {
 		return connection.getNetworkTimeout();
 	}
-
 }

@@ -101,6 +101,9 @@ public class BufferedFastPropagateEdge extends EdgeBase {
 		circularBufferQueues[1] = new CircularBufferQueue(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE, true);
 		
 		persistentBufferQueue = new PersistentBufferQueue();
+		if (proxy != null && proxy.getGraph() != null) {
+			persistentBufferQueue.setContextGraph(proxy.getGraph());
+		}
 	}
 
 	@SuppressFBWarnings("IS2_INCONSISTENT_SYNC")

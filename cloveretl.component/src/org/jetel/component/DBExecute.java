@@ -290,10 +290,10 @@ public class DBExecute extends Node {
 	    if (dbConnection == null){
 	        IConnection conn = getGraph().getConnection(dbConnectionName);
             if(conn == null) {
-                throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName);
+                throw new ComponentNotReadyException("Cannot find DBConnection ID: " + dbConnectionName);
             }
             if(!(conn instanceof DBConnection)) {
-                throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " isn't instance of the DBConnection class.");
+                throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " is not an instance of the DBConnection class.");
             }
             dbConnection = (DBConnection) conn;
 	    }
@@ -411,7 +411,7 @@ public class DBExecute extends Node {
 					sqlStatement.close();
 				}
 			} catch (SQLException e) {
-				logger.warn("SQLException when closing statement", e);
+				logger.warn("Could not close statement", e);
 			}
 			// CLO-6100: do not close the connection, as we expect the graph to perform commit
 			if (transaction != InTransaction.NEVER_COMMIT) {
@@ -468,7 +468,7 @@ public class DBExecute extends Node {
 					}
 				} else if (inParams != null) {
 					throw new ComponentNotReadyException(this, XML_SQLQUERY_ATTRIBUTE,
-							"Can't read statement and parameters from input port");
+							"Cannot read statement and parameters from input port");
 				} else {
 					callableStatement = new SQLCloverCallableStatement[1];
 				}
@@ -488,7 +488,7 @@ public class DBExecute extends Node {
 				connection.setAutoCommit(transaction == InTransaction.ONE);
 			} catch (SQLException ex) {
 				if (transaction != InTransaction.ONE) {
-					throw new ComponentNotReadyException("Can't disable AutoCommit mode (required by current \"Transaction set\" setting) for DB: " + dbConnection + " !", ex);
+					throw new ComponentNotReadyException("Cannot disable auto commit mode (required by current \"Transaction set\" setting) for DB: " + dbConnection, ex);
 				}
 			}
 		} catch (SQLException e) {
@@ -556,8 +556,9 @@ public class DBExecute extends Node {
 			}
 			try {
 				connection.rollback();
+				logger.info("Transaction rolled back");
 			} catch (SQLException e1) {
-				logger.warn("Can't rollback!!", e);
+				logger.warn("Could not rollback transaction", e);
 			}
 			logger.error("Error when executing statement: " + query);
 			throw e;
@@ -568,6 +569,7 @@ public class DBExecute extends Node {
 		if (!connection.getAutoCommit()) {
     		try {
     			connection.commit();
+    			logger.info("Transaction committed explicitly");
     		} catch (SQLException e) {
     			handleException(e, inRecord, -1, "COMMIT");
     		}
@@ -656,6 +658,7 @@ public class DBExecute extends Node {
     		}
     		if (!runIt) {
     			connection.rollback();
+    			logger.info("Transaction rolled back");
     		}
 		} finally {
     		broadcastEOF();
@@ -858,7 +861,7 @@ public class DBExecute extends Node {
         }
         
         if (charset != null && !Charset.isSupported(charset)) {
-        	status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
+        	status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported");
         }
         
         if (sqlQuery == null && fileUrl == null) {
@@ -872,10 +875,10 @@ public class DBExecute extends Node {
 		    if (dbConnection == null && dbConnectionName != null){
 		        IConnection conn = getGraph().getConnection(dbConnectionName);
 	            if(conn == null) {
-	                throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName, XML_DBCONNECTION_ATTRIBUTE);
+	                throw new ComponentNotReadyException("Cannot find DBConnection ID: " + dbConnectionName, XML_DBCONNECTION_ATTRIBUTE);
 	            }
 	            if(!(conn instanceof DBConnection)) {
-	                throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " isn't instance of the DBConnection class.", XML_DBCONNECTION_ATTRIBUTE);
+	                throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " is not an instance of DBConnection class.", XML_DBCONNECTION_ATTRIBUTE);
 	            }
 		    }
             if (errorActionsString != null){
@@ -925,6 +928,4 @@ public class DBExecute extends Node {
 	protected ComponentTokenTracker createComponentTokenTracker() {
 		return new ReformatComponentTokenTracker(this);
 	}
-
 }
-

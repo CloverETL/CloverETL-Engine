@@ -45,8 +45,7 @@ public class ObservableHandler implements IOperationHandler {
 
 		@Override
 		public synchronized void observe(IOperationHandler handler, Operation operation) {
-			//TODO temporary commented out
-			//System.out.printf("%s performs %s%n", handler, operation);
+			System.out.printf("%s performs %s%n", handler, operation);
 		}
 		
 	}

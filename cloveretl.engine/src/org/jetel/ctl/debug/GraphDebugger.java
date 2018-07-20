@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.ListenerNotFoundException;
 import javax.management.Notification;
@@ -77,7 +78,7 @@ public class GraphDebugger implements IdSequence {
 	private volatile NotificationListener finishListener;
 	private final Object finishListenerLock = new Object();
 	
-	private long idSeq;
+	private AtomicLong idSeq = new AtomicLong();
 	
 	public GraphDebugger(GraphRuntimeContext runtimeContext) {
 		this.runtimeContext = runtimeContext;
@@ -164,8 +165,8 @@ public class GraphDebugger implements IdSequence {
 	}
 	
 	@Override
-	public synchronized long nextId() {
-		return ++idSeq;
+	public long nextId() {
+		return idSeq.incrementAndGet();
 	}
 	
 	public void resume(long threadId) {
