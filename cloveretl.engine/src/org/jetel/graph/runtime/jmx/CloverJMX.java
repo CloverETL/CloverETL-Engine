@@ -135,6 +135,19 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	        }
 		}
 	}
+	
+	/**
+	 * Stops {@link #cleanupExecutor}.
+	 */
+	public static synchronized void shutdown() {
+		CloverJMX instance = cloverJMX;
+		if (instance != null) {
+			ScheduledExecutorService executor = instance.cleanupExecutor;
+			if (executor != null) {
+				executor.shutdownNow();
+			}
+		}
+	}
 
 	/**
 	 * @return the singleton
