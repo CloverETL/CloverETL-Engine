@@ -83,7 +83,7 @@ System.getenv().each{ println "\t${it}" }
 
 getBouncyPath()
 
-antCustomEnv = ["ANT_OPTS":"-Xmx2048m -XX:MaxPermSize=256m"]
+antCustomEnv = ["ANT_OPTS":"-Xmx2048m"]
 if( !runTests ){
 	antBaseD = engineD
 	antArgs = [
