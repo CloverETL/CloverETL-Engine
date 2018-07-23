@@ -2,6 +2,57 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-9-0
+---------
+
+* Worker related improvements:
+	* CLO-13032 Reliable JMX messages between Worker and Server
+	* CLO-13852 Worker JNDI and SSL configuration - support for stronger encryption algorithms
+	* CLO-13846 Passwords for JNDI resources are specified as encrypted configuration properties
+	* CLO-13807 Automatically set -Dhttps.protocols=TLSv1.2,TLSv1.1,TLSv1 property for Worker
+	* CLO-13798 Worker JNDI - support all parameters of Apache DBCP2
+	* CLO-13565 Worker classpath parsing should support any OS specific separator	
+	* CLO-13463 accessibilityTest.jsp to indicate also not ready Worker
+	* CLO-13437 Rename workerManager.* properties to worker.* properties
+	* CLO-13232 Worker stability under heavy system load
+	* CLO-13192 Cluster remote edges over SSL with Worker
+	* CLO-13188 Updated job lifecycle logs
+	* CLO-13155 Jobs log when worker is restarted
+	* CLO-12651 Improved Multi JVM related logs
+	* CLO-13398 Rename worker.additional.classpath to worker.classpath
+	* CLO-13365 Rename workerManager.startWorkers to worker.initialWorkers
+	* CLO-13340 Show also Worker memory info in Monitoring
+	* CLO-13310 Rename worker.portPool to worker.portRange
+	* CLO-12972 Improved colors in Monitoring graphs
+	* CLO-12815 Improve default value of worker classpath directory
+* Misc improvements:
+	* CLO-8756 Consistent behavior or isDecimal and str2Decimal functions
+	* CLO-13924 Upgrade bundled PostgreSQL driver version to 42.2.2
+	* CLO-13391 Deprecate Launch Services
+	* CLO-13375 Upgrade JGroups library version to 3.6.15.Final
+	* CLO-13311 New isDecimal functions with format and locale parameters
+	* CLO-13061 Less usage of direct memory
+	* CLO-12704 Add permission to access server web console
+	* CLO-12991 File Event Listener -> Paste URL -> encoded name and password
+	* CLO-564 WebServiceClient documentation should contain information about escaping of special characters
+* Fixes:
+	* CLO-13751	Retrieving execution history via API with Data Service run records doesn't work
+	* CLO-13541	ParallelReader: creates duplicate records when reading smaller files in a cluster environment
+	* CLO-13460	Parameter editor kills Designer on OSX
+	* CLO-13275	CreateFiles component fails to create new file on SFTP
+	* CLO-13009	Server crashes when browsing huge execution history
+	* CLO-12872	Hide Passwords from Parameters in Execution History
+	* CLO-12524	Manual schedule execution produces fake run records
+	* CLO-12014	'Inline' API of our web service interface is not supported with Multi-JVM
+* Compatibility:
+	* CLO-8756	Consistent behavior or isDecimal and str2Decimal functions
+	* CLO-13846	Passwords for JNDI resources are specified as encrypted configuration properties
+	* CLO-13798 Worker JNDI - support all parameters of Apache DBCP2
+	* CLO-13437	Rename workerManager.* properties to worker.* properties
+	* CLO-12014	'Inline' API of our web service interface is not supported with Multi-JVM
+	* CLO-13398	Rename worker.additional.classpath to worker.classpath
+	* CLO-13310	Rename worker.portPool to worker.portRange
+
 REL-4-8-2
 ------------
 * CLO-13157	LZ4 compression for remote edges
