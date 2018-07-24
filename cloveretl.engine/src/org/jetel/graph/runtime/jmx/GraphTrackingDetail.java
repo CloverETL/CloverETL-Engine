@@ -78,27 +78,26 @@ public class GraphTrackingDetail implements GraphTracking {
 		graph = null;
 	}
 	
-	private void copyFrom(GraphTrackingDetail graphDetail) {
-		this.startTime = graphDetail.startTime;
-		this.endTime = graphDetail.endTime;
-		this.result = graphDetail.result;
-		this.graphError = graphDetail.graphError;
-		this.nodeId = graphDetail.nodeId;
-		this.runId = graphDetail.runId;
-
-		if (graphDetail.getRunningPhaseTracking() != null) {
-			this.runningPhaseDetail = getPhaseDetail(graphDetail.getRunningPhaseTracking().getPhaseNum());
-		}
-		
-		int i = 0;
-		for (PhaseTrackingDetail phaseDetail : phasesDetails) {
-			phaseDetail.copyFrom(graphDetail.phasesDetails[i++]);
-		}
-	}
-	
 	public GraphTrackingDetail createCopy() {
 		GraphTrackingDetail detail = new GraphTrackingDetail(this.graph);
-		detail.copyFrom(this);
+		
+		detail.graphName = this.graphName;
+		detail.startTime = this.startTime;
+		detail.endTime = this.endTime;
+		detail.result = this.result;
+		detail.graphError = this.graphError;
+		detail.nodeId = this.nodeId;
+		detail.runId = this.runId;
+		
+		int i = 0;
+		for (PhaseTrackingDetail phaseDetail : detail.phasesDetails) {
+			phaseDetail.copyFrom(this.phasesDetails[i++]);
+		}
+		
+		if (this.getRunningPhaseTracking() != null) {
+			detail.runningPhaseDetail = detail.getPhaseDetail(this.getRunningPhaseTracking().getPhaseNum());
+		}
+
 		return detail;
 	}
 	
