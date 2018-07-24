@@ -74,6 +74,7 @@ public abstract class PortTrackingDetail implements PortTracking {
     	this.waitingRecords= portDetail.waitingRecords;
     	this.averageWaitingRecords = portDetail.averageWaitingRecords;
     	this.usedMemory = portDetail.usedMemory;
+    	this.remoteRunId = portDetail.remoteRunId;
     }
     
 	/* (non-Javadoc)
