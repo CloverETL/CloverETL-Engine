@@ -308,28 +308,17 @@ public class FileUtilsTest extends CloverTestCase {
 	
 	private void testInvalidURL(String context, String urlString) {
 		Exception ex = null;
-		
+
 		try {
-			try {
-				if (context != null) {
-					FileUtils.getFileURL(context); // first check the contextURL, if any
-				}
-				new URL(urlString);
-				// both URLs are valid, unexpected
-				throw new RuntimeException("Valid URL: " + urlString);
-			} catch (MalformedURLException e) {
-				ex = e;
-			}
-			if (context != null) { 
+			if (context != null) {
+				FileUtils.getFileURL(context); // first check the contextURL, if any
 				FileUtils.getFileURL(context, urlString);
 			} else {
 				FileUtils.getFileURL(urlString);
 			}
 			fail("Should fail for url: " + urlString + " with reason: " + ex);
 		} catch (MalformedURLException e) {
-			assertEquals(ex.getClass(), e.getClass());
-			assertEquals(ex.getMessage(), e.getMessage());
-			// same exception class, same message
+			// true
 		}
 	}
 
