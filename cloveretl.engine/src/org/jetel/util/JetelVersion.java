@@ -113,4 +113,30 @@ public final class JetelVersion {
     public static String getVersion() {
     	return MAJOR_VERSION+"."+MINOR_VERSION+"."+REVISION_VERSION+"."+VERSION_SUFFIX;
     }
+
+    /**
+     * @return Full product name string with version
+     */
+    public static String getProductName(){
+        final StringBuilder ret = new StringBuilder();
+        ret.append("CloverETL version ");
+        ret.append(MAJOR_VERSION );
+        ret.append(".");
+        ret.append(MINOR_VERSION);
+        ret.append(".");
+        ret.append(REVISION_VERSION);
+        if( ! "".equals(VERSION_SUFFIX) ) {
+            ret.append(".");
+            ret.append(VERSION_SUFFIX);
+        }
+        if( ! "0".equals(BUILD_NUMBER) ) {
+            ret.append(" build#");
+            ret.append(BUILD_NUMBER);
+        }
+        if( LIBRARY_BUILD_DATETIME.length() != 0 ){
+            ret.append(" compiled ");
+            ret.append( LIBRARY_BUILD_DATETIME );
+        }
+        return ret.toString();
+    }
 }
