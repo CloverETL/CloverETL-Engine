@@ -267,6 +267,13 @@ public class EngineInitializer {
 		//initialize the graph
         graph.init();
 	}
+	
+	/**
+	 * Performs cleanup so that the application that uses the Engine can terminate.
+	 */
+	public static void shutdown() {
+		CloverJMX.shutdown();
+	}
 
 	/**
 	 * Checks configuration of the given graph.

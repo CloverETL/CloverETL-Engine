@@ -523,7 +523,7 @@ public class runGraph {
 	}
 	
 	public static void printInfo(){
-	    System.out.println(getInfo());
+	    System.out.println(JetelVersion.getProductName());
 	}
 
 	private static void printHelp() {
@@ -555,6 +555,7 @@ public class runGraph {
         
 	}
 
+	// See also com.cloveretl.server.utils.LogUtils where this code was temporarily duplicated.
 	private static MessageFormat RUNTIME_HEADER_1 = new MessageFormat("***  CloverDX, (c) 2002-{0} Javlin a.s.  ***");
 	private static MessageFormat RUNTIME_HEADER_2 = new MessageFormat("Running with {0}");
 	private static MessageFormat RUNTIME_HEADER_3 = new MessageFormat(
@@ -565,7 +566,7 @@ public class runGraph {
 	
 	public static void printRuntimeHeader() {
         logger.info(RUNTIME_HEADER_1.format(new Object[] {JetelVersion.LIBRARY_BUILD_YEAR}));
-        logger.info(RUNTIME_HEADER_2.format(new Object[] {getInfo()}));
+        logger.info(RUNTIME_HEADER_2.format(new Object[] {JetelVersion.getProductName()}));
         logger.info(RUNTIME_HEADER_3.format(new Object[] {
         		Runtime.getRuntime().availableProcessors(),
         		System.getProperty("os.name"),

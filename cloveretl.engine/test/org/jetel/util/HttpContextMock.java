@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jetel.graph.runtime.HttpContext;
+import org.jetel.graph.runtime.RestJobOutputData;
 
 /**
  * @author Roland (info@cloveretl.com)
@@ -214,6 +215,11 @@ public class HttpContextMock implements HttpContext {
 	public Map<String, List<String>> getAllRequestParametersList() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void performFileWrite(RestJobOutputData fileData) {
+		// TODO Auto-generated method stub		
 	}
 
 }

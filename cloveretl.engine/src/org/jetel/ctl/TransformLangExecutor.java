@@ -3149,7 +3149,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * CLO-9387
 	 */
 	protected void checkInterrupt() {
-		if (Thread.interrupted()) {
+		if (Thread.currentThread().isInterrupted()) {
 			throw new JetelRuntimeException("Execution thread was interrupted", new InterruptedException());
 		}
 	}

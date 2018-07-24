@@ -95,17 +95,31 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
      */
     private transient List<JobListener> jobListeners = new ArrayList<>();
     
-    private transient ScheduledExecutorService cleanupExecutor = Executors.newScheduledThreadPool(1, 
-    		new ThreadFactory() {
-    			@Override
-    			public Thread newThread(Runnable r) {
-    				Thread t = Executors.defaultThreadFactory().newThread(r);
-    				t.setName("ObsoleteWatchDogsCleaner");
-    				t.setDaemon(true);
-    				return t;
-    			}
-    		}
-    );
+    private static class DaemonThreadFactory implements ThreadFactory {
+    	
+    	private final String threadName;
+    	
+    	public DaemonThreadFactory() {
+    		threadName = null;
+    	}
+    	
+		public DaemonThreadFactory(String threadName) {
+			this.threadName = threadName;
+		}
+
+		@Override
+		public Thread newThread(Runnable r) {
+			Thread t = Executors.defaultThreadFactory().newThread(r);
+			if (threadName != null) {
+				t.setName(threadName);
+			}
+			t.setDaemon(true);
+			return t;
+		}
+	}
+    
+    private transient ScheduledExecutorService cleanupExecutor = Executors.newScheduledThreadPool(1,
+    	new DaemonThreadFactory("ObsoleteWatchDogsCleaner"));
     
 	/**
 	 * Registers CloverJMX as JMX mBean.
@@ -121,6 +135,19 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	        }
 		}
 	}
+	
+	/**
+	 * Stops {@link #cleanupExecutor}.
+	 */
+	public static synchronized void shutdown() {
+		CloverJMX instance = cloverJMX;
+		if (instance != null) {
+			ScheduledExecutorService executor = instance.cleanupExecutor;
+			if (executor != null) {
+				executor.shutdownNow();
+			}
+		}
+	}
 
 	/**
 	 * @return the singleton
@@ -133,8 +160,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	}
 	
 	public CloverJMX() {
-		super();
-	
+		
 		cleanupExecutor.scheduleWithFixedDelay(new Runnable() {
 			
 			@Override
@@ -227,7 +253,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 		try {
 			WatchDog watchDog = watchDogCache.remove(runId);
 			if (watchDog == null) {
-				log.error("Released WatchDog does not found for runId #" + runId);
+				log.warn("Released WatchDog not found for runId #" + runId);
 			} else {
 				sendReleaseWatchdogNotification(watchDog);
 				log.debug("WatchDog unregistered from CloverJMX #" + runId);
@@ -314,8 +340,8 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 			Entry<Long, WatchDog> entry = iterator.next();
 			WatchDog watchDog = entry.getValue();
 			GraphTrackingDetail tracking = watchDog.getGraphTracking();
-			if (tracking.getResult().isStop()
-					&& tracking.getEndTime() + getObsoleteJobTimeout() < currentTime) {
+			if ((tracking.getResult().isStop() && tracking.getEndTime() + getObsoleteJobTimeout() < currentTime) ||
+				(tracking.getStartTime() < 0 && watchDog.getStatus().isStop())) { //job aborted before it started
 				watchdogsToRelease.add(entry.getKey());
 			}
 		}
