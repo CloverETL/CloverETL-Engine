@@ -326,7 +326,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 		for (Iterator<Map.Entry<Long, WatchDog>> iterator = watchDogCache.entrySet().iterator(); iterator.hasNext(); ) {
 			Entry<Long, WatchDog> entry = iterator.next();
 			WatchDog watchDog = entry.getValue();
-			GraphTrackingDetail tracking = watchDog.getGraphTracking();
+			GraphTracking tracking = watchDog.getGraphTracking();
 			if ((tracking.getResult().isStop() && tracking.getEndTime() + getObsoleteJobTimeout() < currentTime) ||
 				(tracking.getStartTime() < 0 && watchDog.getStatus().isStop())) { //job aborted before it started
 				watchdogsToRelease.add(entry.getKey());

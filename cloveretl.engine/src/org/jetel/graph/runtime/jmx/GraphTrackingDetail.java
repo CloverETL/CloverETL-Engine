@@ -21,7 +21,6 @@ package org.jetel.graph.runtime.jmx;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * This class represents tracking information about whole graph.

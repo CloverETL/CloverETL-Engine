@@ -29,7 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.MDC;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.jmx.CloverJMX;
-import org.jetel.graph.runtime.jmx.GraphTrackingDetail;
+import org.jetel.graph.runtime.jmx.GraphTracking;
 import org.jetel.graph.runtime.jmx.PhaseTracking;
 import org.jetel.graph.runtime.jmx.RunIdNotificationFilter;
 import org.jetel.graph.runtime.jmx.TrackingUtils;
@@ -156,7 +156,7 @@ public abstract class TrackingLogger implements NotificationListener {
 
 	protected abstract void printProcessingStatus(boolean finalTracking);
 
-	protected GraphTrackingDetail getGraphTracking() {
+	protected GraphTracking getGraphTracking() {
 		return watchDog.getGraphTracking();
 	}
 	

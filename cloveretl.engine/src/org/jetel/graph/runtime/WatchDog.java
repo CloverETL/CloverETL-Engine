@@ -55,6 +55,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.graph.runtime.jmx.CloverJMX;
 import org.jetel.graph.runtime.jmx.CloverJMXMBean;
+import org.jetel.graph.runtime.jmx.GraphTracking;
 import org.jetel.graph.runtime.jmx.GraphTrackingDetail;
 import org.jetel.graph.runtime.tracker.TokenTracker;
 import org.jetel.util.ExceptionUtils;
@@ -817,7 +818,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     	return tokenTracker;
     }
     
-	public synchronized GraphTrackingDetail getGraphTracking() {
+	public synchronized GraphTracking getGraphTracking() {
 		return graphTracking != null ? graphTracking.createCopy() : null;
 	}
 
