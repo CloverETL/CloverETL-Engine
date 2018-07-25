@@ -199,6 +199,11 @@ if( !runTests ){
 	// trustStore file path set separately from the other arguments
 	// due to different platform path separators (trustStoreF above)
 	antArgs += "-Drunscenarios.trustStore=\"-Djavax.net.ssl.trustStore=${trustStoreF}\""
+	
+	// java.xml.bind needed by CTE is not part of jdk since 9, add the module
+	if (javaVersion == "9") {
+		antArgs += "-Djava.add.modules=--add-modules java.xml.bind"
+	}
 
 	cloverD = new File(baseD, "cloverETL")
 	// removing files from previous build
