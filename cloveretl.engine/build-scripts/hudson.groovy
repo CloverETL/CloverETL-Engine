@@ -160,7 +160,7 @@ if( !runTests ){
 		"-Djavaversion=${javaVersion}"
 	]
 
-	antTarget = "run-scenarios-with-engine-build-with-testdb"
+	antTarget = "run-scenarios-with-engine-build"
 	if( testOption == "profile" ){
 		antTarget = "run-scenarios-with-profiler"
 		antArgs += "-Dprofiler.settings=CPURecording;MonitorRecording;ThreadProfiling;VMTelemetryRecording"
