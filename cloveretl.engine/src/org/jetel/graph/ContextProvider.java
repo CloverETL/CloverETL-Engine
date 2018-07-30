@@ -72,6 +72,8 @@ import org.jetel.graph.runtime.IAuthorityProxy;
 public class ContextProvider {
 
 	private final static Logger logger = Logger.getLogger(ContextProvider.class);
+	
+	public static final String AUTHORITY_PROXY_CONTEXT_PROVIDER_ATTR = "authorityProxy";
 
 	private static final Map<Thread, Stack<Context>> contextCache = new HashMap<Thread, Stack<Context>>(); 
 	

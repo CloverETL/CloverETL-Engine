@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.TreeMap;
+import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
 import org.apache.commons.logging.Log;
@@ -553,7 +554,11 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	            
 	        	//we need a synchronization point for all components in a phase
 	        	//watchdog starts all components in phase and wait on this barrier for real startup
-	    		preExecuteBarrier.await();
+        		try {
+        			preExecuteBarrier.await();
+        		} catch (BrokenBarrierException ex) { // CLO-13760
+        			throw new InterruptedException("Phase was aborted");
+        		}
 	        	
 	        	//preExecute() invocation
 	    		try {
@@ -562,7 +567,11 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	    			throw new ComponentNotReadyException(this, "Component pre-execute initialization failed.", e);
 	    		} finally {
 		    		//waiting for other nodes in the current phase - first all pre-execution has to be done at all nodes
-		    		executeBarrier.await();
+	    			try {
+	    				executeBarrier.await();
+	    			} catch (BrokenBarrierException ex) { // CLO-13760
+	    				throw new InterruptedException("Phase was aborted");
+	    			}
 	    		}
         	}
     		

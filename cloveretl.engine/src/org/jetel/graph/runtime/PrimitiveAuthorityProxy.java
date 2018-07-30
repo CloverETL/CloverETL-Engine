@@ -516,6 +516,5 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	@Override
 	public boolean isHttpContextAvailable() {
 		return false;
-	}
-	
+	}	
 }
