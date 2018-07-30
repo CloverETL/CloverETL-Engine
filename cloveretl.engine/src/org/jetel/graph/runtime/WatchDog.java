@@ -193,15 +193,18 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		if (logger.isDebugEnabled()) {
 		  	logger.debug("Watchdog thread is running");
 		}
+		
+		//we have to register current watchdog's thread to context provider - from now all 
+		//ContextProvider.getGraph() invocations return proper transformation graph
+		Context c = ContextProvider.registerGraph(graph);
+		
 		currentPhaseLock.lock();
 		String originalThreadName = null;
 		final long startTimestamp = System.nanoTime();
 
-		//we have to register current watchdog's thread to context provider - from now all 
-		//ContextProvider.getGraph() invocations return proper transformation graph
-		Context c = ContextProvider.registerGraph(graph);
 		try {
 			try {
+			try {	
 				if (watchDogStatus == Result.ABORTED) { //graph has been aborted before real execution
 					return watchDogStatus;
 				}
@@ -360,9 +363,13 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 	           	//print initial dictionary content
 	    		graph.getDictionary().printContent(logger, "Final dictionary content:");
+			} finally {
+				// prevents deadlock (CLO-13874)
+				currentPhaseLock.unlock();
+			}
+
 	       	} catch (Throwable t) {
 	       		//something was seriously wrong, let's abort the graph if necessary and report the error
-				currentPhaseLock.unlock(); //current phase monitor needs to be unlocked before aborting
 				try {
 					abort(false);
 				} catch (Exception e) {
@@ -380,8 +387,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		} finally {
             //we have to unregister current watchdog's thread from context provider
 			ContextProvider.unregister(c);
-
-			currentPhaseLock.unlock();
 			
 			if (originalThreadName != null) {
 				Thread.currentThread().setName(originalThreadName);
@@ -563,7 +568,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 						while (!abortFinished) {
 							long interval = System.currentTimeMillis() - startAbort;
 							if (interval > ABORT_TIMEOUT) {
-								throw new IllegalStateException("Graph aborting error! Timeout " + ABORT_TIMEOUT + "ms exceeded!");
+								throw new IllegalStateException(String.format("Graph %d aborting error! Timeout %dms exceeded!", graphTracking.getRunId(), ABORT_TIMEOUT));
 							}
 					        try {
 					        	//the aborting thread try to wait for end of graph run

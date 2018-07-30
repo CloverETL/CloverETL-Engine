@@ -113,7 +113,7 @@ public class Log4jTokenTrackerSerializer implements TokenTrackerSerializer {
 		if (token != null && token.getTokenId() >= 0) { 
 			result.append(String.format("Token [%s] ", token.getLabel()));
 		}
-		result.append(String.format("detected finish %s:%s:%s%s with status %s%s.",
+		result.append(String.format("Detected finish %s:%s:%s%s with status %s%s.",
 				jobType,
 				runStatus.runId == 0 ? "" : runStatus.runId,
 				runStatus.jobUrl,
@@ -124,7 +124,7 @@ public class Log4jTokenTrackerSerializer implements TokenTrackerSerializer {
 			result.append(String.format("\nFinal dictionary content:\n%s",
 					formatProperties(runStatus.dictionaryOut.toProperties())));
 		}
-		getLogger().info(result.toString());
+		getLogger().debug(result.toString());
 	}
 
 	private String getErrorDescription(RunStatus runStatus) {
