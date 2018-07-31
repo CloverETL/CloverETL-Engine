@@ -36,44 +36,59 @@ public class GraphErrorDetail implements GraphError {
 
 	private static final long serialVersionUID = -5912895797292615832L;
 
-	private String errorMessage;
+	private final String errorMessage;
 	
-	private Throwable causeException;
+	private final Throwable causeException;
 	
-	private String causeGraphElementId;
+	private final String causeGraphElementId;
 	
-	private String causeComponentType;
+	private final String causeComponentType;
 
 	/**
 	 * @return {@link GraphError} representation of result stored in the given watchDog
 	 */
 	public static GraphErrorDetail createInstance(WatchDog watchDog) {
 		if (watchDog.getStatus() == Result.ERROR) {
-			GraphErrorDetail graphError = new GraphErrorDetail();
-			graphError.setErrorMessage(watchDog.getErrorMessage());
+			
+			String errorMessage = watchDog.getErrorMessage();
+
+			Throwable causeException = null;
 			if (watchDog.getCauseException() != null) {
-				graphError.setCauseException(SerializableException.wrap(watchDog.getCauseException()));
+				causeException = SerializableException.wrap(watchDog.getCauseException());
 			}
+			
+			String causeGraphElementId = null;
+			String causeComponentType = null;
 			IGraphElement causeGraphElement = watchDog.getCauseGraphElement();
 			if (causeGraphElement != null) {
-				graphError.setCauseGraphElementId(causeGraphElement.getId());
+				causeGraphElementId = causeGraphElement.getId();
 				if (causeGraphElement instanceof Node) { 
-					graphError.setCauseComponentType(((Node) causeGraphElement).getType());
+					causeComponentType = ((Node) causeGraphElement).getType();
 				}
 			}
-			return graphError;
+			
+			return new GraphErrorDetail(errorMessage, causeException, causeGraphElementId, causeComponentType);
 		} else {
 			return null;
 		}
 	}
 	
+	public GraphErrorDetail(Throwable causeException, String causeGraphElementId, String causeComponentType) {
+		this(null, causeException, causeGraphElementId, causeComponentType);
+	}
+	
+	public GraphErrorDetail(String errorMessage, Throwable causeException, String causeGraphElementId,
+			String causeComponentType) {
+		super();
+		this.errorMessage = errorMessage;
+		this.causeException = causeException;
+		this.causeGraphElementId = causeGraphElementId;
+		this.causeComponentType = causeComponentType;
+	}
+
 	@Override
 	public String getErrorMessage() {
 		return errorMessage;
-	}
-
-	public void setErrorMessage(String errorMessage) {
-		this.errorMessage = errorMessage;
 	}
 
 	@Override
@@ -81,30 +96,13 @@ public class GraphErrorDetail implements GraphError {
 		return causeException;
 	}
 
-	public void setCauseException(Throwable causeException) {
-		this.causeException = causeException;
-	}
-
 	@Override
 	public String getCauseGraphElementId() {
 		return causeGraphElementId;
-	}
-
-	public void setCauseGraphElementId(String causeGraphElementId) {
-		this.causeGraphElementId = causeGraphElementId;
 	}
 
 	@Override
 	public String getCauseComponentType() {
 		return causeComponentType;
 	}
-
-	public void setCauseComponentType(String causeComponentType) {
-		this.causeComponentType = causeComponentType;
-	}
-
-	public void setCauseGraphElement(String causeGraphElementId) {
-		this.causeGraphElementId = causeGraphElementId;
-	}
-
 }
