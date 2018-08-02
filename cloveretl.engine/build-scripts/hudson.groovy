@@ -202,7 +202,7 @@ if( !runTests ){
 	
 	// java.xml.bind needed by CTE is not part of jdk since 9, add the module
 	if (javaVersion == "9") {
-		antArgs += "-Djava.add.modules=--add-modules java.xml.bind"
+		antArgs += "-Djava.add.modules=--add-modules java.xml.bind,java.xml.ws"
 	}
 
 	cloverD = new File(baseD, "cloverETL")
