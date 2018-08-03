@@ -97,7 +97,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>maxDiscards</b></td><td>number of discards to allow</td></tr>
  *  <tr><td><b>ignoreRows</b></td><td>number of logical records to skip</td></tr>
  *  <tr><td><b>commitInterval</b></td><td>number of rows in conventional path bind array or between direct path data saves</td></tr>
- *  <tr><td><b>parameters</b></td><td>See: http://wiki.cloveretl.org/doku.php?id=components:bulkloaders:oracle_data_writer</td></tr>
+ *  <tr><td><b>parameters</b></td><td>See: http://wiki.cloverdx.com/doku.php?id=components:bulkloaders:oracle_data_writer</td></tr>
  *  </table>
  *
  * @author      Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)

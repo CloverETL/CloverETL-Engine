@@ -27,7 +27,7 @@ Phase 1 shows the second option - reading data from the file specified in the co
 
 Remember that the psql utility must be in the PATH of your system. 
 
-PostgreSQL client must be configured on the same machine as CloverETL.]]></attr>
+PostgreSQL client must be configured on the same machine as CloverDX.]]></attr>
 </Note>
 <Dictionary/>
 </Global>

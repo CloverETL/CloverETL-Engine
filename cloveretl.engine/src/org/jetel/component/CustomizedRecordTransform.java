@@ -863,7 +863,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	}
 
 	/**
-	 * Method for adding rule in CloverETL syntax This method calls proper add....Rule depending on syntax of pattern
+	 * Method for adding rule in CloverDX syntax This method calls proper add....Rule depending on syntax of pattern
 	 * 
 	 * @see org.jetel.util.CodeParser
 	 * @param patternOut

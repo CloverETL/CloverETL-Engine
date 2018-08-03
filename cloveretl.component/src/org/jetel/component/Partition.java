@@ -93,7 +93,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>partitionClass</b><br><i>optional</i></td><td>name of the class to be
  *   used for partioning data
- *  <tr><td><b>partitionSource</b><br><i>optional</i></td><td>partition function for partition dataset. Can be java code or in CloverETL transform language
+ *  <tr><td><b>partitionSource</b><br><i>optional</i></td><td>partition function for partition dataset. Can be java code or in CloverDX transform language
  *  <tr><td><b>partitonURL</b></td><td>path to the file with parttion code</td></tr>
  *  <tr><td><b>charset</b><br><i>optional</i></td><td>encoding of extern source</td></tr>
  *  <tr><td><b>partitionKey</b><br><i>optional</i></td><td>key which specifies which fields (one or more) will be used for calculating hash valu

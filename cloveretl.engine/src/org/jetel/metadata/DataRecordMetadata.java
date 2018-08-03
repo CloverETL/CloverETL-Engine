@@ -1055,7 +1055,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 
 	/**
 	 * Sets the recordProperties attribute of the DataRecordMetadata object Record properties allows defining additional
-	 * parameters for record. These parameters (key-value pairs) are NOT normally handled by CloverETL, but can be used
+	 * parameters for record. These parameters (key-value pairs) are NOT normally handled by CloverDX, but can be used
 	 * in user's code or specialized Components.
 	 * 
 	 * @param properties The new recordProperties value

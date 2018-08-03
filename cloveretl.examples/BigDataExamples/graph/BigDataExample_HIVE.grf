@@ -51,7 +51,7 @@
 <RichTextNote backgroundColor="404040" enabled="true" folded="false" fontSize="medium" height="84" id="Note3" textColor="FFFFFF" width="922" x="20" y="20">
 <attr name="text"><![CDATA[h3. Big Data Example: HDFS Storage and HIVE Table
 
-Store a CSV file into HDFS and then convert it into a HIVE table using CloverETL]]></attr>
+Store a CSV file into HDFS and then convert it into a HIVE table using CloverDX]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="384" id="Note2" textColor="000000" width="167" x="20" y="103">
 <attr name="text"><![CDATA[h3. A. Scenario

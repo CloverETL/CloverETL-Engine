@@ -1,7 +1,7 @@
 <plugin
    id="org.jetel.component"
    version="0.0.0.devel"
-   provider-name="Javlin a.s.">
+   provider-name="CloverDX">
 
 	<runtime>
 		<library path="bin/"/>

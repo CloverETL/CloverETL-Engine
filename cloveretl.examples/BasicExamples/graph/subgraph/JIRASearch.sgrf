@@ -89,7 +89,7 @@ Searches JIRA. The subgraph has 2 modes:
 - if an input port is connected, it searches via multiple JQL queries. The JQL queries are read from the input port. Sends the found issues to the 1. output port, and search metadata to the 2. output port.
 - if the input port is not connected, the JQL query is read from a public parameter
 
-In effect in subgraph is similar to many CloverETL readers - they can read their URL from a property or from their input.]]></attr>
+In effect in subgraph is similar to many CloverDX readers - they can read their URL from a property or from their input.]]></attr>
 </RichTextNote>
 <Dictionary/>
 </Global>

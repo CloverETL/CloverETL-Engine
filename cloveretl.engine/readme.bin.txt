@@ -1,11 +1,11 @@
-CloverETL Engine version 0.0.0.devel
-www.cloveretl.com
+CloverDX Engine version 0.0.0.devel
+www.cloverdx.com
 ---------------------------------
 
 Requirements/dependencies
 -------------------------
 
-CloverETL requires Java version 1.7
+CloverDX requires Java version 1.7
 
 All other required third party libraries can be found in "lib/" directory.
 
@@ -24,4 +24,4 @@ Janino (New BSD)		- http://www.janino.net/
 
 Support
 -------
-In case you encounter issues running CloverETL Engine, please contact us at support@cloveretl.com
+In case you encounter issues running CloverDX Engine, please contact us at support@cloverdx.com

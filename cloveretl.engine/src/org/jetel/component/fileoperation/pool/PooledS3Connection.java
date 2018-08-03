@@ -315,7 +315,7 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 	 * CLO-13093:
 	 * 
 	 * Returns {@link AWSCredentials} from GuiAuthorityProxy registered via {@link ContextProvider}.
-	 * This allows us to load default credentials from CloverETL Server in remote projects.
+	 * This allows us to load default credentials from CloverDX Server in remote projects.
 	 * 
 	 * @author krivanekm (info@cloveretl.com)
 	 *         (c) Javlin, a.s. (www.cloveretl.com)

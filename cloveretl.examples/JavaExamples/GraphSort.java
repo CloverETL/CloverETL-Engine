@@ -40,7 +40,7 @@ import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
 /**
  * Program parameters:
- * -plugins	pluginsDirectory		CloverETL plugins directory
+ * -plugins	pluginsDirectory		CloverDX plugins directory
  * -config propertiesFile			load default engine properties from specified file
  * -dataFile 						file with input data to parse
  * -outputFile						resulting output file
@@ -50,7 +50,7 @@ import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
  * -metadataFile					metadata definition file
  * 
  * This example illustrates how to create and run transformation graph from java code.
- * All examples require to provide CloverETL plugins. Plugins directory can be set as program argument or 
+ * All examples require to provide CloverDX plugins. Plugins directory can be set as program argument or 
  * in params.txt file as plugins parameter or required plugins have to be set on classpath when running the program. 
  * When set in params.txt, the same directory is used for all examples and musn't be set 
  * for each example separately.

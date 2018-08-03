@@ -64,7 +64,7 @@ println "JMS port is ${JMSPort}"
 def startTime = new Date();
 println "======================= " + startTime
 println "====================================================="
-println "======= Running CloverETL Engine tests =============="
+println "======= Running CloverDX Engine tests =============="
 println "jobBasename   = " + jobBasename
 println "jobGoal   = " + jobGoal
 if( runTests ){
