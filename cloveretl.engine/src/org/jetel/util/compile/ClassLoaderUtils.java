@@ -24,6 +24,8 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.AccessControlException;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
@@ -53,6 +55,54 @@ public class ClassLoaderUtils {
 
 	static Log logger = LogFactory.getLog(ClassLoaderUtils.class);
 
+	
+	private static String systemClassPath;
+
+	public static String getClasspath(URL... classPathUrls) {
+		StringBuilder classPathBuilder;
+		if (systemClassPath == null) {
+			classPathBuilder = new StringBuilder();
+			String[] cp = (System.getProperty("java.class.path")).split(String.valueOf(File.pathSeparatorChar));
+			
+			for (String path: cp) {
+				try {
+					Path realPath = Paths.get(path).toRealPath();
+					classPathBuilder.append(File.pathSeparator);
+					classPathBuilder.append(realPath);
+				} catch (Exception e) {
+					logger.debug("Can't access path: " + path + " " + e.getMessage());
+				}
+			}
+			systemClassPath = classPathBuilder.toString();
+		} else {
+			classPathBuilder = new StringBuilder(systemClassPath);
+		}
+		
+		for (URL url : classPathUrls) {
+			String path;
+			try {
+				path = URLDecoder.decode(url.getPath(), "UTF-8");
+			} catch (Exception e) {
+				logger.error("Unsupported encoding UTF-8: " + e.toString());
+				continue;
+			}
+			try {
+				//JDK 9 doesn't recognize a slash leading file URI as a valid classpath in Windows.
+				path = path.replaceFirst("^/(.:/)", "$1");
+				Path realPath = Paths.get(path).toRealPath();
+				classPathBuilder.append(File.pathSeparator);
+				classPathBuilder.append(realPath);
+			} catch (Exception e) {
+				logger.debug("Can't access path: " + path + " " + e.getMessage());
+			}
+		}
+		return classPathBuilder.toString();
+	}
+	
+	@Deprecated
+	/**
+	 * since jdk 1.9 where base ClassLoader No Longer from URLClassLoader
+	 */
 	public static String getClasspath(ClassLoader loader, URL... classPathUrls) {
 		URL[] urls = null;
 

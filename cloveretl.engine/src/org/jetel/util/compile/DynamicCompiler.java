@@ -265,7 +265,7 @@ public final class DynamicCompiler {
 		}
 
 		public String getClassPath() {
-			return ClassLoaderUtils.getClasspath(classLoader.getParent(), classLoader.getURLs());
+			return ClassLoaderUtils.getClasspath(classLoader.getURLs());
 		}
 
 		@Override
