@@ -20,7 +20,6 @@ package org.jetel.plugin;
 
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,6 +30,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.jetel.util.CompoundEnumeration;
 import org.jetel.util.classloader.GreedyURLClassLoader;
+import org.jetel.util.compile.ClassLoaderUtils;
 
 /**
  * Plugin class loader is descendant of URLClassLoader and is used for particular plugins.
@@ -153,11 +153,9 @@ public class PluginClassLoader extends GreedyURLClassLoader {
      */
     public URL[] getAllURLs() {
         List<URL> retURLs = new ArrayList<URL>();
-        ClassLoader parentClassLoader = getParent();
         
-        if(parentClassLoader instanceof URLClassLoader) {
-           retURLs.addAll(Arrays.asList(((URLClassLoader) parentClassLoader).getURLs()));
-        }
+        retURLs.addAll(Arrays.asList(ClassLoaderUtils.getUrls(getParent())));
+        
         retURLs.addAll(Arrays.asList(getURLs()));
         
         for(int i = 0; i < importPlugins.length; i++) {

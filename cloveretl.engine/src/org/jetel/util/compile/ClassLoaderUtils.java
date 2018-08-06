@@ -23,9 +23,8 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.net.URLDecoder;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.AccessControlException;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
@@ -54,55 +53,22 @@ import org.jetel.util.string.StringUtils;
 public class ClassLoaderUtils {
 
 	static Log logger = LogFactory.getLog(ClassLoaderUtils.class);
-
 	
-	private static String systemClassPath;
-
-	public static String getClasspath(URL... classPathUrls) {
-		StringBuilder classPathBuilder;
-		if (systemClassPath == null) {
-			classPathBuilder = new StringBuilder();
-			String[] cp = (System.getProperty("java.class.path")).split(String.valueOf(File.pathSeparatorChar));
-			
-			for (String path: cp) {
-				try {
-					Path realPath = Paths.get(path).toRealPath();
-					classPathBuilder.append(File.pathSeparator);
-					classPathBuilder.append(realPath);
-				} catch (Exception e) {
-					logger.debug("Can't access path: " + path + " " + e.getMessage());
-				}
-			}
-			systemClassPath = classPathBuilder.toString();
-		} else {
-			classPathBuilder = new StringBuilder(systemClassPath);
-		}
-		
-		for (URL url : classPathUrls) {
-			String path;
+	
+	public static URL[] getUrls(ClassLoader classLoader) {
+		URL[] urls = new URL[0];
+		if(classLoader instanceof URLClassLoader) {
+			urls = ((URLClassLoader) classLoader).getURLs();
+		} else if ("jdk.internal.loader.ClassLoaders.AppClassLoader".equals(classLoader.getClass().getCanonicalName())) {
 			try {
-				path = URLDecoder.decode(url.getPath(), "UTF-8");
-			} catch (Exception e) {
-				logger.error("Unsupported encoding UTF-8: " + e.toString());
-				continue;
-			}
-			try {
-				//JDK 9 doesn't recognize a slash leading file URI as a valid classpath in Windows.
-				path = path.replaceFirst("^/(.:/)", "$1");
-				Path realPath = Paths.get(path).toRealPath();
-				classPathBuilder.append(File.pathSeparator);
-				classPathBuilder.append(realPath);
-			} catch (Exception e) {
-				logger.debug("Can't access path: " + path + " " + e.getMessage());
+				urls = ClassLoaderUtils.getClassloaderUrls(null, System.getProperty("java.class.path"));
+			} catch(MalformedURLException e) {
+				logger.debug("Can't load java.class.path: " + e.getMessage());
 			}
 		}
-		return classPathBuilder.toString();
+		return urls;
 	}
 	
-	@Deprecated
-	/**
-	 * since jdk 1.9 where base ClassLoader No Longer from URLClassLoader
-	 */
 	public static String getClasspath(ClassLoader loader, URL... classPathUrls) {
 		URL[] urls = null;
 
@@ -122,6 +88,10 @@ public class ClassLoaderUtils {
 			} catch (Throwable ex) {
 				// ignore
 			}
+		}
+		
+		if (urls == null || urls.length == 0) {
+			urls = ClassLoaderUtils.getUrls(loader);
 		}
 
 		if (urls == null || urls.length == 0) {
@@ -167,7 +137,8 @@ public class ClassLoaderUtils {
 		}
 
 		if (isFileOk(fileName)) {
-			return fileName;
+			//JDK 9 doesn't recognize a slash leading file URI as a valid classpath in Windows.
+			return fileName.replaceFirst("^/([A-Z]:/)", "$1");
 		}
 
 		fileName = fileName.substring(1);
