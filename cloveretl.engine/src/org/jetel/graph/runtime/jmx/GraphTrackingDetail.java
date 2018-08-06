@@ -21,7 +21,6 @@ package org.jetel.graph.runtime.jmx;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * This class represents tracking information about whole graph.
@@ -54,9 +53,6 @@ public class GraphTrackingDetail implements GraphTracking {
     private String nodeId;
     
     private long runId;
-
-    @SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
-    private transient Result lastPhaseResult;
     
 	/**
 	 * Constructor.
@@ -82,16 +78,27 @@ public class GraphTrackingDetail implements GraphTracking {
 		graph = null;
 	}
 	
-	public void copyFrom(GraphTrackingDetail graphDetail) {
-		this.runningPhaseDetail = getPhaseDetail(graphDetail.getRunningPhaseTracking().getPhaseNum());
-		this.startTime = graphDetail.startTime;
-		this.endTime = graphDetail.endTime;
-		this.result = graphDetail.result;
+	public GraphTrackingDetail createCopy() {
+		GraphTrackingDetail detail = new GraphTrackingDetail(this.graph);
+		
+		detail.graphName = this.graphName;
+		detail.startTime = this.startTime;
+		detail.endTime = this.endTime;
+		detail.result = this.result;
+		detail.graphError = this.graphError;
+		detail.nodeId = this.nodeId;
+		detail.runId = this.runId;
 		
 		int i = 0;
-		for (PhaseTrackingDetail phaseDetail : phasesDetails) {
-			phaseDetail.copyFrom(graphDetail.phasesDetails[i++]);
+		for (PhaseTrackingDetail phaseDetail : detail.phasesDetails) {
+			phaseDetail.copyFrom(this.phasesDetails[i++]);
 		}
+		
+		if (this.getRunningPhaseTracking() != null) {
+			detail.runningPhaseDetail = detail.getPhaseDetail(this.getRunningPhaseTracking().getPhaseNum());
+		}
+
+		return detail;
 	}
 	
 	TransformationGraph getGraph() {
@@ -233,10 +240,6 @@ public class GraphTrackingDetail implements GraphTracking {
 		this.runId = runId;
 	}
 	
-	public void setLastPhaseResult(Result lastPhaseResult) {
-		this.lastPhaseResult = lastPhaseResult;
-	}
-
 	//******************* EVENTS ********************/
 	public void graphStarted() {
 		startTime = System.currentTimeMillis();
@@ -260,8 +263,6 @@ public class GraphTrackingDetail implements GraphTracking {
 	public void phaseFinished() {
 		gatherTrackingDetails();
 		runningPhaseDetail.phaseFinished();
-		
-		lastPhaseResult = runningPhaseDetail.getResult();
 	}
 
 	public void graphFinished() {
