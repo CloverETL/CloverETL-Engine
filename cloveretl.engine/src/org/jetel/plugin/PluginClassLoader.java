@@ -20,6 +20,7 @@ package org.jetel.plugin;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -153,8 +154,13 @@ public class PluginClassLoader extends GreedyURLClassLoader {
      */
     public URL[] getAllURLs() {
         List<URL> retURLs = new ArrayList<URL>();
+        ClassLoader parentClassLoader = getParent();
         
-        retURLs.addAll(Arrays.asList(ClassLoaderUtils.getUrls(getParent())));
+        if(parentClassLoader instanceof URLClassLoader) {
+            retURLs.addAll(Arrays.asList(((URLClassLoader) parentClassLoader).getURLs()));
+         } else if (parentClassLoader == ClassLoader.getSystemClassLoader()) {
+        	 retURLs.addAll(Arrays.asList(ClassLoaderUtils.getClassPathUrls()));
+         }
         
         retURLs.addAll(Arrays.asList(getURLs()));
         

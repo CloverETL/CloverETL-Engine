@@ -23,7 +23,6 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.security.AccessControlException;
 import java.security.AccessController;
@@ -55,16 +54,12 @@ public class ClassLoaderUtils {
 	static Log logger = LogFactory.getLog(ClassLoaderUtils.class);
 	
 	
-	public static URL[] getUrls(ClassLoader classLoader) {
+	public static URL[] getClassPathUrls() {
 		URL[] urls = new URL[0];
-		if(classLoader instanceof URLClassLoader) {
-			urls = ((URLClassLoader) classLoader).getURLs();
-		} else if ("jdk.internal.loader.ClassLoaders.AppClassLoader".equals(classLoader.getClass().getCanonicalName())) {
-			try {
-				urls = ClassLoaderUtils.getClassloaderUrls(null, System.getProperty("java.class.path"));
-			} catch(MalformedURLException e) {
-				logger.debug("Can't load java.class.path: " + e.getMessage());
-			}
+		try {
+			urls = ClassLoaderUtils.getClassloaderUrls(null, System.getProperty("java.class.path"));
+		} catch(MalformedURLException e) {
+			logger.debug("Can't load java.class.path: " + e.getMessage());
 		}
 		return urls;
 	}
@@ -91,7 +86,8 @@ public class ClassLoaderUtils {
 		}
 		
 		if (urls == null || urls.length == 0) {
-			urls = ClassLoaderUtils.getUrls(loader);
+			// since java9 SystemClassLoader is not from URLClassLoader
+			urls = ClassLoaderUtils.getClassPathUrls();
 		}
 
 		if (urls == null || urls.length == 0) {
@@ -138,7 +134,7 @@ public class ClassLoaderUtils {
 
 		if (isFileOk(fileName)) {
 			//JDK 9 doesn't recognize a slash leading file URI as a valid classpath in Windows.
-			return fileName.replaceFirst("^/([A-Z]:/)", "$1");
+			return fileName.replaceFirst("^/(.:/)", "$1");
 		}
 
 		fileName = fileName.substring(1);
