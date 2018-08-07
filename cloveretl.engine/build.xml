@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="us-ascii"?>
-<project name="cloveretl.engine" default="build" basedir="." xmlns:jacoco="antlib:org.jacoco.ant">
+<project name="cloveretl.engine" default="build" basedir="." xmlns:jacoco="antlib:org.jacoco.ant" xmlns:if="ant:if">
 
 	<property environment="env"/>
 	<property name="script.name" value="cloveretl.engine\build.xml"/>
@@ -411,6 +411,11 @@ This software is licensed under the terms you may find in the file named "LICENS
 	<target name="compile" depends="init,improve-java-sources" description="Compile sources">
 		<!-- Create directory for binaries. -->
 		<mkdir dir="${dir.bin}"/>
+		
+		<!-- CLO-14010 - java.xml.bind module has to be added on Java 9 -->
+		<condition property="java9">
+				<equals arg1="${ant.java.version}" arg2="1.9"/>
+		</condition>
 
 		<!-- Compile sources -->
 		<javac debug="true" destdir="${dir.bin}" target="${java.src.version}" source="${java.src.version}" encoding="UTF-8">
@@ -422,6 +427,10 @@ This software is licensed under the terms you may find in the file named "LICENS
 			</classpath>
 			<src path="${dir.src.improved}"/>
 			<exclude name="test/**/*"/>
+			
+			<!-- CLO-14010 - java.xml.bind module has to be added on Java 9 -->
+			<compilerarg value="--add-modules" if:set="java9"/>
+			<compilerarg value="java.xml.bind" if:set="java9"/>
 		</javac>
 
 		<!-- copy resources -->
