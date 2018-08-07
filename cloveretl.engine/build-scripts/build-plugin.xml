@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="us-ascii"?>
-<project name="cloveretl plugin" default="build" basedir="." xmlns:jacoco="antlib:org.jacoco.ant">
+<project name="cloveretl plugin" default="build" basedir="." xmlns:jacoco="antlib:org.jacoco.ant" xmlns:if="ant:if">
 
 	<!-- =========================== DEFAULT DIRECTORIES =========================== -->
 	<basename property="plugin.name" file="${basedir}" />
@@ -280,6 +280,12 @@
 		<mkdir dir="${dir.classes}"/>
 
 		<echo message="Compile classes from ${dir.src.improved} with classpath ${cp.compile}"/>
+		
+		<!-- CLO-14010 - java.xml.bind module has to be added on Java 9 -->
+		<condition property="java9">
+				<equals arg1="${ant.java.version}" arg2="1.9"/>
+		</condition>
+		
 		<!-- Compile sources -->
 		<javac 
 				debug="true" 
@@ -294,6 +300,10 @@
 				<fileset refid="license-libs"/>
 			</classpath>
 			<src path="${dir.src.improved}"/>
+			
+			<!-- CLO-14010 - java.xml.bind module has to be added on Java 9 -->
+			<compilerarg value="--add-modules" if:set="java9"/>
+			<compilerarg value="java.xml.bind" if:set="java9"/>
 		</javac>
 
 		<!-- copy resources -->
