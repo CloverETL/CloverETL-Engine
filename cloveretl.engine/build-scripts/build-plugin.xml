@@ -303,8 +303,7 @@
 			
 			<!-- CLO-14010 - java.xml.bind module has to be added on Java 9 -->
 			<compilerarg value="--add-modules" if:set="java9"/>
-			<compilerarg value="java.xml.bind" if:set="java9"/>
-			<compilerarg value="java.xml.ws" if:set="java9"/>
+			<compilerarg value="java.xml.bind,java.xml.ws" if:set="java9"/>
 		</javac>
 
 		<!-- copy resources -->
