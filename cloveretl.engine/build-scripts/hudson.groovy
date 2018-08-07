@@ -222,18 +222,18 @@ if( env['ComSpec'] ) {
 	// windows
 	antC = [env['ComSpec'],
 		"/c",
-		"${env['BASE']}/tools/ant-1.7/bin/ant",
+		"${env['BASE']}/tools/ant-1.9/bin/ant",
 		antTarget
 	]
 } else if (System.properties['os.name'].toLowerCase().contains('mac')) {
 	antArgs += "-Dscenarios=after-commit.ts"
 	// mac
-	antC = ["/jenkins/data/tools/ant-1.7/bin/ant",
+	antC = ["/jenkins/data/tools/ant-1.9/bin/ant",
 		antTarget
 	]
 } else {
 	// unix
-	antC = ["${env['HUDSON_HOME']}/tools/ant-1.7/bin/ant",
+	antC = ["${env['HUDSON_HOME']}/tools/ant-1.9/bin/ant",
 		antTarget
 	]
 }
