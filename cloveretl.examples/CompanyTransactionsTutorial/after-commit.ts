@@ -18,7 +18,7 @@
 	 	<FlatFile outputFile="data-tmp/CustomersFixed.txt" supposedFile="supposed-out/A03.CustomersFixed.txt"/>
 	</FunctionalTest>
 
-	<FunctionalTest ident="A04" graphFile="graph/A04_SortingTransactions.grf" excludedJavaVersions="1.8">
+	<FunctionalTest ident="A04" graphFile="graph/A04_SortingTransactions.grf">
 	 	<FlatFile outputFile="data-out/CustomersForEmployees.txt" supposedFile="supposed-out/A04.CustomersForEmployees.txt"/>
 	 	<FlatFile outputFile="data-out/CustomersForStates.txt" supposedFile="supposed-out/A04.CustomersForStates.txt"/>
 	 	<FlatFile outputFile="data-out/EmployeesForCustomers.txt" supposedFile="supposed-out/A04.EmployeesForCustomers.txt"/>
@@ -26,16 +26,6 @@
 	 	<FlatFile outputFile="data-out/TransactionsForEmployees.txt" supposedFile="supposed-out/A04.TransactionsForEmployees.txt"/>
 	 	<FlatFile outputFile="data-out/TransactionsForStates.txt" supposedFile="supposed-out/A04.TransactionsForStates.txt"/>
 	 	<FlatFile outputFile="data-out/TransactionsForStatesWithinEmployees.txt" supposedFile="supposed-out/A04.TransactionsForStatesWithinEmployees.txt"/>
-	</FunctionalTest>
-	
-	<FunctionalTest ident="A04_java8" graphFile="graph/A04_SortingTransactions.grf" excludedJavaVersions="1.7">
-	 	<FlatFile outputFile="data-out/CustomersForEmployees.txt" supposedFile="supposed-out/A04.CustomersForEmployees.txt"/>
-	 	<FlatFile outputFile="data-out/CustomersForStates.txt" supposedFile="supposed-out/A04.CustomersForStates.txt"/>
-	 	<FlatFile outputFile="data-out/EmployeesForCustomers.txt" supposedFile="supposed-out/A04.EmployeesForCustomers.txt"/>
-	 	<FlatFile outputFile="data-out/TransactionsForCustomers.txt" supposedFile="supposed-out/A04.TransactionsForCustomers_java8.txt"/>
-	 	<FlatFile outputFile="data-out/TransactionsForEmployees.txt" supposedFile="supposed-out/A04.TransactionsForEmployees.txt"/>
-	 	<FlatFile outputFile="data-out/TransactionsForStates.txt" supposedFile="supposed-out/A04.TransactionsForStates.txt"/>
-	 	<FlatFile outputFile="data-out/TransactionsForStatesWithinEmployees.txt" supposedFile="supposed-out/A04.TransactionsForStatesWithinEmployees_java8.txt"/>
 	</FunctionalTest>
 	
 	<FunctionalTest ident="A05" graphFile="graph/A05_CreatingXMLEmplFamCustAm.grf">
