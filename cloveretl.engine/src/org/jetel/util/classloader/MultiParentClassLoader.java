@@ -19,7 +19,6 @@
 package org.jetel.util.classloader;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
@@ -30,7 +29,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.jetel.plugin.PluginClassLoader;
 import org.jetel.util.CompoundEnumeration;
 
 /**
@@ -41,7 +39,7 @@ import org.jetel.util.CompoundEnumeration;
  *
  * @created 1.8.2012
  */
-public final class MultiParentClassLoader extends ClassLoader {
+public final class MultiParentClassLoader extends ClassLoader implements URLBasedClassLoader {
 
 	public static final ClassLoader NULL_CLASS_LOADER = new ClassLoader(null) {
 		
@@ -81,26 +79,17 @@ public final class MultiParentClassLoader extends ClassLoader {
 	}
 	
 	@SuppressWarnings("resource")
-	public URL[] getAllURLs() {
+	@Override
+	public URL[] getURLs() {
 		
-		Set<URL> urls = new LinkedHashSet<URL>();
+		Set<URL> urls = new LinkedHashSet<>();
 		for (ClassLoader parent : parents) {
-			if (parent instanceof PluginClassLoader) {
-				PluginClassLoader pcl = (PluginClassLoader)parent;
-				urls.addAll(Arrays.asList(pcl.getAllURLs()));
+			if (parent instanceof URLBasedClassLoader) {
+				URLBasedClassLoader loader = (URLBasedClassLoader)parent;
+				urls.addAll(Arrays.asList(loader.getURLs()));
 			} else if (parent instanceof URLClassLoader) {
-				URLClassLoader ucl = (URLClassLoader)parent;
-				urls.addAll(Arrays.asList(ucl.getURLs()));
-			} else {
-				try {
-					Method getAllURLs = parent.getClass().getMethod("getAllURLs");
-					Object loaderUrls = getAllURLs.invoke(parent);
-					if (loaderUrls instanceof URL[]) {
-						urls.addAll(Arrays.asList((URL[])loaderUrls));
-					}
-				} catch (Exception e) {
-					// ignore
-				}
+				URLClassLoader loader = (URLClassLoader)parent;
+				urls.addAll(Arrays.asList(loader.getURLs()));
 			}
 		}
 		return urls.toArray(new URL[urls.size()]);
@@ -138,5 +127,4 @@ public final class MultiParentClassLoader extends ClassLoader {
 		}
 		return new CompoundEnumeration<URL>(enums);
 	}
-	
 }

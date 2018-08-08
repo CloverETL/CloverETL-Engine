@@ -519,7 +519,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 	 */
 	public static URL[] getLibrariesURL(URL contextURL, String libraryPath) {
 		try {
-			return ClassLoaderUtils.getClassloaderUrls(contextURL, libraryPath);
+			return ClassLoaderUtils.getClassLoaderUrls(contextURL, libraryPath);
 		} catch (Exception e) {
 			throw new JetelRuntimeException("Can not create JMS connection.", e);
 		}

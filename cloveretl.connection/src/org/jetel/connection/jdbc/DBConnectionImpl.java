@@ -61,6 +61,7 @@ import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
+import org.jetel.util.string.UnicodeBlanks;
 import org.w3c.dom.Element;
 
 
@@ -715,10 +716,10 @@ public class DBConnectionImpl extends AbstractDBConnection {
 	}
 
 	private void prepareDriverLibraryURLs() throws ComponentNotReadyException {
-		if(!StringUtils.isEmpty(driverLibrary)) {
+		if (!UnicodeBlanks.isBlank(driverLibrary)) {
 			URL contextURL = getContextURL();
 			try {
-				driverLibraryURLs = ClassLoaderUtils.getClassloaderUrls(contextURL, driverLibrary);
+				driverLibraryURLs = ClassLoaderUtils.getClassLoaderUrls(contextURL, driverLibrary);
 			} catch (Exception e) {
 				throw new ComponentNotReadyException("Cannot create JDBC connection '" + getId() + "'.", e);
 	        }

@@ -324,7 +324,7 @@ public final class DynamicCompiler {
 			}
 
 			if (resolve) {
-			    resolveClass(clazz);
+				resolveClass(clazz);
 			}
 
 			return clazz;
