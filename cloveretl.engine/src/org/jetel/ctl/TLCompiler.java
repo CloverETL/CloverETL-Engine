@@ -422,7 +422,9 @@ public class TLCompiler implements ITLCompiler {
 		// compiler can be started standalone (i.e. from PropertyRefResolver without component reference)
 		// in that case do not report the execution mode
 		if (logger != null && getComponentId() != null) {
-			logger.debug("Component '" + getComponentId() + "' runs in INTERPRETED mode"); 
+			if (logger.isDebugEnabled()) {
+				logger.debug("Component '" + getComponentId() + "' is running in INTERPRETED mode");
+			}
 		}
 		
 		// perform initialization of the executor for runtime
