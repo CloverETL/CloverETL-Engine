@@ -71,27 +71,28 @@ public class ClassLoaderUtils {
 	 * In case it is a system class loader, JVM class path is included in the result.
 	 * 
 	 * @param loader
+	 * @param includeEngineClasspath whether class path of the engine class loader should be included
 	 * @param classPathUrls
 	 * @return
 	 */
-	public static String getClasspath(ClassLoader loader, URL ... classPathUrls) {
+	public static String getClasspath(ClassLoader loader, boolean includeEngineClasspath, URL ... classPathUrls) {
 		
 		Set<URL> urls = new LinkedHashSet<>();
 		
-		if (loader instanceof URLBasedClassLoader) {
-			URLBasedClassLoader ucl = (URLBasedClassLoader)loader;
-			urls.addAll(Arrays.asList(ucl.getURLs()));
-			
-		} else if (loader instanceof URLClassLoader) {
-			URLClassLoader ucl = (URLClassLoader)loader;
-			urls.addAll(Arrays.asList(ucl.getURLs()));
-			
-		} else if (loader == ClassLoader.getSystemClassLoader()) {
-			urls.addAll(Arrays.asList(getApplicationClassPathUrls()));
+		URL[] loaderClasspath = getClasspathUrls(loader);
+		if (loaderClasspath != null) {
+			urls.addAll(Arrays.asList(loaderClasspath));
 		}
 		
 		if (classPathUrls != null) {
 			urls.addAll(Arrays.asList(classPathUrls));
+		}
+		
+		if (includeEngineClasspath) {
+			URL[] engineClasspath = getClasspathUrls(ClassLoaderUtils.class.getClassLoader());
+			if (engineClasspath != null) {
+				urls.addAll(Arrays.asList(engineClasspath));
+			}
 		}
 		
 		StringBuilder result = new StringBuilder();
@@ -277,6 +278,22 @@ public class ClassLoaderUtils {
     	} catch (SecurityException e) {
     		throw new LoadClassException("Cannot instantiate class: " + className, e);
     	}
+    }
+    
+    private static URL[] getClasspathUrls(ClassLoader loader) {
+    	
+    	if (loader instanceof URLBasedClassLoader) {
+			URLBasedClassLoader ucl = (URLBasedClassLoader)loader;
+			return ucl.getURLs();
+			
+		} else if (loader instanceof URLClassLoader) {
+			URLClassLoader ucl = (URLClassLoader)loader;
+			return ucl.getURLs();
+			
+		} else if (loader == ClassLoader.getSystemClassLoader()) {
+			return getApplicationClassPathUrls();
+		}
+    	return new URL[0];
     }
 	
     /**
