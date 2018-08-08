@@ -280,9 +280,9 @@ public class ClassLoaderUtils {
     	}
     }
     
-    private static URL[] getClasspathUrls(ClassLoader loader) {
-    	
-    	if (loader instanceof URLBasedClassLoader) {
+	private static URL[] getClasspathUrls(ClassLoader loader) {
+		
+		if (loader instanceof URLBasedClassLoader) {
 			URLBasedClassLoader ucl = (URLBasedClassLoader)loader;
 			return ucl.getURLs();
 			
@@ -291,10 +291,10 @@ public class ClassLoaderUtils {
 			return ucl.getURLs();
 			
 		} else if (loader == ClassLoader.getSystemClassLoader()) {
-			return getApplicationClassPathUrls();
+			return getApplicationClasspathUrls();
 		}
-    	return new URL[0];
-    }
+		return new URL[0];
+	}
 	
     /**
      * Answers normalized path to local file/directory represented by given URL.
@@ -350,7 +350,7 @@ public class ClassLoaderUtils {
 	 * Answers URLs forming class path of the running JVM.
 	 * @return
 	 */
-	private static URL[] getApplicationClassPathUrls() {
+	private static URL[] getApplicationClasspathUrls() {
 		URL[] urls = new URL[0];
 		try {
 			urls = getClassLoaderUrls(null, System.getProperty("java.class.path"), System.getProperty("path.separator"));
