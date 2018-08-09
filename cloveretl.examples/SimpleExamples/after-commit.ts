@@ -63,14 +63,9 @@
 		<RegEx expression="org.jetel.exception.BadDataFormatException: Field account_num\(long\) cannot be set to value &quot;8747577056D&quot;; doesn't match the specified format &quot;&quot; with reason &quot;Extraneous characters &quot;D&quot;&quot;; in record 3, field 2" occurences="1"/>
 </FunctionalTest>
 
-<FunctionalTest ident="DBFJoin" graphFile="graph/graphDBFJoin.grf" excludedJavaVersions="1.8">
+<FunctionalTest ident="DBFJoin" graphFile="graph/graphDBFJoin.grf">
 	<FlatFile outputFile="data-out/joinedDBForders.out" supposedFile="supposed-out/joinedDBForders.DBFJoin.out"/>
 	<FlatFile outputFile="data-out/joinedDBFordersNA.out" supposedFile="supposed-out/joinedDBFordersNA.DBFJoin.out"/>
-</FunctionalTest>
-
-<FunctionalTest ident="DBFJoin_java8" graphFile="graph/graphDBFJoin.grf" excludedJavaVersions="1.7">
-	<FlatFile outputFile="data-out/joinedDBForders.out" supposedFile="supposed-out/joinedDBForders.DBFJoin.java8.out"/>
-	<FlatFile outputFile="data-out/joinedDBFordersNA.out" supposedFile="supposed-out/joinedDBFordersNA.DBFJoin.java8.out"/>
 </FunctionalTest>
 
 <FunctionalTest ident="DBFJoinTLNew" graphFile="graph/graphDBFJoinTLNew.grf">

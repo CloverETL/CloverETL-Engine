@@ -323,7 +323,7 @@
 10420.0;WELLI;Wellington Importadora;13.0;4.8;4.75;2.0;0.1;6
 10420.0;WELLI;Wellington Importadora;70.0;12.0;11.988;8.0;0.1;6
 10420.0;WELLI;Wellington Importadora;73.0;12.0;11.995;20.0;0.1;6
-10421.0;QUEDE;Que Delícia;19.0;7.3;7.262;4.0;0.15;6
+10421.0;QUEDE;Que Delícia;19.0;7.3;7.263;4.0;0.15;6
 10421.0;QUEDE;Que Delícia;26.0;24.9;24.9;30.0;0.0;6
 10421.0;QUEDE;Que Delícia;53.0;26.2;26.19;15.0;0.15;6
 10421.0;QUEDE;Que Delícia;77.0;10.4;10.385;10.0;0.15;6
@@ -434,8 +434,8 @@
 10475.0;SUPRD;Supremes délices;76.0;14.4;14.396;42.0;0.15;20
 10477.0;PRINI;Princesa Isabel Vinhos;1.0;14.4;14.4;15.0;0.0;8
 10477.0;PRINI;Princesa Isabel Vinhos;21.0;8.0;7.988;21.0;0.25;8
-10477.0;PRINI;Princesa Isabel Vinhos;39.0;14.4;14.388;20.0;0.25;8
-10478.0;VICTE;Victuailles en stock;10.0;24.8;24.798;20.0;0.05;8
+10477.0;PRINI;Princesa Isabel Vinhos;39.0;14.4;14.387;20.0;0.25;8
+10478.0;VICTE;Victuailles en stock;10.0;24.8;24.797;20.0;0.05;8
 10479.0;RATTC;Rattlesnake Canyon Grocery;38.0;210.8;210.8;30.0;0.0;2
 10479.0;RATTC;Rattlesnake Canyon Grocery;53.0;26.2;26.2;28.0;0.0;2
 10479.0;RATTC;Rattlesnake Canyon Grocery;59.0;44.0;44;60.0;0.0;2
@@ -453,7 +453,7 @@
 10489.0;PICCO;Piccolo und mehr;11.0;16.8;16.783;15.0;0.25;11
 10489.0;PICCO;Piccolo und mehr;16.0;13.9;13.9;18.0;0.0;11
 10492.0;BOTTM;Bottom-Dollar Markets;25.0;11.2;11.199;60.0;0.05;10
-10492.0;BOTTM;Bottom-Dollar Markets;42.0;11.2;11.198;20.0;0.05;10
+10492.0;BOTTM;Bottom-Dollar Markets;42.0;11.2;11.197;20.0;0.05;10
 10494.0;COMMI;Comércio Mineiro;56.0;30.4;30.4;30.0;0.0;7
 10496.0;TRADH;Tradiçao Hipermercados;31.0;10.0;9.997;20.0;0.05;3
 10501.0;BLAUS;Blauer See Delikatessen;54.0;7.45;7.45;20.0;0.0;7
@@ -559,7 +559,7 @@
 10553.0;WARTH;Wartian Herkku;35.0;18.0;18;6.0;0.0;4
 10554.0;OTTIK;Ottilies Käseladen;16.0;17.45;17.448;30.0;0.05;6
 10554.0;OTTIK;Ottilies Käseladen;23.0;9.0;8.997;20.0;0.05;6
-10554.0;OTTIK;Ottilies Käseladen;62.0;49.3;49.298;20.0;0.05;6
+10554.0;OTTIK;Ottilies Käseladen;62.0;49.3;49.297;20.0;0.05;6
 10554.0;OTTIK;Ottilies Käseladen;77.0;13.0;12.995;10.0;0.05;6
 10555.0;SAVEA;Save-a-lot Markets;14.0;23.25;23.243;30.0;0.2;2
 10555.0;SAVEA;Save-a-lot Markets;19.0;9.2;9.194;35.0;0.2;2
@@ -620,7 +620,7 @@
 10583.0;WARTH;Wartian Herkku;69.0;36.0;35.985;10.0;0.15;4
 10584.0;BLONP;Blondel pcre et fils;31.0;12.5;12.499;50.0;0.05;4
 10585.0;WELLI;Wellington Importadora;47.0;9.5;9.5;15.0;0.0;9
-10586.0;REGGC;Reggiani Caseifici;52.0;7.0;6.962;4.0;0.15;7
+10586.0;REGGC;Reggiani Caseifici;52.0;7.0;6.963;4.0;0.15;7
 10587.0;QUEDE;Que Delícia;26.0;31.23;31.23;6.0;0.0;7
 10587.0;QUEDE;Que Delícia;35.0;18.0;18;20.0;0.0;7
 10587.0;QUEDE;Que Delícia;77.0;13.0;13;20.0;0.0;7
@@ -696,7 +696,7 @@
 10637.0;QUEEN;Queen Cozinha;50.0;16.25;16.248;25.0;0.05;7
 10637.0;QUEEN;Queen Cozinha;56.0;38.0;37.999;60.0;0.05;7
 10639.0;SANTG;Santé Gourmet;18.0;62.5;62.5;8.0;0.0;7
-10640.0;WANDK;Die Wandernde Kuh;69.0;36.0;35.988;20.0;0.25;7
+10640.0;WANDK;Die Wandernde Kuh;69.0;36.0;35.987;20.0;0.25;7
 10640.0;WANDK;Die Wandernde Kuh;70.0;15.0;14.983;15.0;0.25;7
 10642.0;SIMOB;Simons bistro;21.0;10.0;9.993;30.0;0.2;14
 10642.0;SIMOB;Simons bistro;61.0;28.5;28.49;20.0;0.2;14
@@ -987,7 +987,7 @@
 10808.0;OLDWO;Old World Delicatessen;76.0;18.0;17.997;50.0;0.15;8
 10809.0;WELLI;Wellington Importadora;52.0;7.0;7;20.0;0.0;6
 10812.0;REGGC;Reggiani Caseifici;31.0;12.5;12.494;16.0;0.1;10
-10812.0;REGGC;Reggiani Caseifici;72.0;34.8;34.798;40.0;0.1;10
+10812.0;REGGC;Reggiani Caseifici;72.0;34.8;34.797;40.0;0.1;10
 10812.0;REGGC;Reggiani Caseifici;77.0;13.0;13;20.0;0.0;10
 10813.0;RICAR;Ricardo Adocicados;2.0;19.0;18.983;12.0;0.2;4
 10813.0;RICAR;Ricardo Adocicados;46.0;12.0;12;35.0;0.0;4
@@ -1025,7 +1025,7 @@
 10833.0;OTTIK;Ottilies Käseladen;31.0;12.5;12.489;9.0;0.1;8
 10833.0;OTTIK;Ottilies Käseladen;53.0;32.8;32.789;9.0;0.1;8
 10834.0;TRADH;Tradiçao Hipermercados;29.0;123.79;123.784;8.0;0.05;4
-10834.0;TRADH;Tradiçao Hipermercados;30.0;25.89;25.888;20.0;0.05;4
+10834.0;TRADH;Tradiçao Hipermercados;30.0;25.89;25.887;20.0;0.05;4
 10835.0;ALFKI;Alfreds Futterkiste;59.0;55.0;55;15.0;0.0;6
 10835.0;ALFKI;Alfreds Futterkiste;77.0;13.0;12.9;2.0;0.2;6
 10836.0;ERNSH;Ernst Handel;22.0;21.0;21;52.0;0.0;5
@@ -1057,7 +1057,7 @@
 10846.0;SUPRD;Supremes délices;4.0;22.0;22;21.0;0.0;1
 10846.0;SUPRD;Supremes délices;70.0;15.0;15;30.0;0.0;1
 10846.0;SUPRD;Supremes délices;74.0;10.0;10;20.0;0.0;1
-10847.0;SAVEA;Save-a-lot Markets;1.0;18.0;17.998;80.0;0.2;19
+10847.0;SAVEA;Save-a-lot Markets;1.0;18.0;17.997;80.0;0.2;19
 10847.0;SAVEA;Save-a-lot Markets;19.0;9.2;9.183;12.0;0.2;19
 10847.0;SAVEA;Save-a-lot Markets;37.0;26.0;25.997;60.0;0.2;19
 10847.0;SAVEA;Save-a-lot Markets;45.0;9.5;9.494;36.0;0.2;19
@@ -1152,7 +1152,7 @@
 10902.0;FOLKO;Folk och fä HB;62.0;49.3;49.275;6.0;0.15;8
 10904.0;WHITC;White Clover Markets;58.0;13.25;13.25;15.0;0.0;3
 10904.0;WHITC;White Clover Markets;62.0;49.3;49.3;35.0;0.0;3
-10905.0;WELLI;Wellington Importadora;1.0;18.0;17.998;20.0;0.05;10
+10905.0;WELLI;Wellington Importadora;1.0;18.0;17.997;20.0;0.05;10
 10906.0;WOLZA;Wolski Zajazd;61.0;28.5;28.5;15.0;0.0;6
 10907.0;SPECD;Spécialités du monde;75.0;7.75;7.75;14.0;0.0;2
 10908.0;REGGC;Reggiani Caseifici;7.0;30.0;29.998;20.0;0.05;8
@@ -1202,7 +1202,7 @@
 10935.0;WELLI;Wellington Importadora;23.0;9.0;8.969;8.0;0.25;9
 10937.0;CACTU;Cactus Comidas para llevar;28.0;45.6;45.6;8.0;0.0;3
 10937.0;CACTU;Cactus Comidas para llevar;34.0;14.0;14;20.0;0.0;3
-10938.0;QUICK;QUICK-Stop;13.0;6.0;5.988;20.0;0.25;6
+10938.0;QUICK;QUICK-Stop;13.0;6.0;5.987;20.0;0.25;6
 10938.0;QUICK;QUICK-Stop;43.0;46.0;45.99;24.0;0.25;6
 10938.0;QUICK;QUICK-Stop;60.0;34.0;33.995;49.0;0.25;6
 10938.0;QUICK;QUICK-Stop;71.0;21.5;21.493;35.0;0.25;6
@@ -1281,7 +1281,7 @@
 10987.0;EASTC;Eastern Connection;43.0;46.0;46;6.0;0.0;6
 10987.0;EASTC;Eastern Connection;72.0;34.8;34.8;20.0;0.0;6
 10988.0;RATTC;Rattlesnake Canyon Grocery;7.0;30.0;30;60.0;0.0;10
-10988.0;RATTC;Rattlesnake Canyon Grocery;62.0;49.3;49.298;40.0;0.1;10
+10988.0;RATTC;Rattlesnake Canyon Grocery;62.0;49.3;49.297;40.0;0.1;10
 10989.0;QUEDE;Que Delícia;6.0;25.0;25;40.0;0.0;2
 10989.0;QUEDE;Que Delícia;11.0;21.0;21;15.0;0.0;2
 10989.0;QUEDE;Que Delícia;41.0;9.65;9.65;4.0;0.0;2
@@ -1361,7 +1361,7 @@
 11025.0;WARTH;Wartian Herkku;13.0;6.0;5.995;20.0;0.1;9
 11027.0;BOTTM;Bottom-Dollar Markets;24.0;4.5;4.492;30.0;0.25;4
 11027.0;BOTTM;Bottom-Dollar Markets;62.0;49.3;49.288;21.0;0.25;4
-11030.0;SAVEA;Save-a-lot Markets;2.0;19.0;18.998;100.0;0.25;10
+11030.0;SAVEA;Save-a-lot Markets;2.0;19.0;18.997;100.0;0.25;10
 11030.0;SAVEA;Save-a-lot Markets;5.0;21.35;21.35;70.0;0.0;10
 11030.0;SAVEA;Save-a-lot Markets;29.0;123.79;123.786;60.0;0.25;10
 11030.0;SAVEA;Save-a-lot Markets;59.0;55.0;54.998;100.0;0.25;10
