@@ -1649,6 +1649,84 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_dynamiclib_getListValue(){
+		doCompile("test_dynamiclib_getListValue");
+		check("ret1", Arrays.asList("John", "Doe", "Jersey"));
+		check("ret2", Arrays.asList("123", "456", "789"));
+		check("ret3", Arrays.asList(String.valueOf(new Date (12000)), String.valueOf(new Date(34000))));
+		check("ret4", Arrays.asList(new String(new byte[] {0x12, 0x34}), new String(new byte[] {0x56, 0x78})));
+		check("ret5", Arrays.asList("12.34", "56.78"));
+	}
+	
+	public void test_dynamiclib_getListValue_expect_error(){
+		try {
+			doCompile("function integer transform(){multivalueInput fi = null; string[] str = getListValue(fi, 1); return 0;}","test_dynamiclib_getListValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){multivalueInput fi = null; string[] str = getListValue($in.0, -1); return 0;}","test_dynamiclib_getListValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){multivalueInput fi = null; string[] str = $in.0.getListValue(15); return 0;}","test_dynamiclib_getListValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	
+	}
+	
+	public void test_dynamiclib_getMapValue(){
+		doCompile("test_dynamiclib_getMapValue");
+		Map<String, String> map1 = new HashMap<String, String>();
+		map1.put("firstName", "John");
+		map1.put("lastName", "Doe");
+		map1.put("address", "Jersey");
+		check("ret1", map1);
+		Map<String, String> map2 = new HashMap<String, String>();
+		map2.put("count", "123");
+		map2.put("max", "456");
+		map2.put("sum", "789");
+		check("ret2", map2);
+		Map<String, String> map3 = new HashMap<String, String>();
+		map3.put("before", String.valueOf(new Date (12000)));
+		map3.put("after", String.valueOf(new Date (34000)));
+		check("ret3", map3);
+		Map<String, String> map4 = new HashMap<String, String>();
+		map4.put("hash", new String(new byte[] {0x12, 0x34}));
+		map4.put("checksum", new String(new byte[] {0x56, 0x78}));
+		check("ret4", map4);
+		Map<String, String> map5 = new HashMap<String, String>();
+		map5.put("asset", "12.34");
+		map5.put("liability", "56.78");
+		check("ret5", map5);
+	}
+	
+	public void test_dynamiclib_getMapValue_expect_error(){
+		try {
+			doCompile("function integer transform(){multivalueInput fi = null; map[string, string] str = getMapValue(fi, 1); return 0;}","test_dynamiclib_getMapValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){multivalueInput fi = null; map[string, string] str = getMapValue($in.0, -1); return 0;}","test_dynamiclib_getMapValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){multivalueInput fi = null; map[string, string] str = $in.0.getMapValue(15); return 0;}","test_dynamiclib_getMapValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_dynamiclib_getValueAsString(){
 		doCompile("test_dynamiclib_getValueAsString");
 		check("ret1", "  HELLO  ");
@@ -1979,6 +2057,97 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 	}
+	
+	public void test_dynamiclib_setListValue(){
+		doCompile("test_dynamiclib_setListValue");
+		check("ret1", Arrays.asList("John", "Doe", "Jersey"));
+		check("ret2", Arrays.asList("123", "456", "789"));
+		check("ret3", Arrays.asList(String.valueOf(new Date (12000)), String.valueOf(new Date(34000))));
+		check("ret4", Arrays.asList("aa", "bb"));
+		check("ret5", Arrays.asList("12.34", "56.78"));
+	}
+	
+	public void test_dynamiclib_setListValue_expect_error(){
+		try {
+			doCompile("function integer transform(){multivalueInput fi = null; setListValue(fi, 'stringListField', ['Draven']); return 0;}","test_dynamiclib_setListValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setListValue($out.0, 'strListField', ['Soraka']); return 0;}","test_dynamiclib_setListValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setListValue($out.0, -1, ['Rengar']); return 0;}","test_dynamiclib_setListValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setListValue(15, ['Vaigar']); return 0;}","test_dynamiclib_setListValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	
+	}
+	
+	public void test_dynamiclib_setMapValue(){
+		doCompile("test_dynamiclib_setMapValue");
+		Map<String, String> map1 = new HashMap<String, String>();
+		map1.put("firstName", "John");
+		map1.put("lastName", "Doe");
+		map1.put("address", "Jersey");
+		check("ret1", map1);
+		Map<String, String> map2 = new HashMap<String, String>();
+		map2.put("count", "123");
+		map2.put("max", "456");
+		map2.put("sum", "789");
+		check("ret2", map2);
+		Map<String, String> map3 = new HashMap<String, String>();
+		map3.put("before", String.valueOf(new Date (12000)));
+		map3.put("after", String.valueOf(new Date (34000)));
+		check("ret3", map3);
+		Map<String, String> map4 = new HashMap<String, String>();
+		map4.put("hash", "aa");
+		map4.put("checksum", "bb");
+		check("ret4", map4);
+		Map<String, String> map5 = new HashMap<String, String>();
+		map5.put("asset", "12.34");
+		map5.put("liability", "56.78");
+		check("ret5", map5);
+	}
+	
+	public void test_dynamiclib_setMapValue_expect_error(){
+		try {
+			doCompile("function integer transform(){multivalueInput fi = null; map[string, string] m; m['a'] = 'b'; setMapValue(fi, 'stringMapField', m); return 0;}","test_dynamiclib_setMapValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){map[string, string] m; m['a'] = 'b'; setMapValue($out.0, 'strMapField', m); return 0;}","test_dynamiclib_setMapValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){map[string, string] m; m['a'] = 'b'; setMapValue($out.0, -1, m); return 0;}","test_dynamiclib_setMapValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){map[string, string] m; m['a'] = 'b'; $out.0.setMapValue(15, m); return 0;}","test_dynamiclib_setMapValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}	
+	}
+	
 	
 	public void test_return_constants() {
 		// test case for issue 2257
@@ -5823,6 +5992,60 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("dateList", Arrays.asList(cal.getTime(), cal2.getTime()));
 		check("strElem", "Shivana");
 		check("strList", Arrays.asList("Annie","Lux"));
+		
+		check("strIntVal", "b");
+		check("intVal1", 1);
+		//Integer.valueOf(1), "a")
+		Map<Integer, String> iMap = new HashMap<Integer, String>();
+		iMap.put(Integer.valueOf(1), "a");
+		check("intMap", iMap);
+		Map<Integer, Integer> iMap1 = new HashMap<Integer, Integer>();
+		iMap1.put(Integer.valueOf(2), Integer.valueOf(2));
+		check("intMapVal", iMap1);
+		check("strLongVal", "b");
+		check("longVal1", Long.valueOf(1));
+		Map<Long, String> lMap = new HashMap<Long, String>();
+		lMap.put(Long.valueOf(1), "a");
+		check("longMap", lMap);
+		Map<Long, Long> lMap1 = new HashMap<Long, Long>();
+		lMap1.put(Long.valueOf(2), Long.valueOf(2));
+		check("longMapVal", lMap1);
+		check("strDecVal", "b");
+		check("decVal1", BigDecimal.valueOf(1.0));
+		Map<BigDecimal, String> bdMap = new HashMap<BigDecimal, String>();
+		bdMap.put(BigDecimal.valueOf(1.0), "a");
+		check("decMap", bdMap);
+		Map<BigDecimal, BigDecimal> bdMap1 = new HashMap<BigDecimal, BigDecimal>();
+		bdMap1.put(BigDecimal.valueOf(2.0), BigDecimal.valueOf(2.0));
+		check("decimalMapVal", bdMap1);
+		
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		Calendar cal3 = Calendar.getInstance();
+		cal3.set(2002,10,13,0,0,0);
+		cal3.set(Calendar.MILLISECOND, 0);
+		Calendar cal4 = Calendar.getInstance();
+		cal4.set(2001,10,13,0,0,0);
+		cal4.set(Calendar.MILLISECOND, 0);
+		String strDate1 = df.format(cal3.getTime());
+		
+		check("strDateVal", "b");
+		check("dateVal1", cal4.getTime());
+		Map<Date, String> dMap = new HashMap<Date, String>();
+		dMap.put(cal4.getTime(), "a");
+		check("dateMap", dMap);
+		Map<Date, Date> dMap1 = new HashMap<Date, Date>();
+		dMap1.put(cal3.getTime(), cal3.getTime());
+		check("dateMapVal", dMap1);	
+
+		check("strStrVal", "b");
+		check("strVal1", "1");
+		Map<String, String> sMap = new HashMap<String, String>();
+		sMap.put("1", "a");
+		check("strMap", sMap);
+		Map<String, String> sMap1 = new HashMap<String, String>();
+		sMap1.put("2", "2");
+		check("stringMapVal", sMap1);
+		
 	}
 
 	public void test_containerlib_remove_expect_error(){

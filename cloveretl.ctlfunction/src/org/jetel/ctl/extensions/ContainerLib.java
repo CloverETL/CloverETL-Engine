@@ -228,6 +228,13 @@ public class ContainerLib extends TLFunctionLibrary {
 	public static final <E> E remove(TLFunctionCallContext context, List<E> list, int position) {
 		return list.remove(position);
 	}
+	
+	@TLFunctionAnnotation("Removes key/value pair from a map identified by a key and returns the value")
+	public static final <K, V> V remove(TLFunctionCallContext context, Map<K, V> map, K key) {
+		return map.remove(key);
+	}
+	
+	
 	static class RemoveFunction implements TLFunctionPrototype{
 		
 		@Override
@@ -236,10 +243,17 @@ public class ContainerLib extends TLFunctionLibrary {
 
 
 		@Override
-		public void execute(Stack stack, TLFunctionCallContext context) {
+		public void execute(Stack stack, TLFunctionCallContext context) {	
+		TLType type=context.getParams()[0];
+		if (type.isMap()) {
+			Object value = stack.pop();
+			Map<Object, Object> map = stack.popMap();
+			stack.push(remove(context, map, value));
+		}
+		else if (type.isList()){
 			final Integer pos = stack.popInt();
 			final List<Object> list = stack.popList();
-			stack.push(remove(context, list, pos));
+			stack.push(remove(context, list, pos));}
 		}
 		
 	}

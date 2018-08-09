@@ -18,18 +18,25 @@
  */
 package org.jetel.ctl.extensions;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 
 import org.jetel.ctl.Stack;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults.DataParser;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
+import java.util.List;
+import java.util.Map;
 
 public class DynamicLib extends TLFunctionLibrary {
 
@@ -45,6 +52,8 @@ public class DynamicLib extends TLFunctionLibrary {
 				case "getLongValue": return new GetValueFunction(Long.class);
 				case "getNumValue": return new GetValueFunction(Double.class);
 				case "getStringValue": return new GetValueFunction(String.class);
+				case "getListValue": return new GetValueFunction(Object.class);
+				case "getMapValue": return new GetValueFunction(Object.class);
 				case "setBoolValue": return new SetValueFunction<Boolean>() {
 	
 						@Override
@@ -165,6 +174,32 @@ public class DynamicLib extends TLFunctionLibrary {
 						}
 						
 					};
+				case "setListValue" : return new SetValueFunction<List<?>>() {
+						@Override
+						protected void setFieldValueIndex(TLFunctionCallContext context, DataRecord record, int fieldIndex,
+								List<?> value) {
+							setListValue(context, record, fieldIndex, value);
+						}
+	
+						@Override
+						protected void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName,
+								List<?> value) {
+							setListValue(context, record, fieldName, value);
+						}
+					};
+				case "setMapValue" : return new SetValueFunction<Map<?, ?>>() {
+						@Override
+						protected void setFieldValueIndex(TLFunctionCallContext context, DataRecord record, int fieldIndex,
+								Map<?, ?> value) {
+							setMapValue(context, record, fieldIndex, value);
+						}
+	
+						@Override
+						protected void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName,
+								Map<?, ?> value) {
+							setMapValue(context, record, fieldName, value);
+						}
+					};
 				case "isNull": return new IsNullFunction();
 				case "getValueAsString": return new GetValueAsStringFunction();
 				case "compare": return new CompareFunction();
@@ -185,11 +220,55 @@ public class DynamicLib extends TLFunctionLibrary {
 		return LIBRARY_NAME;
 	}
 
-		
+	
+	@SuppressWarnings("unchecked")
 	private static final Object getFieldValue(DataField field) {
 		Object value = field.getValue();
 		if (value == null) {
 			return null;
+		} else if(field.getMetadata().getContainerType() == DataFieldContainerType.LIST) {
+			//convert elements to string
+			List<Object> list = (List<Object>)value;
+			List<String> strList = new ArrayList<String>();
+			for (Object item : list)
+			{
+				if (item instanceof byte[])
+				{
+					try {
+						strList.add(new String((byte[]) item, DataParser.DEFAULT_CHARSET_DECODER));
+					} catch (UnsupportedEncodingException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}			
+				}
+				else
+				{
+					strList.add(String.valueOf(item));
+				}
+			}
+			value = strList;
+		} else if(field.getMetadata().getContainerType() == DataFieldContainerType.MAP) {
+			//convert keys and values to string
+			Map<Object, Object> map = (Map<Object, Object>)value;
+			Map<String, String> strMap = new HashMap<String, String>();
+			for (Map.Entry<Object, Object> entry : map.entrySet())
+			{
+				if (entry.getValue() instanceof byte[])
+				{
+					try {
+						strMap.put(String.valueOf(entry.getKey()), new String((byte[]) entry.getValue(),DataParser.DEFAULT_CHARSET_DECODER));
+					} catch (UnsupportedEncodingException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				else
+				{
+					strMap.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
+				}
+			}
+			value = strMap;
+			
 		} else if(value instanceof CharSequence) {
 			// convert to String
 			value = ((CharSequence) value).toString();
@@ -202,7 +281,9 @@ public class DynamicLib extends TLFunctionLibrary {
 			 * - DateDataField can modify the returned instance 
 			 */
 			value = new Date(((Date) value).getTime());
+
 		}
+		
 		return value;
 	}
 	
@@ -302,7 +383,30 @@ public class DynamicLib extends TLFunctionLibrary {
 		return (String) getFieldValue(record, fieldName);
 	}
 	
-
+	// GET LIST VALUE
+	@SuppressWarnings("unchecked")
+	@TLFunctionAnnotation("Returns the list value of a field. All elements are cast to string.")
+	public static final List<String> getListValue(TLFunctionCallContext context, DataRecord record, int fieldIndex) {
+		return (List<String>) getFieldValue(record, fieldIndex);
+	}
+	@SuppressWarnings("unchecked")
+	@TLFunctionAnnotation("Returns the list value of a field. All elements are cast to string.")
+	public static final List<String> getListValue(TLFunctionCallContext context, DataRecord record, String fieldName) {
+		return (List<String>) getFieldValue(record, fieldName);
+	}
+	
+	// GET MAP VALUE
+	@SuppressWarnings("unchecked")
+	@TLFunctionAnnotation("Returns the map value of a field. All keys and values are cast to string.")
+	public static final Map<String, String> getMapValue(TLFunctionCallContext context, DataRecord record, int fieldIndex) {
+		return (Map<String, String>) getFieldValue(record, fieldIndex);
+	}
+	@SuppressWarnings("unchecked")
+	@TLFunctionAnnotation("Returns the map value of a field. All keys and values are cast to string.")
+	public static final Map<String, String> getMapValue(TLFunctionCallContext context, DataRecord record, String fieldName) {
+		return (Map<String, String>) getFieldValue(record, fieldName);
+	}
+	
 	private static final void setFieldValue(DataField field, Object value) {
 		field.setValue(value);
 	}
@@ -461,6 +565,45 @@ public class DynamicLib extends TLFunctionLibrary {
 		setFieldValue(field, value);
 	}
 
+	// SET LIST VALUE
+	@TLFunctionAnnotation("Sets the list value of a field")
+	public static final <T> void setListValue(TLFunctionCallContext context, DataRecord record, int fieldIndex, List<T> value) {
+		DataField field = record.getField(fieldIndex);
+		if (field.getMetadata().getContainerType() != DataFieldContainerType.LIST) {
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
+		}
+		setFieldValue(field, value);
+	}
+	
+	@TLFunctionAnnotation("Sets the list value of a field")
+	public static final <T> void setListValue(TLFunctionCallContext context, DataRecord record, String fieldName, List<T> value) {
+		DataField field = record.getField(fieldName);
+		if (field.getMetadata().getContainerType() != DataFieldContainerType.LIST) {
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
+		}
+		setFieldValue(field, value);
+	}
+	
+	// SET MAP VALUE
+	@TLFunctionAnnotation("Sets the map value of a field")
+	public static final <K, V> void setMapValue(TLFunctionCallContext context, DataRecord record, int fieldIndex, Map<K, V> value) {
+		DataField field = record.getField(fieldIndex);
+		if (field.getMetadata().getContainerType() != DataFieldContainerType.MAP) {			
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
+		}
+		setFieldValue(field, value);
+	}
+	
+	@TLFunctionAnnotation("Sets the map value of a field")
+	public static final <K, V> void setMapValue(TLFunctionCallContext context, DataRecord record, String fieldName, Map<K, V> value) {
+		DataField field = record.getField(fieldName);
+		if (field.getMetadata().getContainerType() != DataFieldContainerType.MAP) {
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
+		}
+		setFieldValue(field, value);
+	}
+	
+	
 	// IS NULL
 	@TLFunctionAnnotation("Returns true if a field is null")
 	public static final Boolean isNull(TLFunctionCallContext context, DataRecord record, int fieldIndex) {
