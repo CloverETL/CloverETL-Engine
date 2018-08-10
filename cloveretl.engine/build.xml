@@ -1211,16 +1211,17 @@ This software is licensed under the terms you may find in the file named "LICENS
 	</target>
 	
 	<target name="pmd-init">
-		<taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" classpathref="pmd.classpath" />
-		<path id="pmd.classpath">
+		<taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" >
+			<classpath>
 				<fileset dir="${dir.pmd.lib}" includes="**/*.jar" />
-		</path>
+			</classpath>
+		</taskdef>
 	</target>
 	
 	<target name="pmd" depends="pmd-init" description="Analyze the source code with PMD">
 		<mkdir dir="${dir.pmdreport}"/>
 		<pmd shortFilenames="true" rulesetfiles="${pmd.ruleset.file}">
-			<sourceLanguage name="java" version="1.7"/>
+			<sourceLanguage name="java" version="${java.src.version}"/>
 			<formatter type="xml" toFile="${dir.pmdreport}/pmdreport.xml"/>
 			<fileset dir="../" includes="**/*.java"/>
 		</pmd>
