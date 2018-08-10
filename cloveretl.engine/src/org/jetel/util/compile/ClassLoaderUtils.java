@@ -43,6 +43,7 @@ import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Node;
 import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.util.classloader.URLBasedClassLoader;
+import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.SandboxUrlUtils;
 import org.jetel.util.string.UnicodeBlanks;
@@ -97,13 +98,15 @@ public class ClassLoaderUtils {
 		
 		StringBuilder result = new StringBuilder();
 		
+		final String pathSeparator = System.getProperty("path.separator");
+		
 		for (Iterator<URL> it = urls.iterator(); it.hasNext();) {
 			URL url = it.next();
 			String fileName = getClasspathFilePath(url);
 			if (!UnicodeBlanks.isBlank(fileName)) {
 				result.append(fileName);
 				if (it.hasNext()) {
-					result.append(File.pathSeparator);
+					result.append(pathSeparator);
 				}
 			}
 		}
@@ -315,7 +318,10 @@ public class ClassLoaderUtils {
 			 *  JDK 9 does not recognize a leading slash in a file URI as a valid class path in Windows.
 			 *  https://bugs.java.com/view_bug.do?bug_id=JDK-8185596
 			 */
-			return filePath.replaceFirst("^/(.:/)", "$1");
+			if (PlatformUtils.isWindowsPlatform()) {
+				filePath = filePath.replaceFirst("^/(.:/)", "$1");
+			}
+			return filePath;
 		}
 
 		filePath = filePath.substring(1);
