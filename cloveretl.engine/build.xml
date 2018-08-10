@@ -1103,17 +1103,9 @@ This software is licensed under the terms you may find in the file named "LICENS
 		<property name="test.cloveretl.plugins" value="${dir.package}/plugins"/>
 		<property name="dir.test.additional.classpath" value=""/>
 		<property name="cloveretl.smb2.bouncycastle.jar.file" value="${cloveretl.smb2.bouncycastle.jar.file}"/>
-		<parallel>
-			<daemons>
-				<antcall target="start-testdb" />
-			</daemons>
-			<sequential>
-				<sleep seconds="5" />
-				<antcall target="generate-eval-license" />
-				<antcall target="tests-reset" />
-				<antcall target="clean-eval-license" />
-			</sequential>
-		</parallel>
+		<antcall target="generate-eval-license" />
+		<antcall target="tests-reset" />
+		<antcall target="clean-eval-license" />
 	</target>
 	
 	<target name="tests-reset" depends="build-plugins,runtests-engine"/>
