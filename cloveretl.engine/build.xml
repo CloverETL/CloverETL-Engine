@@ -135,7 +135,8 @@
 
 	<!-- =========================== LIBRARIES ============================= -->
 	<fileset id="engine-libs" dir="${dir.lib}">
-		<include name="**/*.jar"/>
+		<include name="**/*.jar" />
+		<exclude name="**/jaxb-*.jar" />
 	</fileset>
 
 
