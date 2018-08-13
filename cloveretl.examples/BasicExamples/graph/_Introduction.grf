@@ -25,7 +25,7 @@
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
 <RichTextNote backgroundColor="DAD8C9" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" folded="false" fontSize="medium" height="92" id="Note2" textColor="444444" width="1018" x="3" y="5">
-<attr name="text"><![CDATA[h3. Welcome to CloverETL
+<attr name="text"><![CDATA[h3. Welcome to CloverDX
 This simple example [reads|element://READ_FILE] a [CSV text file|open://BasicExamples/data-in/addressbook.csv], performs some basic transformations on it, and [outputs|element://WRITE_AS_EXCEL] the result into an Excel spreadsheet.]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="F9EB81" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" fontSize="medium" height="154" id="Note3" textColor="444444" width="266" x="755" y="102">
@@ -52,7 +52,7 @@ You can check other examples that show
 - [Accessing a Database|open://BasicExamples/graph/DatabaseAccess.grf]
 - [Processing of a JSON files|open://BasicExamples/graph/JSONProcessing.grf]
 
-or start creating your own project using File -> New -> CloverETL Project]]></attr>
+or start creating your own project using File -> New -> CloverDX Project]]></attr>
 </RichTextNote>
 <Dictionary/>
 </Global>

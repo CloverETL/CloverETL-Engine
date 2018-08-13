@@ -79,6 +79,8 @@ import org.jetel.util.file.FileUtils;
  */
 public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
+	private static final String UNSUPPORTED_OPERATION_MESSAGE = "Sandbox directory may be created only in CloverDX Server environment!";
+
 	/**
 	 * Auto-incremented number, which is used in {@link #getUniqueRunId()}
 	 * for generating unique run IDs. 
@@ -321,12 +323,12 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 	@Override
 	public boolean makeDirectories(String storageCode, String path, boolean makeParents) {
-		throw new UnsupportedOperationException("Sandbox directory may be created only in CloverETL Server environment!");
+		throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_MESSAGE);
 	}
 
 	@Override
 	public Collection<String> resolveAllFiles(String sandboxCode, String wildcardedPath) {
-		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
+		throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_MESSAGE);
 	}
 
 	/*
@@ -335,7 +337,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	 */
 	@Override
 	public InputStream getSandboxResourceInput(String componentId, String storageCode, String path) throws IOException {
-		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
+		throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_MESSAGE);
 	}
 
 	/*
@@ -344,21 +346,21 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	 */
 	@Override
 	public OutputStream getSandboxResourceOutput(String componentId, String storageCode, String path, boolean append) throws IOException {
-		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
+		throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_MESSAGE);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getPartitionedSandboxResourceInput(java.lang.String, java.lang.String)
 	 */
 	public InputStream[] getPartitionedSandboxResourceInput(String storageCode, String path) {
-		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
+		throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_MESSAGE);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getPartitionedSandboxResourceOutput(java.lang.String, java.lang.String)
 	 */
 	public OutputStream[] getPartitionedSandboxResourceOutput(String storageCode, String path) {
-		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
+		throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_MESSAGE);
 	}
 
 	@Override
@@ -369,27 +371,27 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 	@Override
 	public RunStatus getRunStatus(long runId, List<TrackingEvent> trackingEvents, Long timeout) throws InterruptedException {
-		throw new UnsupportedOperationException("Graph execution status is available only in CloverETL Server environment!");
+		throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_MESSAGE);
 	}
 
 	@Override
 	public List<RunStatus> killJob(long runId, boolean recursive) {
-		throw new UnsupportedOperationException("Graph abortation is available only in CloverETL Server environment!");
+		throw new UnsupportedOperationException("Graph abortation is available only in CloverDX Server environment!");
 	}
 
 	@Override
 	public List<RunStatus> killExecutionGroup(String executionGroup, boolean recursive) {
-		throw new UnsupportedOperationException("Graph abortation is available only in CloverETL Server environment!");
+		throw new UnsupportedOperationException("Graph abortation is available only in CloverDX Server environment!");
 	}
 
 	@Override
 	public RunStatus executeGraph(String graphUrl, GraphRuntimeContext runtimeContext) {
-		throw new UnsupportedOperationException("Subgraph execution is available only in CloverETL Server environment!");
+		throw new UnsupportedOperationException("Subgraph execution is available only in CloverDX Server environment!");
 	}
 
 	@Override
 	public ConfigurationStatus checkConfig(String graphUrl, GraphRuntimeContext runtimeContext) {
-		throw new UnsupportedOperationException("Subgraph configuration check is available only in CloverETL Server environment!");
+		throw new UnsupportedOperationException("Subgraph configuration check is available only in CloverDX Server environment!");
 	}
 		
 	@Override
@@ -418,12 +420,12 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	
 	@Override
 	public RunStatus executeProfilerJobAsync(String profilerJobUrl, GraphRuntimeContext runtimeContext) {
-		throw new UnsupportedOperationException("Profiler job execution is available only in CloverETL Server environment");
+		throw new UnsupportedOperationException("Profiler job execution is available only in CloverDX Server environment");
 	}
 	
 	@Override
 	public DataSource getProfilerResultsDataSource() {
-		throw new UnsupportedOperationException("Profiler results storage is available only in CloverETL Server environment");
+		throw new UnsupportedOperationException("Profiler results storage is available only in CloverDX Server environment");
 	}
 	
 	@Override
@@ -443,7 +445,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	
 	@Override
 	public RunStatus executeProfilerJobSync(String profilerJobUrl, GraphRuntimeContext runtimeContext, Long timeout) {
-		throw new UnsupportedOperationException("Profiler job execution is available only in CloverETL Server environment");
+		throw new UnsupportedOperationException("Profiler job execution is available only in CloverDX Server environment");
 	}
 
 	@Override
@@ -516,5 +518,6 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	@Override
 	public boolean isHttpContextAvailable() {
 		return false;
-	}	
+	}
+	
 }

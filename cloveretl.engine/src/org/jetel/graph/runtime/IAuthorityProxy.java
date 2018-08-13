@@ -473,7 +473,7 @@ public abstract class IAuthorityProxy {
 	 * </p>
 	 * 
 	 * <p>
-	 * These methods obsolete {@link File#createTempFile(String, String)} method in whole CloverETL Engine.
+	 * These methods obsolete {@link File#createTempFile(String, String)} method in whole CloverDX Engine.
 	 * </p>
 	 * 
 	 * <p>
@@ -590,7 +590,7 @@ public abstract class IAuthorityProxy {
 	 */
 	public String getSecureParamater(String parameterName, String parameterValue) {
 		//no secure storage is implemented in default authority proxy
-		throw new JetelRuntimeException("Secure parameters are supported only in CloverETL Server environment.");
+		throw new JetelRuntimeException("Secure parameters are supported only in CloverDX Server environment.");
 	}
 
 	public boolean isSecureParameterValue(String parameterValue) {

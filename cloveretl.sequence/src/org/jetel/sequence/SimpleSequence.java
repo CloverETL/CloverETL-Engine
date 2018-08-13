@@ -180,7 +180,7 @@ public class SimpleSequence extends AbstractSequence {
             free();
             ComponentNotReadyException cnre = new ComponentNotReadyException(this, "Can't read value from sequence file. " +
             		"This is caused by accessing the file from multiple Java Virtual Machines at the same time. " +
-            		"If you are using CloverETL Cluster, make sure you are accessing persisted sequence " +
+            		"If you are using CloverDX Cluster, make sure you are accessing persisted sequence " +
             		StringUtils.quote(getName()) + " on the same cluster node.", ex);
             cnre.setAttributeName(XML_FILE_URL_ATTRIBUTE);
             throw cnre;

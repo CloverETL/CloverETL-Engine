@@ -105,28 +105,28 @@ public class URLOperationHandlerTest extends OperationHandlerTestTemplate {
 		assertTrue(info.isFile());
 		assertTrue(info.getName().isEmpty());
 
-		uri = createURI("http://www.cloveretl.com/");
+		uri = createURI("http://www.cloverdx.com/");
 		System.out.println(uri.getAbsoluteURI());
 		info = manager.info(uri).getInfo();
 		assertNotNull(info);
 		assertTrue(info.isFile());
 		assertTrue(info.getName().isEmpty());
 
-		uri = createURI("http://www.cloveretl.com");
+		uri = createURI("http://www.cloverdx.com");
 		System.out.println(uri.getAbsoluteURI());
 		info = manager.info(uri).getInfo();
 		assertNotNull(info);
 		assertTrue(info.isFile());
 		assertTrue(info.getName().isEmpty());
 
-		uri = createURI("http:(direct:)//www.cloveretl.com/");
+		uri = createURI("http:(direct:)//www.cloverdx.com/");
 		System.out.println(uri.getAbsoluteURI());
 		info = manager.info(uri).getInfo();
 		assertNotNull(info);
 		assertTrue(info.isFile());
 		assertTrue(info.getName().isEmpty());
 
-		uri = createURI("http:(direct:)//www.cloveretl.com");
+		uri = createURI("http:(direct:)//www.cloverdx.com");
 		System.out.println(uri.getAbsoluteURI());
 		info = manager.info(uri).getInfo();
 		assertNotNull(info);
@@ -177,7 +177,7 @@ public class URLOperationHandlerTest extends OperationHandlerTestTemplate {
 //		channel = manager.getInput(uri).channel();
 //		assertTrue(read(channel).length() > 0);
 
-//		uri = createURI("http:(proxy://195.70.145.15:8000)//www.cloveretl.com");
+//		uri = createURI("http:(proxy://195.70.145.15:8000)//www.cloverdx.com");
 //		channel = manager.getInput(uri).channel();
 //		assertTrue(read(channel).length() > 0);
 		
@@ -238,7 +238,7 @@ public class URLOperationHandlerTest extends OperationHandlerTestTemplate {
 			System.err.println("Failed to read from " + uri);
 		}
 		
-//		uri = createURI("http://www.cloveretl.com/documentation/quickstart/index.html");
+//		uri = createURI("http://www.cloverdx.com/documentation/quickstart/index.html");
 //		outputChannel = manager.getOutput(uri).channel();
 //		assertFalse(write(outputChannel, text)); // not a WebDAV
 		

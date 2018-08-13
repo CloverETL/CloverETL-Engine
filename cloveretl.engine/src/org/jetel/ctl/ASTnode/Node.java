@@ -60,6 +60,6 @@ public interface Node {
   /** Set (Replace) all node's children with <code>children</code> */
   public void setChildren(Node[] children);
   
-  /* added by D.Pavlis for CloverETL based on work of Sreeni*/
+  /* added by D.Pavlis for CloverDX based on work of Sreeni*/
   public void init();
 }

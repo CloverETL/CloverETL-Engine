@@ -8,7 +8,7 @@
 <RichTextNote backgroundColor="404040" enabled="true" folded="false" fontSize="medium" height="99" id="Note4" textColor="FFFFFF" width="929" x="30" y="15">
 <attr name="text"><![CDATA[h3. Big Data - Processing Web Access Log (Unique Visitors)
 Report the number of unique visitors per month from a potentially huge web access log using different methods.
-(CloverETL, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
+(CloverDX, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="46" id="Note5" textColor="000000" width="929" x="30" y="113">
 <attr name="text"><![CDATA[h3. This graph is a generic part for all variants of the UniqueVisits example.
@@ -25,7 +25,7 @@ Report the number of unique visitors per month from a potentially huge web acces
 
 
 
-Reads number of unique visitors for each month. The file with up-to-date metric values can be created using CloverETL, MapReduce or Hive query.]]></attr>
+Reads number of unique visitors for each month. The file with up-to-date metric values can be created using CloverDX, MapReduce or Hive query.]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="295" id="Note1" textColor="000000" width="225" x="389" y="195">
 <attr name="text"><![CDATA[h3. Read Metric values

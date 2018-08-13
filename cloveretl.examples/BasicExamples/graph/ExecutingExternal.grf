@@ -58,7 +58,7 @@ the "save file list" writer.]]></attr>
 SystemExecute works on Windows too!
 Enable these two components and disable all other in the Unix cases.
 
-Here, 'dir' command returns a list of files in the current directory and this list is read by CloverETL and put to a file]]></attr>
+Here, 'dir' command returns a list of files in the current directory and this list is read by CloverDX and put to a file]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="436" id="Note1" textColor="000000" width="586" x="25" y="709">
 <attr name="text"><![CDATA[h3. UNIX - Case III: Pass data to stdin and then read the output stdout
@@ -66,7 +66,7 @@ Here, 'dir' command returns a list of files in the current directory and this li
 This case shows how data can be sent
 to command standard input through
 an input edge and then read back to
-CloverETL after being processed by the
+CloverDX after being processed by the
 command using the built-in parser
 and connected output edge.
 

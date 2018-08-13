@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361360543511" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Mar 25 15:58:05 CET 2014" modifiedBy="User" name="ProcessLog_CloverETL" nature="jobflow" revision="1.107" showComponentDetails="true">
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361360543511" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Mar 25 15:58:05 CET 2014" modifiedBy="User" name="ProcessLog_CloverDX" nature="jobflow" revision="1.107" showComponentDetails="true">
 <Global>
 <Connection config="${CONN_DIR}/Hadoop-CDH-5.6.0.cfg" id="CDH5" type="HADOOP"/>
 <GraphParameters>
@@ -13,7 +13,7 @@
 <RichTextNote backgroundColor="404040" enabled="true" folded="false" fontSize="medium" height="107" id="Note3" textColor="FFFFFF" width="929" x="25" y="16">
 <attr name="text"><![CDATA[h3. Big Data - Processing Web Access Log (Unique Visitors):  Hadoop MapReduce
 Report the number of unique visitors per month from a potentially huge web access log using different methods.
-(CloverETL, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
+(CloverDX, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="365" id="Note2" textColor="000000" width="215" x="25" y="122">
 <attr name="text"><![CDATA[h3. Scenario

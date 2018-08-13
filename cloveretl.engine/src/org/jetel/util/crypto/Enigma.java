@@ -27,7 +27,7 @@ import javax.crypto.SecretKey;
 import org.jetel.exception.JetelException;
 
 /**
- * Class for encrypting/decrypting strings (mostly passwords) stored by CloverETL
+ * Class for encrypting/decrypting strings (mostly passwords) stored by CloverDX
  * 
  * @author Martin Zatopek, JavlinConsulting,s.r.o.
  * @since  16.8.2006

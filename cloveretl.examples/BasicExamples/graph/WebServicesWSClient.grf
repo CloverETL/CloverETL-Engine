@@ -91,7 +91,7 @@
 </GraphParameters>
 <RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="118" id="Note0" textColor="000000" width="978" x="5" y="8">
 <attr name="text"><![CDATA[h3. Using Web Service tools
-Example demonstrates a functional Web service providing a list of *.grf files from the demo CloverETL server called by the WebServiceClient component. Example shows cascade of SOAP API calls. The results are returned in XML format which are then parsed, consolidated and written to an Excel file. This example requires CloverETL Server running locally on port 8083.
+Example demonstrates a functional Web service providing a list of *.grf files from the demo CloverDX server called by the WebServiceClient component. Example shows cascade of SOAP API calls. The results are returned in XML format which are then parsed, consolidated and written to an Excel file. This example requires CloverDX Server running locally on port 8083.
 ]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="DEF4AB" enabled="true" folded="false" fontSize="medium" height="99" id="Note3" textColor="000000" width="980" x="5" y="403">

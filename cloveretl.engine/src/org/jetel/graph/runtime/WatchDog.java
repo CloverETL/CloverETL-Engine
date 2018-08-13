@@ -55,6 +55,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.graph.runtime.jmx.CloverJMX;
 import org.jetel.graph.runtime.jmx.CloverJMXMBean;
+import org.jetel.graph.runtime.jmx.GraphTracking;
 import org.jetel.graph.runtime.jmx.GraphTrackingDetail;
 import org.jetel.graph.runtime.tracker.TokenTracker;
 import org.jetel.util.ExceptionUtils;
@@ -89,6 +90,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	public static final String WATCHDOG_THREAD_NAME_PREFIX = "WatchDog_";
 	
     private final Object messageMonitor = new Object();
+    private final Object graphTrackingMonitor = new Object();
     
     private static Logger logger = Logger.getLogger(WatchDog.class);
 
@@ -817,8 +819,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
     	return tokenTracker;
     }
     
-	public GraphTrackingDetail getGraphTracking() {
-		return graphTracking;
+	public GraphTracking getGraphTracking() {
+		synchronized (graphTrackingMonitor) {
+			return graphTracking != null ? graphTracking.createCopy() : null;
+		}
 	}
 
 	public void setApprovedPhaseNumber(int approvedPhaseNumber) {
@@ -945,7 +949,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	
 	public synchronized void graphStarted() {
 		try {
-			graphTracking.graphStarted();
+			synchronized (graphTrackingMonitor) {
+				graphTracking.graphStarted();
+			}
 		} catch (Exception e) {
 			logger.error("Unexpected error during job tracking", e);
 		}
@@ -957,7 +963,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 	public synchronized void phaseStarted(Phase phase) {
 		try {
-			graphTracking.phaseStarted(phase);
+			synchronized (graphTrackingMonitor) {
+				graphTracking.phaseStarted(phase);
+			}
 		} catch (Exception e) {
 			logger.error("Unexpected error during job tracking", e);
 		}
@@ -969,7 +977,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 	public synchronized void gatherTrackingDetails() {
 		try {
-			graphTracking.gatherTrackingDetails();
+			synchronized (graphTrackingMonitor) {
+				graphTracking.gatherTrackingDetails();
+			}
 		} catch (Exception e) {
 			logger.error("Unexpected error during job tracking", e);
 		}
@@ -981,7 +991,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 	public synchronized void phaseFinished() {
 		try {
-			graphTracking.phaseFinished();
+			synchronized (graphTrackingMonitor) {
+				graphTracking.phaseFinished();
+			}
 		} catch (Exception e) {
 			logger.error("Unexpected error during job tracking", e);
 		}
@@ -996,7 +1008,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 	public synchronized void phaseAborted() {
 		try {
-			graphTracking.phaseFinished();
+			synchronized (graphTrackingMonitor) {
+				graphTracking.phaseFinished();
+			}
 		} catch (Exception e) {
 			logger.error("Unexpected error during job tracking", e);
 		}
@@ -1009,7 +1023,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 	public synchronized void phaseError(String message) {
 		try {
-			graphTracking.phaseFinished();
+			synchronized (graphTrackingMonitor) {
+				graphTracking.phaseFinished();
+			}
 		} catch (Exception e) {
 			logger.error("Unexpected error during job tracking", e);
 		}
@@ -1022,7 +1038,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 	public synchronized void graphFinished() {
 		try {
-			graphTracking.graphFinished();
+			synchronized (graphTrackingMonitor) {
+				graphTracking.graphFinished();
+			}
 		} catch (Exception e) {
 			logger.error("Unexpected error during job tracking", e);
 		}
@@ -1038,8 +1056,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 */
 	public synchronized void graphAborted() {
 		try {
-			graphTracking.gatherTrackingDetails();
-			graphTracking.graphFinished();
+			synchronized (graphTrackingMonitor) {
+				graphTracking.gatherTrackingDetails();
+				graphTracking.graphFinished();
+			}
 		} catch (Exception e) {
 			logger.error("Unexpected error during job tracking", e);
 		}
@@ -1055,8 +1075,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 */
 	public synchronized void graphError(String message) {
 		try {
-			graphTracking.gatherTrackingDetails();
-			graphTracking.graphFinished();
+			synchronized (graphTrackingMonitor) {
+				graphTracking.gatherTrackingDetails();
+				graphTracking.graphFinished();
+			}
 		} catch (Exception e) {
 			logger.error("Unexpected error during job tracking", e);
 		}

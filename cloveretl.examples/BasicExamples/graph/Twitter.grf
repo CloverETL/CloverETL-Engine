@@ -36,7 +36,7 @@
 <GraphParameters>
 <GraphParameter category="basic" defaultHint="pick or enter search query" label="Twitter Query" name="TWITTER_QUERY" public="true" required="true" value="#bigdata">
 <attr name="description"><![CDATA[Twitter search query]]></attr>
-<SingleType allowCustomValues="true" name="simpleEnum" values="#bigdata;#cloveretl;#iot;#dataintegration"/>
+<SingleType allowCustomValues="true" name="simpleEnum" values="#bigdata;#cloverdx;#iot;#dataintegration"/>
 </GraphParameter>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>

@@ -89,7 +89,7 @@ import org.w3c.dom.Element;
  * formatFile, inputFile) in parameters attribute has to be used. serverName option in parameters attribute is required when a bcp
  * command is run from a remote computer on the network or a local named instance.<br>
  * Before you use this component, make sure that SQL Server Client Connectivity Components are installed and configured on the
- * machine where CloverETL runs and bcp.exe command line tool available (part of SQL Server Management Tools, also included in SQL
+ * machine where CloverDX runs and bcp.exe command line tool available (part of SQL Server Management Tools, also included in SQL
  * Server Express Edition). </td>
  * </tr>
  * <tr>
