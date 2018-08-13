@@ -101,10 +101,7 @@ if( !runTests ){
 		// only compile engine and run the minimum unit tests (target runtests)
 		antTarget = "reports-hudson-unittest"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-8-Oracle"
-		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java,"
-				+ "org/jetel/component/fileoperation/FTPOperationHandlerTest.java,com/opensys/cloveretl/component/EmailFilterTest.java,"
-				+ "org/jetel/component/fileoperation/hadoop/Hadoop511OperationHandlerTest.java,"
-				+ "com/opensys/cloveretl/component/tree/writer/bean/MappingMapTypesTest.java"
+		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java,org/jetel/component/fileoperation/FTPOperationHandlerTest.java,com/opensys/cloveretl/component/EmailFilterTest.java,org/jetel/component/fileoperation/hadoop/Hadoop511OperationHandlerTest.java"
 	} else if( jobGoal == "optimalized"){
 		antTarget = "reports-hudson-optimalized"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.6-Sun_optimalized"
@@ -114,8 +111,7 @@ if( !runTests ){
 	} else if( jobGoal == "detail"){
 		antTarget = "reports-hudson-detail"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-8-Oracle_detail"
-		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/hadoop/Hadoop511OperationHandlerTest.java,"
-				+ "com/opensys/cloveretl/component/tree/writer/bean/MappingMapTypesTest.java"
+		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/hadoop/Hadoop511OperationHandlerTest.java"
 		antArgs += "-Drun.coverage=true"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit"
 	} else if( jobGoal == "tests-reset"){
