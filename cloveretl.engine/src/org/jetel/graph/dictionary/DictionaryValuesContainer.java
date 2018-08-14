@@ -212,7 +212,7 @@ public final class DictionaryValuesContainer implements Serializable {
 		 */
 		ClassLoader loader = DictionaryValuesContainer.class.getClassLoader();
 		try {
-			Class<?> type = loader.loadClass(object.getClass().getName());
+			Class<?> type = Class.forName(object.getClass().getName(), false, loader);
 			if (!type.equals(object.getClass())) {
 				return false;
 			}
