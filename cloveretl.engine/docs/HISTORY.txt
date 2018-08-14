@@ -2,6 +2,20 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-9-1
+---------
+
+* CLO-13996 JMS Event listener - add option to define Durable subscriber name
+* CLO-13875 Change Worker JMS properties to better match Tomcat resource properties
+* Fixes:
+	* CLO-14060 StackOverflowError in subgraph in jobflow
+	* CLO-14074 Launch Services running Subgraphs on Worker
+	* CLO-14011 Dictionary byte type serialization doesn't work in Worker
+	* CLO-13982 Worker SSL tweaks
+* Compatibility:
+	* CLO-14115 Disable the Groovy servlet
+	* CLO-13875 Change Worker JMS properties to better match Tomcat resource properties
+
 REL-4-9-0
 ---------
 
