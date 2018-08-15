@@ -1,12 +1,8 @@
 info@javlin.eu
-test@javlin.eu
 another@google.com
 yetanother@google.com
 gooddomain@google.com
-test@seznam.cz
 info@opensys.com
 info@opensys.com
 sales@opensys.com
-nonexistent@opensys.com
-test@cloveretl.net
 info@javlin.cz
