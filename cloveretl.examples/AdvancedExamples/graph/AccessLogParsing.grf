@@ -40,7 +40,7 @@
 </Record>
 </Metadata>
 <GraphParameters>
-<GraphParameter name="GET_HOSTNAME" value="1"/>
+<GraphParameter name="GET_HOSTNAME" value="0"/>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
 <LookupTable charset="ISO-8859-1" id="LookupTable0" initialSize="512" key="ip_address" metadata="Metadata4" name="irrelevant_ip_addresses" type="simpleLookup"/>
