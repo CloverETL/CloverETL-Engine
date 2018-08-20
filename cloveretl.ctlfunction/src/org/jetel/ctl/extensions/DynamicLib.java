@@ -187,16 +187,16 @@ public class DynamicLib extends TLFunctionLibrary {
 							setListValue(context, record, fieldName, value);
 						}
 					};
-				case "setMapValue" : return new SetValueFunction<Map<?, ?>>() {
+				case "setMapValue" : return new SetValueFunction<Map<String, ?>>() {
 						@Override
 						protected void setFieldValueIndex(TLFunctionCallContext context, DataRecord record, int fieldIndex,
-								Map<?, ?> value) {
+								Map<String, ?> value) {
 							setMapValue(context, record, fieldIndex, value);
 						}
 	
 						@Override
 						protected void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName,
-								Map<?, ?> value) {
+								Map<String, ?> value) {
 							setMapValue(context, record, fieldName, value);
 						}
 					};
@@ -586,7 +586,7 @@ public class DynamicLib extends TLFunctionLibrary {
 	
 	// SET MAP VALUE
 	@TLFunctionAnnotation("Sets the map value of a field")
-	public static final <K, V> void setMapValue(TLFunctionCallContext context, DataRecord record, int fieldIndex, Map<K, V> value) {
+	public static final <V> void setMapValue(TLFunctionCallContext context, DataRecord record, int fieldIndex, Map<String, V> value) {
 		DataField field = record.getField(fieldIndex);
 		if (field.getMetadata().getContainerType() != DataFieldContainerType.MAP) {			
 			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
@@ -595,7 +595,7 @@ public class DynamicLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Sets the map value of a field")
-	public static final <K, V> void setMapValue(TLFunctionCallContext context, DataRecord record, String fieldName, Map<K, V> value) {
+	public static final <V> void setMapValue(TLFunctionCallContext context, DataRecord record, String fieldName, Map<String, V> value) {
 		DataField field = record.getField(fieldName);
 		if (field.getMetadata().getContainerType() != DataFieldContainerType.MAP) {
 			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());

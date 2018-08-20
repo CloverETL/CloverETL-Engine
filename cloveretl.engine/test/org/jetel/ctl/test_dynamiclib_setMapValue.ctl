@@ -23,8 +23,6 @@ function integer transform(){
 	dateMap["before"] = str2date("1970-01-01 01:00:12", "yyyy-MM-dd HH:mm:ss");
 	dateMap["after"] = str2date("1970-01-01 01:00:34", "yyyy-MM-dd HH:mm:ss");
 	
-	//byteMap["hash"] = hex2byte("0x12, 0x34");
-	//byteMap["checksum"] = hex2byte("0x56, 0x78");
 	byteMap["hash"] = str2byte('aa', "UTF-8");
 	byteMap["checksum"] = str2byte('bb', "UTF-8");
 	
