@@ -141,17 +141,33 @@
 				<groupId>joda-time</groupId>
 				<artifactId>joda-time</artifactId>
 			</exclusion>
+			<exclusion>
+				<groupId>software.amazon.ion</groupId>
+				<artifactId>ion-java</artifactId>
+			</exclusion>
 		</exclusions>
     </dependency>
     <dependency>
 		<groupId>com.amazonaws</groupId>
 		<artifactId>aws-java-sdk-kms</artifactId>
 		<version>1.11.75</version>
+		<exclusions>
+			<exclusion>
+				<groupId>software.amazon.ion</groupId>
+				<artifactId>ion-java</artifactId>
+			</exclusion>
+		</exclusions>		
     </dependency>
     <dependency>
 		<groupId>com.amazonaws</groupId>
 		<artifactId>aws-java-sdk-s3</artifactId>
 		<version>1.11.75</version>
+		<exclusions>
+			<exclusion>
+				<groupId>software.amazon.ion</groupId>
+				<artifactId>ion-java</artifactId>
+			</exclusion>
+		</exclusions>
     </dependency>
 
     <dependency>
