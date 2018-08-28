@@ -175,6 +175,10 @@
 				<groupId>com.fasterxml.jackson.dataformat</groupId>
 				<artifactId>jackson-dataformat-cbor</artifactId>
 			</exclusion>
+			<exclusion>
+				<groupId>com.amazonaws</groupId>
+				<artifactId>jmespath-java</artifactId>
+			</exclusion>
 		</exclusions>		
     </dependency>
     <dependency>
@@ -189,7 +193,11 @@
 			<exclusion>
 				<groupId>com.fasterxml.jackson.dataformat</groupId>
 				<artifactId>jackson-dataformat-cbor</artifactId>
-			</exclusion>			
+			</exclusion>
+			<exclusion>
+				<groupId>com.amazonaws</groupId>
+				<artifactId>jmespath-java</artifactId>
+			</exclusion>
 		</exclusions>
     </dependency>
 
