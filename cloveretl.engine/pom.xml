@@ -111,6 +111,12 @@
 		<groupId>org.apache.commons</groupId>
 		<artifactId>commons-compress</artifactId>
 		<version>1.7</version>
+		<exclusions>
+			<exclusion>
+				<groupId>org.tukaani</groupId>
+				<artifactId>xz</artifactId>
+			</exclusion>
+		</exclusions>
     </dependency>
     <dependency>
 		<groupId>commons-net</groupId>
@@ -175,6 +181,10 @@
 				<groupId>com.fasterxml.jackson.dataformat</groupId>
 				<artifactId>jackson-dataformat-cbor</artifactId>
 			</exclusion>
+			<exclusion>
+				<groupId>com.amazonaws</groupId>
+				<artifactId>jmespath-java</artifactId>
+			</exclusion>
 		</exclusions>		
     </dependency>
     <dependency>
@@ -189,7 +199,11 @@
 			<exclusion>
 				<groupId>com.fasterxml.jackson.dataformat</groupId>
 				<artifactId>jackson-dataformat-cbor</artifactId>
-			</exclusion>			
+			</exclusion>
+			<exclusion>
+				<groupId>com.amazonaws</groupId>
+				<artifactId>jmespath-java</artifactId>
+			</exclusion>
 		</exclusions>
     </dependency>
 
