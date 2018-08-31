@@ -155,7 +155,7 @@ public class WebdavOutputStream extends OutputStream {
 				
 				String urlString = this.url.toString();
 				
-				// This is a workaround needed for example for writing to CloverETL Server.
+				// This is a workaround needed for example for writing to CloverDX Server.
 				// It will avoid retry on non-repeatable request error.
 				// Digest authorization will be performed on this request and then the PUT
 				// method (where retry caused by authorization would fail) is already authorized.

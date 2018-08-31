@@ -64,17 +64,17 @@ and contains parameters:</P>
 </UL>
 <h2><a name="Installation>Custom plugin installation</a></h2>
 <P>Now
-you can install the plugin to CloverETL Engine. Your library needs to
+you can install the plugin to CloverDX Engine. Your library needs to
 be compiled, packed to jar file and placed with the <i>plugin.xml</i> file
-to CloverETL Engine's plugins directory. This task can be done by the
+to CloverDX Engine's plugins directory. This task can be done by the
 <i>build.xml</i> file placed in project's root directory.<br>In <I>build.properties</I>
-file, there is defined path to CloverETL Engine directory (<i>dir.engine</i>)
+file, there is defined path to CloverDX Engine directory (<i>dir.engine</i>)
 and the ctl version, you want to build the plugin for (<i>ctl_version</i>). By 
 default the build is performed for CTL2; to change it for CTL1, just change  <i>ctl_version</i>
 parameter to <i>ctl1</i> (<i>ctl_version = ctl1</i>).<br>
 The ant task <i>install</i> compiles the example library, packs the class
 files to the  <I>my_lib_${ctl_version}.jar (my_lib_ctl1.jar or my_lib_ctl2.jar)</I> 
-and copies the jar and proper <i>plugin.xml</i> to the CloverETL Engine's plugins
+and copies the jar and proper <i>plugin.xml</i> to the CloverDX Engine's plugins
 directory. 
 </P>
 </BODY>

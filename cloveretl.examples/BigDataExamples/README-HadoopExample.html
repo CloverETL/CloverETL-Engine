@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>CloverETL + Apache - Examples README</title>
+<title>CloverDX + Apache - Examples README</title>
 
 <link rel="stylesheet" type="text/css" href="res/style.css"/>
 
@@ -37,13 +37,13 @@ $(document).ready(function() {
 
 <div class="pad">
 
-<img src="res/gfx/cloveretl-logo.png" id="logo"/>
+<img src="res/gfx/logo-cloverdx.png" id="logo"/>
 
-<h1>Big Data with CloverETL + Apache Hadoop</h1>
-<h1 class="sub">An example for HDFS, Hive and MapReduce integration in CloverETL</h1>
+<h1>Big Data with CloverDX + Apache Hadoop</h1>
+<h1 class="sub">An example for HDFS, Hive and MapReduce integration in CloverDX</h1>
 
-<p>Starting with CloverETL 3.4M2 we provide integration with technologies from the Apache Hadoop stack: HDFS, Hive and MapReduce.  All these technologies are still under active development with major changes to API, class structure, and library names happening frequently between releases.</p> 
-<p>CloverETL integration with Hadoop is not bound to any particular Hadoop distribution and should work with various versions of Hadoop technologies. CloverETL supports both MapReduce 1.0 (available in CDH4 and optionally in CDH5) as well as MapReduce 2.0 with YARN (available in CDH4 and CDH5).</p> 
+<p>Starting with CloverDX 3.4M2 we provide integration with technologies from the Apache Hadoop stack: HDFS, Hive and MapReduce.  All these technologies are still under active development with major changes to API, class structure, and library names happening frequently between releases.</p> 
+<p>CloverDX integration with Hadoop is not bound to any particular Hadoop distribution and should work with various versions of Hadoop technologies. CloverDX supports both MapReduce 1.0 (available in CDH4 and optionally in CDH5) as well as MapReduce 2.0 with YARN (available in CDH4 and CDH5).</p> 
 
 </div>
 
@@ -52,7 +52,7 @@ $(document).ready(function() {
 <h6>Example Scenario</h6>
 
 <h2>Computing "unique visitors per month" from large Apache web logs</h2>
-<p>For the purpose of demontrating CloverETL with Hadoop support, we will use a quite common scenario where huge web logs (up to hundreds of GBs per day)
+<p>For the purpose of demontrating CloverDX with Hadoop support, we will use a quite common scenario where huge web logs (up to hundreds of GBs per day)
 need to be reduced to compute simple metrics, in this case a report the sum of unique visits (IP addresses) per month and sort by busiest months first.
 </p> 
 
@@ -66,7 +66,7 @@ group by monthOfYear</code>
 <p>
 <strong>A &ndash; Hadoop Hive query</strong> &ndash; Store data to HDFS, create a Hive table and run a query</i><br/>
 <strong>B &ndash; Hadoop MapReduce</strong> &ndash;  Store data to HDFS and run a MapReduce job<br/>
-<strong>C &ndash; Pure CloverETL</strong>  &ndash; only CloverETL components, no Hadoop 
+<strong>C &ndash; Pure CloverDX</strong>  &ndash; only CloverDX components, no Hadoop 
 </p> 
 
 </div>
@@ -80,7 +80,7 @@ group by monthOfYear</code>
 Cloudera distributions (see instructions below). If you use another distribution or setup, unfortunately, you are on your own &ndash; use the instructions 
 below as guidelines.</p>
  
-<p>The examples are presented in the form of jobflows, which bind all necessary steps of the process into one executable piece which <b>requires CloverETL Server</b> to run.</p>
+<p>The examples are presented in the form of jobflows, which bind all necessary steps of the process into one executable piece which <b>requires CloverDX Server</b> to run.</p>
 <p>Please keep in mind, that the Server needs to have <b>network access to the Hadoop installation</b>.</p>
 
 
@@ -104,18 +104,18 @@ below as guidelines.</p>
 
 <h2>Running the example in a local Server installation</h2>
 
-<h3 class="expandtopic" rel="solution-hive">Solution A: CloverETL with Hadoop Hive query</h3>
+<h3 class="expandtopic" rel="solution-hive">Solution A: CloverDX with Hadoop Hive query</h3>
 
 <div id="solution-hive" class="hide">
 	<div class="guide">
 
 	<h2>How it works?</h2>
 	<ol class="explain">
-	<li>Read the Apache log using CloverETL (UniversalDataReader component)</li>
+	<li>Read the Apache log using CloverDX (UniversalDataReader component)</li>
 	<li>Extract the required fields (month, year and IP address) into a file stored in HDFS</li>
 	<li>Create a Hive table based on that HDFS file</li>
 	<li>Run a Hive query on the table</li>
-	<li>Get the result back to CloverETL and generate an Excel report.</li>
+	<li>Get the result back to CloverDX and generate an Excel report.</li>
 	</ol>
 
 	<h2>Resources</h2>
@@ -173,16 +173,16 @@ below as guidelines.</p>
 
 
 
-<h3 class="expandtopic" rel="solution-mapreduce">Solution B: CloverETL with Hadoop MapReduce script</h3>
+<h3 class="expandtopic" rel="solution-mapreduce">Solution B: CloverDX with Hadoop MapReduce script</h3>
 
 <div id="solution-mapreduce" class="hide guide">
 
 	<h2>How it works?</h2>
 	<ol class="explain">
-	<li>Read the Apache log using CloverETL (UniversalDataReader component)</li>
+	<li>Read the Apache log using CloverDX (UniversalDataReader component)</li>
 	<li>Extract the required fields (month, year and IP address) into a file stored in HDFS</li>
 	<li>Run a MapReduce job that counts unique visitors and stores results back to HDFS</li>
-	<li>Get the result back to CloverETL and generate an Excel report.</li>
+	<li>Get the result back to CloverDX and generate an Excel report.</li>
 	</ol>
 
 	<h2>Resources</h2>
@@ -200,7 +200,7 @@ below as guidelines.</p>
 	<h2>Additional Notes</h2>
 	
 	<h3>Old and new MapReduce APIs</h3>
-	<p>Within the MapReduce 1.0 framework CloverETL support submission of jobs developed with both the old org.apache.hadoop.mapred.* as well as the new org.apache.hadoop.mapreduce.* map-reduce API.</p>
+	<p>Within the MapReduce 1.0 framework CloverDX support submission of jobs developed with both the old org.apache.hadoop.mapred.* as well as the new org.apache.hadoop.mapreduce.* map-reduce API.</p>
 	
 	<h2>Which distribution are you using?</h2>
 	<p>This <a href="https://blogs.apache.org/bigtop/entry/all_you_wanted_to_know">article</a> can help you decide which one to choose.</p>
@@ -243,7 +243,7 @@ below as guidelines.</p>
 
 
 
-<h3 class="expandtopic" rel="solution-cloveretl">Solution C: Pure CloverETL solution; no Hadoop</h3>
+<h3 class="expandtopic" rel="solution-cloveretl">Solution C: Pure CloverDX solution; no Hadoop</h3>
 
 <div id="solution-cloveretl" class="hide">
 <div class="guide">
@@ -251,11 +251,11 @@ below as guidelines.</p>
 	
 	<h4>Instructions</h4>
 	<ol class="steps">
-	<li>Run <i>jobflows/UniqueVisits-CloverETL.jbf</i></li>
+	<li>Run <i>jobflows/UniqueVisits-CloverDX.jbf</i></li>
 	</ol>
 
 </div>
-</div><!-- pure CloverETL -->
+</div><!-- pure CloverDX -->
 
 </div>
 

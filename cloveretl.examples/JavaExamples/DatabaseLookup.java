@@ -36,7 +36,7 @@ import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
 /**
  * Program parameters:
- * -plugins	pluginsDirectory		CloverETL plugins directory
+ * -plugins	pluginsDirectory		CloverDX plugins directory
  * -config propertiesFile			load default engine properties from specified file
  * -connection 						database connection configuration file
  * -query							lookup query
@@ -45,7 +45,7 @@ import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
  * 
  * This example illustrates usage of LookupTable, in particular database lookup table (DBLookupTable).
  * It looks up in derby database for the records with requested key.
- * All examples require to provide CloverETL plugins. Plugins directory can be set as program argument or 
+ * All examples require to provide CloverDX plugins. Plugins directory can be set as program argument or 
  * in params.txt file as plugins parameter or required plugins have to be set on classpath when running the program. 
  * When set in params.txt, the same directory is used for all examples and musn't be set 
  * for each example separately.

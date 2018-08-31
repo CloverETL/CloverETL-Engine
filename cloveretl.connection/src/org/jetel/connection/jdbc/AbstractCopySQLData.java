@@ -61,9 +61,9 @@ import org.jetel.util.ExceptionUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
- *  Class for creating mappings between CloverETL's DataRecords and JDBC's
+ *  Class for creating mappings between CloverDX's DataRecords and JDBC's
  *  ResultSets.<br>
- *  It also contains inner classes for translating various CloverETL's DataField
+ *  It also contains inner classes for translating various CloverDX's DataField
  *  types onto JDBC types.
  *
  * @author      dpavlis
@@ -304,7 +304,7 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 		 * fields on DB side is O.K. (some of Clover fields won't get assigned value).
 		 */
 		if (fieldTypes.size()>metadata.getNumFields()){
-			throw new RuntimeException("CloverETL data record "+metadata.getName()+
+			throw new RuntimeException("CloverDX data record "+metadata.getName()+
 					" contains less fields than source JDBC record !");
 		}
 		
@@ -384,7 +384,7 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 		 * fields on DB side is O.K. (some of Clover fields won't be assigned to JDBC).
 		 */
 		if (fieldTypes.size()>record.getMetadata().getNumFields()){
-			throw new RuntimeException("CloverETL data record "+record.getMetadata().getName()+
+			throw new RuntimeException("CloverDX data record "+record.getMetadata().getName()+
 					" contains less fields than target JDBC record !");
 		}
 		CopySQLData[] transMap = new CopySQLData[fieldTypes.size()];

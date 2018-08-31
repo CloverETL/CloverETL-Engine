@@ -37,7 +37,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * 
  * This example illustrates usage of DataParser - the object for parsing plain text data.
  * Data from data/bonus.csv is parsed and saved in output/bonus.out
- * All examples require to provide CloverETL plugins. Plugins directory can be set as program argument or 
+ * All examples require to provide CloverDX plugins. Plugins directory can be set as program argument or 
  * in params.txt file as plugins parameter or required plugins have to be set on classpath when running the program. 
  * When set in params.txt, the same directory is used for all examples and musn't be set 
  * for each example separately.
@@ -85,7 +85,7 @@ public class DataParsing {
 	System.out.println("Default properties file: "+ propertiesFile);
 	System.out.println("***************************************************");
 	
-	//Initialization of CloverETL engine
+	//Initialization of CloverDX engine
 	EngineInitializer.initEngine(plugins, propertiesFile, null);
 	
 	//preparing input and output files

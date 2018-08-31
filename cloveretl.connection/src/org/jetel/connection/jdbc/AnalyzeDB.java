@@ -87,7 +87,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * driverLibrary=/opt/borland/interbase/jdbc/lib/jdbcdrv.jar
  * </pre>
  * <u>Note:</u>
- * The <tt>driverLibrary</tt> option is not used by JDBC driver (thus not required). It is option which allows CloverETL automatically
+ * The <tt>driverLibrary</tt> option is not used by JDBC driver (thus not required). It is option which allows CloverDX automatically
  * load-in addition library containing JDBC driver if class specified in option dbDriver can't be found in standard CLASSPATH.<br>
  * @author     dpavlis
  * @since    September 25, 2002

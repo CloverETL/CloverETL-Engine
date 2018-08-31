@@ -1,4 +1,4 @@
-package com.cloveretl.examples;
+package com.cloverdx.examples;
 
 import org.fluttercode.datafactory.RandomPerson;
 import org.fluttercode.datafactory.impl.DataFactory;

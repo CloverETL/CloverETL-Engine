@@ -88,7 +88,7 @@ import org.w3c.dom.Element;
  * and configured on the local host. Server and database have to be cataloged 
  * (see <a href="http://publib.boulder.ibm.com/infocenter/db2luw/v8/index.jsp?topic=/com.ibm.db2.udb.doc/opt/t0010791.htm">
  * Configuring a client to Query Patroller server connection using the command line processor</a>).<br>
- * <i>Note: In CloverETL date data field stores date as well as time or time stamp 
+ * <i>Note: In CloverDX date data field stores date as well as time or time stamp 
  * (date & time). In DB2 thees are three different types. The component recognizes them 
  * due to the format set on metadata, so be positive that formats on metadata are set 
  * correctly.</i>  </td></tr>

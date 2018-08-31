@@ -26,7 +26,7 @@ import org.jetel.metadata.DataFieldType;
  * @author dpavlis
  *
  * Some dBase related constants and conversion routines for
- * dBase to CloverETL type conversions.
+ * dBase to CloverDX type conversions.
  */
 public class DBFTypes  {
 	
@@ -125,7 +125,7 @@ public class DBFTypes  {
 
 	/**
 	 * @param dBase field type
-	 * @return CloverETL field type
+	 * @return CloverDX field type
 	 */
 	public static DataFieldType dbfFieldType2Clover(char type){
 		switch(Character.toUpperCase(type)){

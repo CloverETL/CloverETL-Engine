@@ -19,7 +19,7 @@
 package org.jetel.util;
 
 /**
- * Class which carries information about current CloverETL
+ * Class which carries information about current CloverDX
  * library version (both major & minor).<br>
  * Can be used to check for compatibility.<br>
  * <i>Values are automatically updated by ANT build file when

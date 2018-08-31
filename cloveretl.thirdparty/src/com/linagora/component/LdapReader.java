@@ -63,7 +63,7 @@ import com.linagora.ldap.LdapParser;
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
  * <td>Provides the logic to extract search result of an LDAP directory
- * and transform them into CloverETL Data Records.
+ * and transform them into CloverDX Data Records.
  * <br>The metadata provided on output port/edge (field names) are used when mapping from LDAP
  * attributes to fields.<br>Only Clover fields of types String and Byte/CompressedByte are supported.<br>
  * Multi-value attributes are mapped onto target fields two ways - if target field is of type List<String> or List<Byte>

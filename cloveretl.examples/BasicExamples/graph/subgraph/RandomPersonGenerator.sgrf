@@ -37,7 +37,7 @@ By default, 100 records are generated. This may be changed to whatever number.]]
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" generateClass="com.cloveretl.examples.RandomPersonGen" guiName="DataGenerator" guiX="349" guiY="205" id="DATA_GENERATOR" recordsNumber="${RECORDS_NUMBER}" type="DATA_GENERATOR"/>
+<Node enabled="enabled" generateClass="com.cloverdx.examples.RandomPersonGen" guiName="DataGenerator" guiX="349" guiY="205" id="DATA_GENERATOR" recordsNumber="${RECORDS_NUMBER}" type="DATA_GENERATOR"/>
 <Node enabled="enabled" guiName="SubgraphInput" guiX="200" guiY="10" id="SUBGRAPH_INPUT0" type="SUBGRAPH_INPUT">
 <Port guiY="118" name="0"/>
 </Node>
