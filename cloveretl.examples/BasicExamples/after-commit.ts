@@ -4,7 +4,7 @@
 <TestScenario ident="Examples" description="Examples distributed with Designer" useJMX="true">
 	<GlobalRegEx ident="error" expression="^ERROR" caseSensitive="false" occurences="0" />
 	
-	<FunctionalTest ident="DataSelectionAdvanced" graphFile="graph/DataSelectionAdvanced.grf" excludedContainers="websphere7">
+	<FunctionalTest ident="DataSelectionAdvanced" graphFile="graph/DataSelectionAdvanced.grf">
 		<FlatFile outputFile="data-out/NumberOfCustomers.out" supposedFile="supposed-out/NumberOfCustomers.out"/>
 		<FlatFile outputFile="data-tmp/had_duplicate_records.txt" supposedFile="supposed-out/had_duplicate_records.txt"/>
 		<RegEx expression="# 4 *\|Argentina *\|16" occurences="1"/>
@@ -77,17 +77,17 @@
 		<FlatFile outputFile="data-out/orders_late.txt" supposedFile="supposed-out/orders_late.txt"/>
 	</FunctionalTest>
 			
-	<FunctionalTest ident="MetadataWriting" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine,serverWorker,clusterWorker" excludedJavaVersions="1.7" excludedContainers="tomcat7,tomcat8,tomcat85,tomcat9,jetty9,glassfish3,websphere85,jboss6,jboss7,jboss7-eap-6-4,tcserver329">
+	<FunctionalTest ident="MetadataWriting" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine,serverWorker,clusterWorker" excludedJavaVersions="1.7" excludedContainers="tomcat85,tomcat9,websphere9,jboss-eap-7-1,tcserver329">
 		<FlatFile outputFile="data-out/employees_txt.fmt" supposedFile="supposed-out/employees_txt.fmt"/>
 		<FlatFile outputFile="data-out/departments_txt.fmt" supposedFile="supposed-out/departments_txt.fmt"/>
 	</FunctionalTest>
 	
-	<FunctionalTest ident="MetadataWriting_version2" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine,serverWorker,clusterWorker" excludedJavaVersions="1.7" excludedContainers="weblogic12,weblogic-12-1-3,jboss6,jboss7,jboss7-eap-6-4">
+	<FunctionalTest ident="MetadataWriting_version2" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine,serverWorker,clusterWorker" excludedJavaVersions="1.7" excludedContainers="weblogic-12-2-1,jboss-eap-7-1">
 		<FlatFile outputFile="data-out/employees_txt.fmt" supposedFile="supposed-out/employees_txt_version2.fmt"/>
 		<FlatFile outputFile="data-out/departments_txt.fmt" supposedFile="supposed-out/departments_txt_version2.fmt"/>
 	</FunctionalTest>
 	
-	<FunctionalTest ident="MetadataWriting_version3" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine,serverWorker,clusterWorker" excludedJavaVersions="1.7" excludedContainers="tomcat7,tomcat8,tomcat85,tomcat9,jetty9,weblogic12,weblogic-12-1-3,glassfish3,websphere85,tcserver329">
+	<FunctionalTest ident="MetadataWriting_version3" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine,serverWorker,clusterWorker" excludedJavaVersions="1.7" excludedContainers="tomcat85,tomcat9,weblogic-12-2-1,websphere9,tcserver329">
 		<FlatFile outputFile="data-out/employees_txt.fmt" supposedFile="supposed-out/employees_txt_version3.fmt"/>
 		<FlatFile outputFile="data-out/departments_txt.fmt" supposedFile="supposed-out/departments_txt_version3.fmt"/>
 	</FunctionalTest>
