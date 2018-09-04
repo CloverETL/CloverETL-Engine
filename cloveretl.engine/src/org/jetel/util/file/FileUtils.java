@@ -44,6 +44,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -68,6 +69,7 @@ import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.jetel.component.fileoperation.CloverURI;
 import org.jetel.component.fileoperation.FileManager;
+import org.jetel.component.fileoperation.FileOperationMessages;
 import org.jetel.component.fileoperation.Operation;
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.URIUtils;
@@ -303,6 +305,10 @@ public class FileUtils {
      * @throws MalformedURLException  
      */
     public static URL getFileURL(URL contextURL, String fileURL, boolean addStrokePrefix) throws MalformedURLException {
+    	return validateUrlAtCount(processFileURL(contextURL, fileURL, addStrokePrefix));
+    }
+    
+    private static URL processFileURL(URL contextURL, String fileURL, boolean addStrokePrefix) throws MalformedURLException {
     	// remove mark for absolute path
     	if (contextURL != null && fileURL.startsWith(FILE_PROTOCOL_ABSOLUTE_MARK)) {
     		fileURL = fileURL.substring((FILE_PROTOCOL+":").length());
@@ -366,7 +372,7 @@ public class FileUtils {
             // unknown protocol will throw an exception,
             // standard Java protocols will be ignored;
             // all Clover-specific protocols must be checked before this call
-            new URL(fileURL);
+			new URL(fileURL);
         }
 		
 		if (StringUtils.isEmpty(protocol)) {
@@ -2790,6 +2796,16 @@ public class FileUtils {
 		} else {
 			throw new JetelRuntimeException("URL '" + portUrlStr + "' is not valid port URL.");
 		}
+	}
+	
+	private static URL validateUrlAtCount(URL url) throws MalformedURLException {
+		if (url == null || url.getAuthority() == null) {
+			return url;
+		}
+		if (StringUtils.countMatches(url.toString(), "@") > 1) {
+			throw new MalformedURLException(MessageFormat.format(FileOperationMessages.getString("FileUtils.url_at_count_error"), url.toString()));
+		}
+		return url;
 	}
 	
 }

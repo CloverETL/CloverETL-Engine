@@ -42,7 +42,7 @@ import org.jetel.util.string.StringUtils;
  * @author misho
  *
  */
-public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinitionFactory {
+public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinitionFactory, URLBasedClassLoader {
 	private static Logger log  = Logger.getLogger(GreedyURLClassLoader.class);
 	
 	/** packages prefixes which are excluded from Greedy class-loading and which will be loaded in common way (parent class-loader first) 
@@ -132,11 +132,13 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 		if (isGreedy(name)) {
 			return loadClassGreedy(name, resolve);
 		} else {
-	        if (log.isTraceEnabled())
-	      	   log.trace(this+" P-F loading: "+ name);
+	        if (log.isTraceEnabled()) {
+	            log.trace(this + " P-F loading: " + name);
+	        }
 			Class<?> c = super.loadClass(name, resolve);
-	        if (log.isTraceEnabled())
-	           log.trace(this+" P-F loaded:  "+ name+" by: "+getClassLoaderId(c.getClassLoader()));
+	        if (log.isTraceEnabled()) {
+	            log.trace(this + " P-F loaded:  " + name + " by: " + getClassLoaderId(c.getClassLoader()));
+	        }
 			return c;
 		}
 	}
@@ -147,17 +149,21 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 		if (c == null) {
 		    try {
 				// try to load the class by ourselves
-		        if (log.isTraceEnabled())
-			      	   log.trace(this+" S-F loading: "+ name);
+		        if (log.isTraceEnabled()) {
+			        log.trace(this + " S-F loading: " + name);
+		        }
 		        c = findClass(name);
-		        if (log.isTraceEnabled())
-			      	   log.trace(this+" S-F loaded:  "+ name + " by: "+getClassLoaderId(c.getClassLoader()));
+		        if (log.isTraceEnabled()) {
+			        log.trace(this + " S-F loaded:  " + name + " by: " + getClassLoaderId(c.getClassLoader()));
+		        }
 		    } catch (ClassNotFoundException e) {
-		        if (log.isTraceEnabled())
-			      	   log.trace(this+" S-F loading: "+ name + " by: "+getClassLoaderId(getParent()));
+		        if (log.isTraceEnabled()) {
+			        log.trace(this + " S-F loading: " + name + " by: " + getClassLoaderId(getParent()));
+		        }
 		    	c = getParent().loadClass(name);
-		        if (log.isTraceEnabled())
-			      	   log.trace(this+" S-F loaded:  "+ name + " by: "+getClassLoaderId(c.getClassLoader()));
+		        if (log.isTraceEnabled()) {
+			      	   log.trace(this + " S-F loaded:  "+ name + " by: " + getClassLoaderId(c.getClassLoader()));
+		        }
 		    }
 		}
 		if (resolve) {
@@ -209,7 +215,7 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 		} else if (cl instanceof GreedyURLClassLoader) {
 			return cl.toString();
 		} else {
-			return cl.getClass().toString()+"#"+cl.hashCode();
+			return cl.getClass().toString() + "#" + cl.hashCode();
 		}
 	}
 
@@ -221,34 +227,39 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 	@Override
 	public URL getResource(String name) {
 		if (isGreedy(name)) {
-			if (log.isTraceEnabled())
-				log.trace(this+" S-F trying to load resource: "+ name);
+			if (log.isTraceEnabled()) {
+				log.trace(this + " S-F trying to load resource: " + name);
+			}
 			URL url = findResource(name);
 			if (url != null) {
-				if (log.isTraceEnabled())
-					log.trace(this+" S-F loaded resource: "+ name);
+				if (log.isTraceEnabled()) {
+					log.trace(this + " S-F loaded resource: " + name);
+				}
 				return url;
 			}
 		}
 		
-		if (log.isTraceEnabled())
-			log.trace(this+" P-F trying to load resource: "+ name);
-		
-		 URL url = super.getResource(name);
-		 if (log.isTraceEnabled())
-			 log.trace(this+" resource loaded from url: "+ url);
+		if (log.isTraceEnabled()) {
+			log.trace(this + " P-F trying to load resource: " + name);
+		}
+		URL url = super.getResource(name);
+		if (log.isTraceEnabled()) {
+			log.trace(this + " resource loaded from url: " + url);
+		}
 		return url;
 	}
 	
 	@Override
 	public Enumeration<URL> getResources(String name) throws IOException {
 		if (isGreedy(name)) {
-			if (log.isTraceEnabled())
-				log.trace(this+" S-F trying to load resources: "+ name);
+			if (log.isTraceEnabled()) {
+				log.trace(this + " S-F trying to load resources: " + name);
+			}
 			return new CompoundEnumeration<>(Arrays.asList(findResources(name), getParent().getResources(name)));
         } else {
-        	if (log.isTraceEnabled())
-				log.trace(this+" P-F trying to load resources: "+ name);
+        	if (log.isTraceEnabled()) {
+				log.trace(this + " P-F trying to load resources: " + name);
+        	}
         	return super.getResources(name);
         }
 	}
@@ -261,6 +272,4 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 		}
 		return klass;
 	}
-
-	
 }

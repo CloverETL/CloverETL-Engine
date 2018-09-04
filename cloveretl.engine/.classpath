@@ -7,7 +7,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="test"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
@@ -70,5 +70,9 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="tools/mockito-all-1.9.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jaxb-api.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jaxb-impl.jar"/>
+	<classpathentry kind="lib" path="lib/javax.activation-1.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/jaxb-core.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

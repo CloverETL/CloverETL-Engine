@@ -26,7 +26,7 @@ def getBouncyPath() {
 	println "We got path $bouncyPath"
 }
 
-jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-after-commit-mac-java-1.8-Sun|tests-after-commit-windows-java-1.7-Sun|tests-after-commit-windows-java-1.7-IBM|tests-after-commit-windows-java-1.7-IBM|tests-after-commit-proxy-java-1.7-Sun|tests-after-commit-java-8-Sun|tests-after-commit-java-1.7-Sun|tests-after-commit-java-1.7-IBM|tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional-java-1.7-Sun|tests-after-commit|tests-reset|tests-performance-java-1.7-Sun|detail)-)?(.+)$/
+jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-after-commit-mac-java-9-Oracle|tests-after-commit-windows-java-8-Oracle|tests-after-commit-windows-java-8-IBM|tests-after-commit-windows-java-8-IBM|tests-after-commit-proxy-java-8-Oracle|tests-after-commit-java-8-Oracle|tests-after-commit-java-9-Oracle|tests-after-commit-java-8-IBM|tests-night-functional-java-8-Oracle|tests-after-commit|tests-reset|tests-performance-java-8-Oracle|detail)-)?(.+)$/
 assert jobNameM.matches()
 jobBasename = jobNameM[0][1]
 jobGoal = jobNameM[0][3]
@@ -83,7 +83,7 @@ System.getenv().each{ println "\t${it}" }
 
 getBouncyPath()
 
-antCustomEnv = ["ANT_OPTS":"-Xmx2048m -XX:MaxPermSize=256m"]
+antCustomEnv = ["ANT_OPTS":"-Xmx2048m"]
 if( !runTests ){
 	antBaseD = engineD
 	antArgs = [
@@ -100,8 +100,11 @@ if( !runTests ){
 	if( jobGoal == "after-commit" ) {
 		// only compile engine and run the minimum unit tests (target runtests)
 		antTarget = "reports-hudson-unittest"
-		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun"
-		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java,org/jetel/component/fileoperation/FTPOperationHandlerTest.java,com/opensys/cloveretl/component/EmailFilterTest.java,org/jetel/component/fileoperation/hadoop/Hadoop511OperationHandlerTest.java"
+		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-8-Oracle"
+		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java," +
+				"org/jetel/component/fileoperation/FTPOperationHandlerTest.java,com/opensys/cloveretl/component/EmailFilterTest.java," +
+				"org/jetel/component/fileoperation/hadoop/Hadoop511OperationHandlerTest.java," +
+				"com/opensys/cloveretl/component/tree/writer/bean/MappingMapTypesTest.java"
 	} else if( jobGoal == "optimalized"){
 		antTarget = "reports-hudson-optimalized"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.6-Sun_optimalized"
@@ -110,8 +113,9 @@ if( !runTests ){
 		antArgs += "-Druntests-target=runtests-scenario-after-commit-with-engine-classes"
 	} else if( jobGoal == "detail"){
 		antTarget = "reports-hudson-detail"
-		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun_detail"
-		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/hadoop/Hadoop511OperationHandlerTest.java"
+		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-8-Oracle_detail"
+		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/hadoop/Hadoop511OperationHandlerTest.java," +
+				"com/opensys/cloveretl/component/tree/writer/bean/MappingMapTypesTest.java"
 		antArgs += "-Drun.coverage=true"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit"
 	} else if( jobGoal == "tests-reset"){
@@ -160,7 +164,7 @@ if( !runTests ){
 		"-Djavaversion=${javaVersion}"
 	]
 
-	antTarget = "run-scenarios-with-engine-build-with-testdb"
+	antTarget = "run-scenarios-with-engine-build"
 	if( testOption == "profile" ){
 		antTarget = "run-scenarios-with-profiler"
 		antArgs += "-Dprofiler.settings=CPURecording;MonitorRecording;ThreadProfiling;VMTelemetryRecording"
@@ -199,6 +203,11 @@ if( !runTests ){
 	// trustStore file path set separately from the other arguments
 	// due to different platform path separators (trustStoreF above)
 	antArgs += "-Drunscenarios.trustStore=\"-Djavax.net.ssl.trustStore=${trustStoreF}\""
+	
+	// java.xml.bind needed by CTE is not part of jdk since 9, add the module
+	if (javaVersion == "9") {
+		antArgs += "-Djava.add.modules=--add-modules java.xml.bind,java.xml.ws"
+	}
 
 	cloverD = new File(baseD, "cloverETL")
 	// removing files from previous build

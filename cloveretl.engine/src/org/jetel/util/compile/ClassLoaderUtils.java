@@ -20,15 +20,19 @@ package org.jetel.util.compile;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.security.AccessControlException;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,139 +42,113 @@ import org.jetel.exception.LoadClassException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Node;
 import org.jetel.graph.runtime.IAuthorityProxy;
+import org.jetel.util.classloader.URLBasedClassLoader;
+import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.SandboxUrlUtils;
-import org.jetel.util.string.StringUtils;
+import org.jetel.util.string.UnicodeBlanks;
 
 /**
  * @author David Pavlis, JavlinConsulting, s.r.o.
+ * @author jan.michalica
  * @since 27.3.2006
- * 
- * 
  */
-
 public class ClassLoaderUtils {
 
-	static Log logger = LogFactory.getLog(ClassLoaderUtils.class);
-
-	public static String getClasspath(ClassLoader loader, URL... classPathUrls) {
-		URL[] urls = null;
-
-		try {
-			// this method is used by org.jboss.mx.loading.RepositoryClassLoader
-			Method getAllURLs = loader.getClass().getMethod("getAllURLs");
-			urls = (URL[]) getAllURLs.invoke(loader);
-		} catch (Throwable ex) {
-			// ignore
+	private static final Log logger = LogFactory.getLog(ClassLoaderUtils.class);
+	
+	public static class SandboxURLException extends RuntimeException {
+		
+		private static final long serialVersionUID = 1L;
+		
+		public SandboxURLException(String message, Throwable cause) {
+			super(message, cause);
 		}
-
-		if (urls == null || urls.length == 0) {
-			try {
-				// this way non-URLClassLoader or extended ClassLoaders can also return urls
-				Method getAllURLs = loader.getClass().getMethod("getURLs");
-				urls = (URL[]) getAllURLs.invoke(loader);
-			} catch (Throwable ex) {
-				// ignore
+	}
+	
+	/**
+	 * Builds platform-specific class path string from given class loader and provided URLs.
+	 * It is presumed that the provided class loader is a URL-based class loader and its URLs are added to the result.
+	 * In case it is a system class loader, JVM class path is included in the result.
+	 * 
+	 * @param loader
+	 * @param includeEngineClasspath whether class path of the engine class loader should be included
+	 * @param classPathUrls
+	 * @return
+	 */
+	public static String getClasspath(ClassLoader loader, boolean includeEngineClasspath, URL ... classPathUrls) {
+		
+		Set<URL> urls = new LinkedHashSet<>();
+		
+		URL[] loaderClasspath = getClasspathUrls(loader);
+		if (loaderClasspath != null) {
+			urls.addAll(Arrays.asList(loaderClasspath));
+		}
+		
+		if (classPathUrls != null) {
+			urls.addAll(Arrays.asList(classPathUrls));
+		}
+		
+		if (includeEngineClasspath) {
+			URL[] engineClasspath = getClasspathUrls(ClassLoaderUtils.class.getClassLoader());
+			if (engineClasspath != null) {
+				urls.addAll(Arrays.asList(engineClasspath));
 			}
 		}
-
-		if (urls == null || urls.length == 0) {
-			urls = classPathUrls;
-		} else if (classPathUrls != null && classPathUrls.length != 0) {
-			URL[] cpUrls = new URL[urls.length + classPathUrls.length];
-			System.arraycopy(urls, 0, cpUrls, 0, urls.length);
-			System.arraycopy(classPathUrls, 0, cpUrls, urls.length, classPathUrls.length);
-
-			urls = cpUrls;
-		}
-
-		String classpath = "";
-
-		if (urls != null) {
-			StringBuilder classPathBuilder = new StringBuilder();
-
-			for (int i = 0; i < urls.length; i++) {
-				String fileName = getCheckedFileName(urls[i]);
-
-				if (fileName.length() > 0) {
-					classPathBuilder.append(File.pathSeparator);
-					classPathBuilder.append(fileName);
+		
+		StringBuilder result = new StringBuilder();
+		
+		final String pathSeparator = System.getProperty("path.separator");
+		
+		for (Iterator<URL> it = urls.iterator(); it.hasNext();) {
+			URL url = it.next();
+			String fileName = getClasspathFilePath(url);
+			if (!UnicodeBlanks.isBlank(fileName)) {
+				result.append(fileName);
+				if (it.hasNext()) {
+					result.append(pathSeparator);
 				}
 			}
-
-			if (classPathBuilder.length() > 0) {
-				classpath = classPathBuilder.substring(File.pathSeparator.length());
-			}
 		}
-
-		return classpath;
+		return result.toString();
 	}
 
-	private static String getCheckedFileName(URL url) {
-		String fileName;
-
-		try {
-			fileName = URLDecoder.decode(url.getPath(), "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			logger.error("Unsupported encoding UTF-8: " + e.toString());
-			return "";
-		}
-
-		if (isFileOk(fileName)) {
-			return fileName;
-		}
-
-		fileName = fileName.substring(1);
-		if (isFileOk(fileName)) {
-			return fileName;
-		}
-
-		fileName = url.getFile();
-		if (isFileOk(fileName)) {
-			return fileName;
-		}
-
-		return "";
-	}
-
-	private static boolean isFileOk(String fileName) {
-		File file = new File(fileName);
-		try {
-			if (file.exists() && (fileName.endsWith(".jar") || fileName.endsWith(".zip") || file.isDirectory())) {
-				return true;
-			}
-		} catch (AccessControlException e) {
-			logger.debug("Can't access file "+file+" "+e.getMessage());
-			return false;
-		}
-		return false;
-	}
-
+	
 	/**
-	 * Answers class loader composed of the node's plugin classloader and current runtime context
-	 * class loader.
+	 * Answers class loader composed of node's plugin class loader and current runtime context class loader.
+	 * 
 	 * @param node
 	 * @return
 	 */
 	public static ClassLoader createNodeClassLoader(Node node) {
+		
 		ArrayList<ClassLoader> parentClassLoaders = new ArrayList<ClassLoader>();
 		parentClassLoaders.add(node.getClass().getClassLoader());
 		parentClassLoaders.addAll(DynamicCompiler.getCTLLibsClassLoaders());
 		
 		IAuthorityProxy authorityProxy = node.getAuthorityProxy();
 
-		ClassLoader parentClassLoader = authorityProxy.createMultiParentClassLoader(parentClassLoaders.toArray(new ClassLoader[0]));
+		ClassLoader parentClassLoader = authorityProxy.createMultiParentClassLoader(parentClassLoaders.toArray(new ClassLoader[parentClassLoaders.size()]));
 		URL[] runtimeClasspath = node.getGraph().getRuntimeContext().getRuntimeClassPath();
 		return authorityProxy.createClassLoader(runtimeClasspath, parentClassLoader, true);
 	}
 
+	/**
+	 * Creates a URL class loader for provided class path (relative to the provided context URL).
+	 * Thread context class loader is used as the parent of the result.
+	 * If the class path is empty, thread context class loader is returned.
+	 * 
+	 * @param contextUrl
+	 * @param classpath
+	 * @return
+	 */
 	public static ClassLoader createURLClassLoader(URL contextUrl, String classpath) {
 		ClassLoader classLoader;
-		if (StringUtils.isEmpty(classpath)) {
+		if (UnicodeBlanks.isBlank(classpath)) {
 			classLoader = Thread.currentThread().getContextClassLoader();
 		} else {
 			try {
-				final URL urls[] = getClassloaderUrls(contextUrl, classpath);
+				final URL urls[] = getClassLoaderUrls(contextUrl, classpath);
 				classLoader = AccessController.doPrivileged(new PrivilegedExceptionAction<ClassLoader>() {
 
 					@Override
@@ -188,24 +166,34 @@ public class ClassLoaderUtils {
 		return classLoader;
 	}
 
+	public static URL[] getClassLoaderUrls(URL contetxtUrl, String classpath) throws MalformedURLException {
+		return getClassLoaderUrls(contetxtUrl, classpath, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+	}
+	
 	/**
-	 * Convert the given classpath in string form to array of URLs, which
-	 * are suitable for classloader initialization.
-	 * The method ensures that directory paths contains '/' at the end
+	 * Converts given class path in string form to array of URLs that
+	 * are suitable for class loader initialization.
+	 * The method ensures that directory paths contain trailing slash
 	 * so that URLClassLoader will treat is as directory.
-	 * Sandbox urls are converted into basic file protocol, if possible.
+	 * Sandbox URLs are converted into basic file protocol if possible.
+	 * 
+	 * @param contextUrl - URL to which relative class path items are resolved
+	 * @param classpath - string containing list of resources providing JAR files/class folders
+	 * @param separator - character separating items in class path
+	 * 
 	 */
-	public static URL[] getClassloaderUrls(URL contextUrl, String classpath) throws MalformedURLException {
-		String paths[] = classpath.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+	public static URL[] getClassLoaderUrls(URL contextUrl, String classpath, String separator) throws MalformedURLException {
+		
+		String paths[] = classpath.split(separator);
 		URL urls[] = FileUtils.getFileUrls(contextUrl, paths);
 		/*
-		 * resolve sandbox URL's
+		 * resolve sandbox URLs
 		 */
 		for (int i = 0; i < urls.length; ++i) {
 			if (SandboxUrlUtils.isSandboxUrl(urls[i])) {
 				URL localUrl = SandboxUrlUtils.toLocalFileUrl(urls[i]);
 				if (localUrl != null) {
-					// sandbox URL can be replaced by URL of local file
+					// sandbox URL can be replaced by URL of a local file
 					urls[i] = localUrl;
 				} else {
 					// sandbox URLs to remote sandboxes will be processed on server-side of AuthorityProxy
@@ -219,6 +207,10 @@ public class ClassLoaderUtils {
 	}
 	
 	/**
+	 * Utility to transform local file URL pointing to a directory to the form
+	 * with trailing slash, so that it correctly recognized as a class files folder
+	 * by {@link URLClassLoader}.
+	 * 
 	 * @param localUrl
 	 * @return
 	 * @throws MalformedURLException 
@@ -235,6 +227,7 @@ public class ClassLoaderUtils {
 	
     /**
      * Instantiates class from the given className.
+     * 
      * @throws LoadClassException
      */
     public static <T> T loadClassInstance(Class<T> expectedType, String className, Node node) {
@@ -268,7 +261,7 @@ public class ClassLoaderUtils {
     }
     
     /**
-     * Instantiates class from the given className.
+     * Instantiates class of the given className using provided class loader.
      * @throws LoadClassException
      */
     public static Object loadClassInstance(String className, ClassLoader loader) {
@@ -289,14 +282,89 @@ public class ClassLoaderUtils {
     		throw new LoadClassException("Cannot instantiate class: " + className, e);
     	}
     }
-
-	public static class SandboxURLException extends RuntimeException {
+    
+	private static URL[] getClasspathUrls(ClassLoader loader) {
 		
-		private static final long serialVersionUID = 1L;
-		
-		public SandboxURLException(String message, Throwable cause) {
-			super(message, cause);
+		if (loader instanceof URLBasedClassLoader) {
+			URLBasedClassLoader ucl = (URLBasedClassLoader)loader;
+			return ucl.getURLs();
+			
+		} else if (loader instanceof URLClassLoader) {
+			URLClassLoader ucl = (URLClassLoader)loader;
+			return ucl.getURLs();
+			
+		} else if (loader == ClassLoader.getSystemClassLoader()) {
+			return getApplicationClasspathUrls();
 		}
+		return new URL[0];
+	}
+	
+    /**
+     * Answers normalized path to local file/directory represented by given URL.
+     * @param url
+     * @return file path or empty string if the URL does represent JAR file or a directory
+     */
+	private static String getClasspathFilePath(URL url) {
+		
+		String filePath;
+		try {
+			filePath = URLDecoder.decode(url.getPath(), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new JetelRuntimeException(e);
+		}
+
+		if (isSuitableClasspathFile(filePath)) {
+			/*
+			 *  JDK 9 does not recognize a leading slash in a file URI as a valid class path in Windows.
+			 *  https://bugs.java.com/view_bug.do?bug_id=JDK-8185596
+			 */
+			if (PlatformUtils.isWindowsPlatform()) {
+				filePath = filePath.replaceFirst("^/(.:/)", "$1");
+			}
+			return filePath;
+		}
+
+		filePath = filePath.substring(1);
+		if (isSuitableClasspathFile(filePath)) {
+			return filePath;
+		}
+
+		filePath = url.getFile();
+		if (isSuitableClasspathFile(filePath)) {
+			return filePath;
+		}
+
+		return "";
 	}
 
+	private static boolean isSuitableClasspathFile(String filePath) {
+		
+		File file = new File(filePath);
+		try {
+			if (file.exists() && (filePath.endsWith(".jar") || filePath.endsWith(".zip") || file.isDirectory())) {
+				return true;
+			}
+		} catch (AccessControlException e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Cannot access file " + file, e);
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Answers URLs forming class path of the running JVM.
+	 * @return
+	 */
+	private static URL[] getApplicationClasspathUrls() {
+		URL[] urls = new URL[0];
+		try {
+			urls = getClassLoaderUrls(null, System.getProperty("java.class.path"), System.getProperty("path.separator"));
+		} catch (MalformedURLException e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Cannot parse java.class.path: " + e.getMessage(), e);
+			}
+		}
+		return urls;
+	}
 }

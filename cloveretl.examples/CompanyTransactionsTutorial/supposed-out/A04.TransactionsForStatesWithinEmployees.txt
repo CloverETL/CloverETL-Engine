@@ -128,7 +128,7 @@ Alipranti;Rosemary;Montana;9;276.31;992.49;586.87;5281.84
 Alipranti;Rosemary;Nebraska;12;20.77;946.03;504.71;6056.55
 Alipranti;Rosemary;Nevada;8;56.95;751.63;354.12;2832.93
 Alipranti;Rosemary;New Hampshire;11;60.07;676.74;401.66;4418.29
-Alipranti;Rosemary;New Jersey;4;196.87;459.23;296.48;1185.94
+Alipranti;Rosemary;New Jersey;4;196.87;459.23;296.49;1185.94
 Alipranti;Rosemary;New Mexico;17;82.74;953.35;464.32;7893.51
 Alipranti;Rosemary;New York;4;65.45;743.85;530.83;2123.33
 Alipranti;Rosemary;North Carolina;14;23.54;982.99;516.75;7234.48
@@ -180,7 +180,7 @@ Arteaga;Sarah;Nevada;10;126.61;919.10;488.22;4882.23
 Arteaga;Sarah;New Hampshire;16;53.32;871.31;527.88;8446.09
 Arteaga;Sarah;New Jersey;7;74.61;544.71;313.00;2190.98
 Arteaga;Sarah;New Mexico;18;125.56;977.41;496.88;8943.85
-Arteaga;Sarah;New York;6;79.90;761.93;536.42;3218.49
+Arteaga;Sarah;New York;6;79.90;761.93;536.41;3218.49
 Arteaga;Sarah;North Carolina;9;265.12;934.44;563.09;5067.77
 Arteaga;Sarah;North Dakota;12;59.70;962.49;576.13;6913.61
 Arteaga;Sarah;Ohio;7;224.72;996.61;633.23;4432.62
@@ -194,7 +194,7 @@ Arteaga;Sarah;Tennessee;12;137.47;871.89;479.87;5758.41
 Arteaga;Sarah;Texas;4;130.36;959.62;675.28;2701.14
 Arteaga;Sarah;Utah;9;161.05;861.31;500.81;4507.29
 Arteaga;Sarah;Vermont;8;21.37;942.08;454.47;3635.80
-Arteaga;Sarah;Virginia;8;30.38;945.17;594.84;4758.76
+Arteaga;Sarah;Virginia;8;30.38;945.17;594.85;4758.76
 Arteaga;Sarah;Washington;8;138.24;954.10;537.02;4296.19
 Arteaga;Sarah;West Virginia;9;94.67;915.85;485.87;4372.79
 Arteaga;Sarah;Wisconsin;8;263.16;855.99;491.08;3928.63
@@ -253,7 +253,7 @@ Babb;Vanessa;Alabama;6;194.73;950.27;636.18;3817.05
 Babb;Vanessa;Alaska;7;267.92;952.21;621.87;4353.10
 Babb;Vanessa;Arizona;14;95.04;957.17;595.95;8343.27
 Babb;Vanessa;Arkansas;7;101.40;940.48;463.09;3241.65
-Babb;Vanessa;California;12;58.28;888.79;497.96;5975.46
+Babb;Vanessa;California;12;58.28;888.79;497.95;5975.46
 Babb;Vanessa;Colorado;5;316.76;937.44;581.59;2907.94
 Babb;Vanessa;Connecticut;9;89.81;959.00;657.93;5921.34
 Babb;Vanessa;Delaware;7;28.43;762.66;325.27;2276.88
@@ -461,7 +461,7 @@ Barrier;Agatha;Florida;14;41.46;974.23;490.18;6862.51
 Barrier;Agatha;Georgia;11;79.22;938.82;566.42;6230.60
 Barrier;Agatha;Hawaii;13;131.29;917.30;566.60;7365.79
 Barrier;Agatha;Idaho;11;119.57;926.52;569.04;6259.46
-Barrier;Agatha;Illinois;8;132.14;869.04;434.42;3475.40
+Barrier;Agatha;Illinois;8;132.14;869.04;434.43;3475.40
 Barrier;Agatha;Indiana;9;73.09;667.17;403.17;3628.53
 Barrier;Agatha;Iowa;8;144.30;977.25;546.98;4375.83
 Barrier;Agatha;Kansas;15;339.20;770.67;525.33;7879.88
@@ -496,7 +496,7 @@ Barrier;Agatha;Utah;11;75.92;945.51;517.27;5689.95
 Barrier;Agatha;Vermont;14;189.15;994.95;585.83;8201.61
 Barrier;Agatha;Virginia;9;99.93;742.25;483.09;4347.84
 Barrier;Agatha;Washington;13;28.10;825.90;453.27;5892.57
-Barrier;Agatha;West Virginia;8;222.86;837.39;526.92;4215.32
+Barrier;Agatha;West Virginia;8;222.86;837.39;526.91;4215.32
 Barrier;Agatha;Wisconsin;7;85.81;904.39;516.66;3616.65
 Barrier;Agatha;Wyoming;9;61.45;813.00;498.88;4489.95
 Barrilleaux;Rosemary;Alabama;9;90.57;981.69;449.76;4047.84
@@ -537,7 +537,7 @@ Barrilleaux;Rosemary;Ohio;12;20.03;870.98;432.68;5192.19
 Barrilleaux;Rosemary;Oklahoma;10;71.15;908.00;622.98;6229.82
 Barrilleaux;Rosemary;Oregon;8;74.62;996.91;434.23;3473.86
 Barrilleaux;Rosemary;Pennsylvania;19;65.25;852.06;324.15;6158.91
-Barrilleaux;Rosemary;Rhode Island;6;301.71;603.20;484.66;2907.99
+Barrilleaux;Rosemary;Rhode Island;6;301.71;603.20;484.67;2907.99
 Barrilleaux;Rosemary;South Carolina;5;134.13;848.97;498.99;2494.94
 Barrilleaux;Rosemary;South Dakota;16;171.90;985.31;528.65;8458.47
 Barrilleaux;Rosemary;Tennessee;5;27.15;815.81;377.26;1886.30
@@ -842,7 +842,7 @@ Belsey;Scott;South Carolina;11;94.69;862.90;452.62;4978.83
 Belsey;Scott;South Dakota;6;153.99;965.27;569.61;3417.64
 Belsey;Scott;Tennessee;19;32.18;970.33;481.87;9155.60
 Belsey;Scott;Texas;10;27.98;985.84;525.04;5250.41
-Belsey;Scott;Utah;14;169.48;940.79;554.64;7764.89
+Belsey;Scott;Utah;14;169.48;940.79;554.63;7764.89
 Belsey;Scott;Vermont;11;90.00;939.68;444.29;4887.21
 Belsey;Scott;Virginia;12;89.53;937.34;488.02;5856.29
 Belsey;Scott;Washington;10;47.57;728.11;291.36;2913.59
@@ -867,7 +867,7 @@ Beltran;Annabel;Iowa;4;69.24;967.68;443.33;1773.34
 Beltran;Annabel;Kansas;7;92.03;914.90;560.03;3920.18
 Beltran;Annabel;Kentucky;10;58.33;998.14;516.79;5167.87
 Beltran;Annabel;Louisiana;9;136.65;827.48;395.85;3562.69
-Beltran;Annabel;Maine;8;249.15;920.14;500.70;4005.56
+Beltran;Annabel;Maine;8;249.15;920.14;500.69;4005.56
 Beltran;Annabel;Maryland;11;30.62;950.53;342.93;3772.27
 Beltran;Annabel;Massachusetts;13;43.16;910.29;506.48;6584.22
 Beltran;Annabel;Michigan;7;74.29;963.20;576.88;4038.17
@@ -1003,7 +1003,7 @@ Bers;Flora;Alabama;7;176.08;776.47;478.87;3352.11
 Bers;Flora;Alaska;12;22.41;906.77;428.22;5138.60
 Bers;Flora;Arizona;7;144.00;986.32;540.14;3780.99
 Bers;Flora;Arkansas;18;173.20;999.82;656.35;11814.28
-Bers;Flora;California;6;72.83;645.47;263.78;1582.71
+Bers;Flora;California;6;72.83;645.47;263.79;1582.71
 Bers;Flora;Colorado;12;25.28;844.80;395.56;4746.66
 Bers;Flora;Connecticut;9;219.54;984.97;577.68;5199.08
 Bers;Flora;Delaware;11;55.71;801.47;486.20;5348.21
@@ -1113,7 +1113,7 @@ Bewley;Rowan;Hawaii;6;64.24;760.55;487.80;2926.79
 Bewley;Rowan;Idaho;11;82.57;871.84;446.61;4912.66
 Bewley;Rowan;Illinois;11;49.22;943.67;379.02;4169.18
 Bewley;Rowan;Indiana;14;32.75;961.87;473.59;6630.25
-Bewley;Rowan;Iowa;6;260.72;962.95;469.20;2815.17
+Bewley;Rowan;Iowa;6;260.72;962.95;469.19;2815.17
 Bewley;Rowan;Kansas;7;70.76;800.57;627.25;4390.77
 Bewley;Rowan;Kentucky;9;82.43;918.38;624.94;5624.46
 Bewley;Rowan;Louisiana;11;115.29;830.28;444.93;4894.22
@@ -1185,7 +1185,7 @@ Bias;Francene;North Carolina;17;123.11;935.84;591.43;10054.27
 Bias;Francene;North Dakota;14;240.85;907.94;593.84;8313.72
 Bias;Francene;Ohio;13;25.63;910.53;395.57;5142.47
 Bias;Francene;Oklahoma;12;26.49;937.09;409.53;4914.37
-Bias;Francene;Oregon;12;98.87;825.66;457.42;5489.10
+Bias;Francene;Oregon;12;98.87;825.66;457.43;5489.10
 Bias;Francene;Pennsylvania;12;98.78;951.32;492.79;5913.45
 Bias;Francene;Rhode Island;9;122.78;935.08;590.86;5317.77
 Bias;Francene;South Carolina;11;51.36;984.22;401.86;4420.50
@@ -1267,7 +1267,7 @@ Blaney;Theresa;Iowa;7;35.94;828.49;586.76;4107.31
 Blaney;Theresa;Kansas;11;68.36;844.66;486.12;5347.35
 Blaney;Theresa;Kentucky;13;27.29;914.05;490.32;6374.22
 Blaney;Theresa;Louisiana;11;91.79;955.68;537.29;5910.16
-Blaney;Theresa;Maine;2;83.70;523.15;303.42;606.85
+Blaney;Theresa;Maine;2;83.70;523.15;303.43;606.85
 Blaney;Theresa;Maryland;10;23.32;983.87;449.77;4497.66
 Blaney;Theresa;Massachusetts;14;68.92;993.90;494.23;6919.25
 Blaney;Theresa;Michigan;17;25.45;792.03;371.55;6316.38
@@ -1277,7 +1277,7 @@ Blaney;Theresa;Missouri;11;58.46;922.80;487.75;5365.24
 Blaney;Theresa;Montana;8;79.91;752.30;328.73;2629.85
 Blaney;Theresa;Nebraska;12;27.37;760.51;428.83;5145.97
 Blaney;Theresa;Nevada;4;281.09;977.77;536.30;2145.21
-Blaney;Theresa;New Hampshire;12;44.49;995.21;573.44;6881.34
+Blaney;Theresa;New Hampshire;12;44.49;995.21;573.45;6881.34
 Blaney;Theresa;New Jersey;10;78.08;993.68;505.81;5058.07
 Blaney;Theresa;New Mexico;14;138.60;971.46;671.82;9405.42
 Blaney;Theresa;New York;14;135.42;975.10;521.94;7307.13
@@ -1324,10 +1324,10 @@ Blockie;Michael;Michigan;7;106.07;906.68;489.47;3426.28
 Blockie;Michael;Minnesota;7;74.67;936.70;551.27;3858.87
 Blockie;Michael;Mississippi;12;38.55;894.89;444.18;5330.20
 Blockie;Michael;Missouri;5;230.98;882.35;457.67;2288.34
-Blockie;Michael;Montana;2;333.27;949.28;641.28;1282.55
+Blockie;Michael;Montana;2;333.27;949.28;641.27;1282.55
 Blockie;Michael;Nebraska;5;265.46;995.27;561.20;2806.00
 Blockie;Michael;Nevada;11;55.28;912.26;498.16;5479.79
-Blockie;Michael;New Hampshire;8;342.56;996.76;673.64;5389.08
+Blockie;Michael;New Hampshire;8;342.56;996.76;673.63;5389.08
 Blockie;Michael;New Jersey;11;207.06;852.40;591.81;6509.91
 Blockie;Michael;New Mexico;15;85.51;905.02;528.30;7924.51
 Blockie;Michael;New York;17;32.24;944.47;299.13;5085.23
@@ -1373,7 +1373,7 @@ Boersen;Rosemary;Massachusetts;12;147.56;923.90;508.43;6101.19
 Boersen;Rosemary;Michigan;9;84.76;808.21;385.56;3470.01
 Boersen;Rosemary;Minnesota;5;201.35;939.56;427.66;2138.32
 Boersen;Rosemary;Mississippi;12;29.84;903.64;439.86;5278.27
-Boersen;Rosemary;Missouri;6;264.79;791.19;522.08;3132.51
+Boersen;Rosemary;Missouri;6;264.79;791.19;522.09;3132.51
 Boersen;Rosemary;Montana;14;56.72;981.02;454.06;6356.84
 Boersen;Rosemary;Nebraska;17;21.09;992.56;506.60;8612.22
 Boersen;Rosemary;Nevada;10;159.20;857.58;369.15;3691.49
@@ -1594,7 +1594,7 @@ Broce;Annabel;Tennessee;6;184.68;847.14;382.27;2293.59
 Broce;Annabel;Texas;15;33.35;984.77;450.03;6750.51
 Broce;Annabel;Utah;11;70.14;872.17;481.06;5291.71
 Broce;Annabel;Vermont;13;85.07;877.09;503.93;6551.14
-Broce;Annabel;Virginia;16;54.05;993.98;503.20;8051.12
+Broce;Annabel;Virginia;16;54.05;993.98;503.19;8051.12
 Broce;Annabel;Washington;6;96.06;803.43;390.05;2340.28
 Broce;Annabel;West Virginia;20;184.51;930.13;542.47;10849.31
 Broce;Annabel;Wisconsin;8;213.93;787.13;511.01;4088.10
@@ -1783,7 +1783,7 @@ Butcher;Jacqueline;New Mexico;14;83.23;936.32;553.54;7749.55
 Butcher;Jacqueline;New York;9;207.68;845.73;637.54;5737.86
 Butcher;Jacqueline;North Carolina;7;280.55;633.29;441.93;3093.51
 Butcher;Jacqueline;North Dakota;11;110.41;905.10;625.56;6881.19
-Butcher;Jacqueline;Ohio;6;123.76;958.23;518.36;3110.19
+Butcher;Jacqueline;Ohio;6;123.76;958.23;518.37;3110.19
 Butcher;Jacqueline;Oklahoma;15;196.85;981.03;614.52;9217.74
 Butcher;Jacqueline;Oregon;8;37.98;834.74;535.59;4284.71
 Butcher;Jacqueline;Pennsylvania;6;120.26;834.21;517.66;3105.98
@@ -1801,7 +1801,7 @@ Butcher;Jacqueline;Wisconsin;13;151.12;967.66;581.43;7558.63
 Butcher;Jacqueline;Wyoming;5;148.86;972.35;595.70;2978.51
 Cammack;Raquel;Alabama;10;23.60;945.42;434.09;4340.92
 Cammack;Raquel;Alaska;7;77.74;872.84;522.42;3656.94
-Cammack;Raquel;Arizona;10;94.37;979.61;530.92;5309.15
+Cammack;Raquel;Arizona;10;94.37;979.61;530.91;5309.15
 Cammack;Raquel;Arkansas;9;40.20;849.40;378.21;3403.92
 Cammack;Raquel;California;10;85.78;865.77;431.23;4312.34
 Cammack;Raquel;Colorado;3;314.44;581.47;445.89;1337.66
@@ -1849,7 +1849,7 @@ Cammack;Raquel;Washington;11;67.69;835.41;396.79;4364.66
 Cammack;Raquel;West Virginia;11;51.20;831.78;336.16;3697.75
 Cammack;Raquel;Wisconsin;8;90.96;711.67;438.19;3505.51
 Cammack;Raquel;Wyoming;10;318.01;765.81;552.07;5520.72
-Canfield;Arnold;Alabama;10;61.90;840.82;448.08;4480.75
+Canfield;Arnold;Alabama;10;61.90;840.82;448.07;4480.75
 Canfield;Arnold;Alaska;10;288.87;976.35;651.47;6514.68
 Canfield;Arnold;Arizona;7;62.01;880.61;356.42;2494.94
 Canfield;Arnold;Arkansas;12;43.89;975.79;563.26;6759.08
@@ -1913,7 +1913,7 @@ Caro;Raquel;Hawaii;9;77.18;937.85;522.32;4700.88
 Caro;Raquel;Idaho;10;108.24;903.76;632.64;6326.42
 Caro;Raquel;Illinois;8;55.71;985.62;425.46;3403.71
 Caro;Raquel;Indiana;7;281.95;883.16;661.91;4633.36
-Caro;Raquel;Iowa;4;79.98;865.49;354.66;1418.62
+Caro;Raquel;Iowa;4;79.98;865.49;354.65;1418.62
 Caro;Raquel;Kansas;6;141.01;869.73;362.13;2172.77
 Caro;Raquel;Kentucky;8;112.56;903.99;501.63;4013.05
 Caro;Raquel;Louisiana;8;94.82;942.09;454.67;3637.35
@@ -2045,7 +2045,7 @@ Cata;Flora;Texas;17;34.40;947.36;384.24;6532.14
 Cata;Flora;Utah;13;40.21;807.47;442.01;5746.13
 Cata;Flora;Vermont;10;29.15;840.04;495.97;4959.69
 Cata;Flora;Virginia;11;128.72;796.10;524.32;5767.51
-Cata;Flora;Washington;14;216.58;964.94;563.26;7885.57
+Cata;Flora;Washington;14;216.58;964.94;563.25;7885.57
 Cata;Flora;West Virginia;13;169.17;810.00;479.65;6235.42
 Cata;Flora;Wisconsin;8;338.28;943.47;556.96;4455.67
 Cata;Flora;Wyoming;7;427.19;829.70;637.29;4461.00
@@ -2056,7 +2056,7 @@ Cereghino;Peter;Arkansas;8;25.74;891.82;449.94;3599.49
 Cereghino;Peter;California;14;97.54;961.55;544.33;7620.59
 Cereghino;Peter;Colorado;6;263.97;990.15;713.65;4281.89
 Cereghino;Peter;Connecticut;10;70.63;984.04;483.95;4839.47
-Cereghino;Peter;Delaware;10;172.35;873.82;560.28;5602.75
+Cereghino;Peter;Delaware;10;172.35;873.82;560.27;5602.75
 Cereghino;Peter;Florida;8;91.78;574.26;358.61;2868.89
 Cereghino;Peter;Georgia;12;226.64;890.25;596.05;7152.64
 Cereghino;Peter;Hawaii;15;21.10;986.22;474.56;7118.33
@@ -2089,7 +2089,7 @@ Cereghino;Peter;Oregon;8;39.83;952.36;447.74;3581.89
 Cereghino;Peter;Pennsylvania;10;52.88;964.09;488.62;4886.19
 Cereghino;Peter;Rhode Island;6;37.83;816.12;527.67;3166.02
 Cereghino;Peter;South Carolina;10;24.05;977.67;525.12;5251.16
-Cereghino;Peter;South Dakota;4;138.52;746.74;427.54;1710.18
+Cereghino;Peter;South Dakota;4;138.52;746.74;427.55;1710.18
 Cereghino;Peter;Tennessee;11;111.02;941.34;614.65;6761.15
 Cereghino;Peter;Texas;10;35.71;835.00;482.26;4822.63
 Cereghino;Peter;Utah;7;83.62;815.49;490.20;3431.37
@@ -2224,7 +2224,7 @@ Channing;Jane;Michigan;17;40.08;967.39;415.30;7060.15
 Channing;Jane;Minnesota;14;103.68;932.76;456.77;6394.73
 Channing;Jane;Mississippi;14;34.54;879.96;400.62;5608.72
 Channing;Jane;Missouri;13;243.18;952.06;591.32;7687.21
-Channing;Jane;Montana;8;199.36;921.93;470.84;3766.76
+Channing;Jane;Montana;8;199.36;921.93;470.85;3766.76
 Channing;Jane;Nebraska;9;28.67;990.02;333.88;3004.89
 Channing;Jane;Nevada;13;91.02;908.13;539.43;7012.56
 Channing;Jane;New Hampshire;6;49.84;908.60;463.68;2782.06
@@ -2242,7 +2242,7 @@ Channing;Jane;South Carolina;9;143.19;925.57;516.98;4652.81
 Channing;Jane;South Dakota;8;43.32;853.30;317.75;2542.01
 Channing;Jane;Tennessee;14;27.35;864.64;402.75;5638.47
 Channing;Jane;Texas;16;35.03;985.81;522.68;8362.85
-Channing;Jane;Utah;6;44.51;860.13;456.46;2738.73
+Channing;Jane;Utah;6;44.51;860.13;456.45;2738.73
 Channing;Jane;Vermont;12;81.52;891.72;549.33;6591.91
 Channing;Jane;Virginia;13;26.91;945.62;438.99;5706.92
 Channing;Jane;Washington;8;200.84;924.22;601.07;4808.57
@@ -2280,7 +2280,7 @@ Chessman;Tiara;Nevada;6;125.04;970.59;622.44;3734.64
 Chessman;Tiara;New Hampshire;12;348.93;954.44;636.17;7634.09
 Chessman;Tiara;New Jersey;14;83.22;956.92;529.65;7415.04
 Chessman;Tiara;New Mexico;11;225.01;867.27;566.53;6231.83
-Chessman;Tiara;New York;4;549.10;920.47;726.40;2905.58
+Chessman;Tiara;New York;4;549.10;920.47;726.39;2905.58
 Chessman;Tiara;North Carolina;11;70.75;959.37;648.76;7136.34
 Chessman;Tiara;North Dakota;8;135.98;967.95;616.75;4934.03
 Chessman;Tiara;Ohio;8;293.39;896.15;660.80;5286.37
@@ -2428,7 +2428,7 @@ Choin;Amy;Montana;9;41.93;999.42;484.90;4364.13
 Choin;Amy;Nebraska;13;54.73;971.93;607.80;7901.35
 Choin;Amy;Nevada;14;49.81;997.45;641.06;8974.77
 Choin;Amy;New Hampshire;14;52.37;976.06;567.68;7947.51
-Choin;Amy;New Jersey;14;45.65;939.02;469.70;6575.73
+Choin;Amy;New Jersey;14;45.65;939.02;469.69;6575.73
 Choin;Amy;New Mexico;9;36.12;773.75;388.99;3500.88
 Choin;Amy;New York;9;45.61;944.97;448.12;4033.10
 Choin;Amy;North Carolina;10;29.48;863.47;451.22;4512.19
@@ -2455,13 +2455,13 @@ Cole;Rowan;Arizona;9;321.63;585.41;454.93;4094.41
 Cole;Rowan;Arkansas;12;58.99;994.44;424.53;5094.32
 Cole;Rowan;California;8;261.14;989.35;617.12;4936.96
 Cole;Rowan;Colorado;9;284.51;938.51;670.29;6032.64
-Cole;Rowan;Connecticut;10;68.04;814.17;405.02;4050.15
+Cole;Rowan;Connecticut;10;68.04;814.17;405.01;4050.15
 Cole;Rowan;Delaware;8;53.21;805.04;384.48;3075.82
 Cole;Rowan;Florida;13;222.28;976.48;623.95;8111.32
 Cole;Rowan;Georgia;4;95.37;919.39;681.39;2725.56
 Cole;Rowan;Hawaii;10;99.75;939.67;475.78;4757.80
 Cole;Rowan;Idaho;6;353.87;880.03;596.22;3577.32
-Cole;Rowan;Illinois;10;55.10;993.55;556.58;5565.85
+Cole;Rowan;Illinois;10;55.10;993.55;556.59;5565.85
 Cole;Rowan;Indiana;13;40.13;934.72;506.59;6585.66
 Cole;Rowan;Iowa;8;117.89;942.47;490.27;3922.15
 Cole;Rowan;Kansas;5;317.01;920.31;634.16;3170.79
@@ -2485,7 +2485,7 @@ Cole;Rowan;North Carolina;8;192.18;757.46;485.79;3886.32
 Cole;Rowan;North Dakota;10;348.93;997.39;632.55;6325.50
 Cole;Rowan;Ohio;6;95.66;990.05;336.84;2021.01
 Cole;Rowan;Oklahoma;11;113.19;905.72;545.84;6004.28
-Cole;Rowan;Oregon;6;61.64;831.62;395.84;2375.07
+Cole;Rowan;Oregon;6;61.64;831.62;395.85;2375.07
 Cole;Rowan;Pennsylvania;11;129.28;554.99;347.00;3817.00
 Cole;Rowan;Rhode Island;8;50.84;859.29;505.27;4042.18
 Cole;Rowan;South Carolina;8;23.31;982.32;653.22;5225.73
@@ -2625,7 +2625,7 @@ Conser;Ashley;Minnesota;9;156.45;948.50;580.44;5223.94
 Conser;Ashley;Mississippi;20;38.88;998.56;588.59;11771.76
 Conser;Ashley;Missouri;7;347.64;905.07;663.50;4644.48
 Conser;Ashley;Montana;8;118.26;965.67;522.81;4182.44
-Conser;Ashley;Nebraska;8;40.47;892.58;383.80;3070.44
+Conser;Ashley;Nebraska;8;40.47;892.58;383.81;3070.44
 Conser;Ashley;Nevada;3;663.45;850.05;729.48;2188.45
 Conser;Ashley;New Hampshire;5;231.08;841.09;522.02;2610.08
 Conser;Ashley;New Jersey;9;51.39;997.88;412.42;3711.77
@@ -2638,7 +2638,7 @@ Conser;Ashley;Oklahoma;14;20.78;975.09;442.58;6196.17
 Conser;Ashley;Oregon;13;34.86;985.94;514.24;6685.17
 Conser;Ashley;Pennsylvania;15;23.66;976.57;605.98;9089.74
 Conser;Ashley;Rhode Island;9;293.13;964.36;568.75;5118.77
-Conser;Ashley;South Carolina;6;70.24;778.28;343.70;2062.17
+Conser;Ashley;South Carolina;6;70.24;778.28;343.69;2062.17
 Conser;Ashley;South Dakota;9;52.78;955.13;492.68;4434.13
 Conser;Ashley;Tennessee;11;127.23;903.72;530.09;5831.04
 Conser;Ashley;Texas;3;68.13;438.54;261.26;783.77
@@ -2744,7 +2744,7 @@ Cosgrove;Frank;Tennessee;10;128.80;825.82;483.79;4837.94
 Cosgrove;Frank;Texas;6;245.43;933.22;724.97;4349.80
 Cosgrove;Frank;Utah;14;33.76;996.49;472.47;6614.58
 Cosgrove;Frank;Vermont;5;193.88;745.40;483.93;2419.65
-Cosgrove;Frank;Virginia;4;443.75;818.54;653.04;2612.14
+Cosgrove;Frank;Virginia;4;443.75;818.54;653.03;2612.14
 Cosgrove;Frank;Washington;11;178.80;938.29;554.08;6094.83
 Cosgrove;Frank;West Virginia;10;85.74;775.33;471.23;4712.28
 Cosgrove;Frank;Wisconsin;11;20.19;971.76;517.05;5687.51
@@ -2812,7 +2812,7 @@ Delgado;Priscila;Georgia;9;66.06;894.35;566.31;5096.77
 Delgado;Priscila;Hawaii;8;54.98;707.88;471.69;3773.49
 Delgado;Priscila;Idaho;7;97.77;581.86;426.44;2985.09
 Delgado;Priscila;Illinois;13;30.92;790.61;492.82;6406.60
-Delgado;Priscila;Indiana;10;144.98;695.00;416.20;4161.95
+Delgado;Priscila;Indiana;10;144.98;695.00;416.19;4161.95
 Delgado;Priscila;Iowa;11;32.91;940.90;590.20;6492.15
 Delgado;Priscila;Kansas;4;81.12;576.21;303.30;1213.21
 Delgado;Priscila;Kentucky;10;150.70;981.15;671.58;6715.81
@@ -2854,7 +2854,7 @@ Deskus;Frederick;Alaska;11;23.79;937.42;444.93;4894.27
 Deskus;Frederick;Arizona;5;214.50;960.73;680.27;3401.34
 Deskus;Frederick;Arkansas;12;120.17;888.87;557.16;6685.89
 Deskus;Frederick;California;8;49.68;812.73;246.97;1975.80
-Deskus;Frederick;Colorado;8;70.24;958.44;449.96;3599.64
+Deskus;Frederick;Colorado;8;70.24;958.44;449.95;3599.64
 Deskus;Frederick;Connecticut;8;159.88;980.87;637.85;5102.82
 Deskus;Frederick;Delaware;8;55.12;924.85;579.01;4632.11
 Deskus;Frederick;Florida;13;260.71;981.24;678.04;8814.54
@@ -2886,7 +2886,7 @@ Deskus;Frederick;North Dakota;11;95.34;892.22;481.11;5292.21
 Deskus;Frederick;Ohio;12;170.21;985.18;648.31;7779.76
 Deskus;Frederick;Oklahoma;10;181.32;959.81;567.93;5679.29
 Deskus;Frederick;Oregon;10;342.59;967.52;713.90;7139.05
-Deskus;Frederick;Pennsylvania;8;74.50;958.05;532.96;4263.72
+Deskus;Frederick;Pennsylvania;8;74.50;958.05;532.97;4263.72
 Deskus;Frederick;Rhode Island;15;28.12;952.18;515.17;7727.55
 Deskus;Frederick;South Carolina;8;105.73;959.14;473.01;3784.06
 Deskus;Frederick;South Dakota;10;110.69;960.65;451.43;4514.33
@@ -3020,7 +3020,7 @@ Dodd;Zoe;Louisiana;8;25.63;885.97;463.40;3707.19
 Dodd;Zoe;Maine;8;292.04;863.17;508.59;4068.69
 Dodd;Zoe;Maryland;10;88.60;939.10;472.66;4726.57
 Dodd;Zoe;Massachusetts;12;48.92;881.44;425.09;5101.05
-Dodd;Zoe;Michigan;8;220.00;976.27;685.56;5484.52
+Dodd;Zoe;Michigan;8;220.00;976.27;685.57;5484.52
 Dodd;Zoe;Minnesota;19;32.81;923.75;483.88;9193.80
 Dodd;Zoe;Mississippi;14;149.15;955.34;641.98;8987.75
 Dodd;Zoe;Missouri;13;32.88;926.35;521.02;6773.21
@@ -3138,7 +3138,7 @@ Dorland;Amanda;Oklahoma;9;232.97;998.75;527.38;4746.40
 Dorland;Amanda;Oregon;7;65.02;912.36;571.80;4002.59
 Dorland;Amanda;Pennsylvania;12;67.10;772.59;496.28;5955.37
 Dorland;Amanda;Rhode Island;10;56.21;999.75;511.07;5110.66
-Dorland;Amanda;South Carolina;8;230.96;870.72;563.32;4506.60
+Dorland;Amanda;South Carolina;8;230.96;870.72;563.33;4506.60
 Dorland;Amanda;South Dakota;10;85.91;969.34;574.09;5740.91
 Dorland;Amanda;Tennessee;10;42.41;967.10;528.15;5281.54
 Dorland;Amanda;Texas;7;87.47;949.67;464.55;3251.82
@@ -3177,7 +3177,7 @@ Dreschel;Richard;Missouri;8;179.57;987.32;690.82;5526.54
 Dreschel;Richard;Montana;5;64.48;816.57;473.54;2367.70
 Dreschel;Richard;Nebraska;8;24.31;929.95;495.37;3962.98
 Dreschel;Richard;Nevada;13;128.23;992.43;645.51;8391.65
-Dreschel;Richard;New Hampshire;6;110.72;826.36;480.14;2880.81
+Dreschel;Richard;New Hampshire;6;110.72;826.36;480.13;2880.81
 Dreschel;Richard;New Jersey;10;20.54;588.27;301.38;3013.80
 Dreschel;Richard;New Mexico;10;41.21;831.51;412.21;4122.06
 Dreschel;Richard;New York;6;136.47;959.55;408.58;2451.46
@@ -3347,7 +3347,7 @@ Fancher;Raquel;Vermont;10;144.03;966.04;597.73;5977.34
 Fancher;Raquel;Virginia;7;88.55;797.22;398.77;2791.39
 Fancher;Raquel;Washington;6;31.70;978.02;407.03;2442.17
 Fancher;Raquel;West Virginia;7;352.35;859.30;527.00;3689.02
-Fancher;Raquel;Wisconsin;8;290.51;974.84;598.42;4787.32
+Fancher;Raquel;Wisconsin;8;290.51;974.84;598.41;4787.32
 Fancher;Raquel;Wyoming;9;66.67;620.42;338.48;3046.31
 Farsai;Vanessa;Alabama;11;132.61;979.03;591.37;6505.09
 Farsai;Vanessa;Alaska;7;22.46;634.78;468.26;3277.83
@@ -3630,7 +3630,7 @@ Geyer;Agatha;Nevada;9;197.03;858.31;536.85;4831.62
 Geyer;Agatha;New Hampshire;11;62.05;976.00;597.10;6568.07
 Geyer;Agatha;New Jersey;12;34.26;794.73;537.97;6455.67
 Geyer;Agatha;New Mexico;11;76.53;975.84;632.15;6953.60
-Geyer;Agatha;New York;12;297.52;966.17;741.10;8893.26
+Geyer;Agatha;New York;12;297.52;966.17;741.11;8893.26
 Geyer;Agatha;North Carolina;9;108.13;903.54;495.55;4459.99
 Geyer;Agatha;North Dakota;9;181.39;895.43;509.86;4588.70
 Geyer;Agatha;Ohio;8;30.08;890.82;299.26;2394.11
@@ -3691,7 +3691,7 @@ Gorgone;Charles;Rhode Island;10;100.86;862.03;558.16;5581.56
 Gorgone;Charles;South Carolina;10;112.58;790.23;504.33;5043.30
 Gorgone;Charles;South Dakota;9;231.56;901.88;518.11;4662.97
 Gorgone;Charles;Tennessee;8;167.69;888.92;562.65;4501.21
-Gorgone;Charles;Texas;6;45.69;546.70;323.60;1941.63
+Gorgone;Charles;Texas;6;45.69;546.70;323.61;1941.63
 Gorgone;Charles;Utah;11;131.55;933.49;472.70;5199.73
 Gorgone;Charles;Vermont;13;90.99;941.36;580.09;7541.16
 Gorgone;Charles;Virginia;14;20.70;995.59;407.02;5698.25
@@ -3731,7 +3731,7 @@ Grass;Harry;New Hampshire;9;70.32;859.47;525.35;4728.16
 Grass;Harry;New Jersey;11;86.48;841.44;585.38;6439.19
 Grass;Harry;New Mexico;7;33.12;990.22;405.19;2836.36
 Grass;Harry;New York;8;263.60;754.88;490.73;3925.81
-Grass;Harry;North Carolina;10;162.40;987.45;661.68;6616.75
+Grass;Harry;North Carolina;10;162.40;987.45;661.67;6616.75
 Grass;Harry;North Dakota;14;42.26;887.12;494.42;6921.87
 Grass;Harry;Ohio;6;244.98;949.50;573.75;3442.48
 Grass;Harry;Oklahoma;9;178.76;781.82;519.03;4671.23
@@ -3741,7 +3741,7 @@ Grass;Harry;Rhode Island;15;111.68;961.68;539.51;8092.64
 Grass;Harry;South Carolina;10;38.48;957.97;711.06;7110.59
 Grass;Harry;South Dakota;16;183.22;980.92;613.29;9812.70
 Grass;Harry;Tennessee;11;89.97;958.11;493.93;5433.22
-Grass;Harry;Texas;8;32.52;979.25;463.18;3705.48
+Grass;Harry;Texas;8;32.52;979.25;463.19;3705.48
 Grass;Harry;Utah;9;71.54;859.45;446.13;4015.19
 Grass;Harry;Vermont;13;132.73;893.52;507.79;6601.30
 Grass;Harry;Virginia;10;58.52;723.11;349.28;3492.83
@@ -3811,7 +3811,7 @@ Hadlock;David;Florida;10;148.80;990.80;582.58;5825.77
 Hadlock;David;Georgia;9;175.56;901.29;491.25;4421.24
 Hadlock;David;Hawaii;7;39.33;857.97;515.26;3606.84
 Hadlock;David;Idaho;8;171.74;962.12;533.91;4271.28
-Hadlock;David;Illinois;10;40.95;951.58;558.78;5587.75
+Hadlock;David;Illinois;10;40.95;951.58;558.77;5587.75
 Hadlock;David;Indiana;9;98.49;866.37;378.47;3406.26
 Hadlock;David;Iowa;11;140.78;925.91;552.43;6076.73
 Hadlock;David;Kansas;14;112.13;945.28;555.22;7773.12
@@ -3846,7 +3846,7 @@ Hadlock;David;Utah;17;109.55;966.89;495.00;8415.08
 Hadlock;David;Vermont;7;70.91;790.98;390.36;2732.51
 Hadlock;David;Virginia;11;86.79;950.56;561.30;6174.34
 Hadlock;David;Washington;11;142.94;987.24;418.99;4608.89
-Hadlock;David;West Virginia;2;100.74;507.35;304.04;608.09
+Hadlock;David;West Virginia;2;100.74;507.35;304.05;608.09
 Hadlock;David;Wisconsin;10;35.17;798.10;361.20;3612.01
 Hadlock;David;Wyoming;9;27.01;863.96;536.36;4827.24
 Hambright;George;Alabama;9;46.74;948.41;418.14;3763.24
@@ -3873,7 +3873,7 @@ Hambright;George;Massachusetts;8;45.66;973.86;432.08;3456.62
 Hambright;George;Michigan;12;74.94;985.27;394.55;4734.63
 Hambright;George;Minnesota;10;194.96;985.51;553.82;5538.23
 Hambright;George;Mississippi;18;35.72;988.15;543.69;9786.48
-Hambright;George;Missouri;10;121.85;830.27;506.72;5067.15
+Hambright;George;Missouri;10;121.85;830.27;506.71;5067.15
 Hambright;George;Montana;16;47.67;960.32;573.98;9183.75
 Hambright;George;Nebraska;12;84.75;997.38;603.20;7238.44
 Hambright;George;Nevada;7;82.06;989.44;409.47;2866.29
@@ -3882,7 +3882,7 @@ Hambright;George;New Jersey;14;60.03;777.56;433.27;6065.74
 Hambright;George;New Mexico;8;53.62;938.02;641.16;5129.29
 Hambright;George;New York;11;55.22;979.78;601.47;6616.17
 Hambright;George;North Carolina;6;68.46;887.26;406.87;2441.22
-Hambright;George;North Dakota;8;106.57;919.02;545.94;4367.56
+Hambright;George;North Dakota;8;106.57;919.02;545.95;4367.56
 Hambright;George;Ohio;4;45.02;333.01;184.75;739.00
 Hambright;George;Oklahoma;6;63.45;918.49;615.39;3692.34
 Hambright;George;Oregon;16;78.86;906.43;454.25;7268.02
@@ -4026,7 +4026,7 @@ Harbison;Gabriel;Mississippi;13;165.98;996.57;577.84;7511.97
 Harbison;Gabriel;Missouri;9;43.31;899.29;466.26;4196.34
 Harbison;Gabriel;Montana;7;296.82;951.87;664.45;4651.17
 Harbison;Gabriel;Nebraska;6;70.06;942.83;662.15;3972.92
-Harbison;Gabriel;Nevada;12;201.13;930.68;571.10;6853.26
+Harbison;Gabriel;Nevada;12;201.13;930.68;571.11;6853.26
 Harbison;Gabriel;New Hampshire;8;20.73;522.77;244.11;1952.91
 Harbison;Gabriel;New Jersey;10;44.35;722.15;267.41;2674.09
 Harbison;Gabriel;New Mexico;13;46.94;890.72;520.49;6766.40
@@ -4034,7 +4034,7 @@ Harbison;Gabriel;New York;12;37.85;996.87;598.66;7183.92
 Harbison;Gabriel;North Carolina;11;195.92;966.10;490.52;5395.70
 Harbison;Gabriel;North Dakota;5;65.23;786.32;460.31;2301.56
 Harbison;Gabriel;Ohio;8;33.10;662.27;231.70;1853.58
-Harbison;Gabriel;Oklahoma;8;133.45;941.85;699.14;5593.08
+Harbison;Gabriel;Oklahoma;8;133.45;941.85;699.13;5593.08
 Harbison;Gabriel;Oregon;10;45.25;695.45;310.16;3101.58
 Harbison;Gabriel;Pennsylvania;11;63.07;920.16;459.19;5051.13
 Harbison;Gabriel;Rhode Island;9;92.46;804.27;401.19;3610.75
@@ -4051,10 +4051,10 @@ Harbison;Gabriel;Wisconsin;10;37.58;949.96;550.28;5502.81
 Harbison;Gabriel;Wyoming;7;190.68;986.67;547.27;3830.89
 Hargrave;Stanley;Alabama;7;71.63;939.61;487.51;3412.54
 Hargrave;Stanley;Alaska;11;42.24;842.37;447.36;4920.97
-Hargrave;Stanley;Arizona;8;106.54;978.09;541.82;4334.60
+Hargrave;Stanley;Arizona;8;106.54;978.09;541.83;4334.60
 Hargrave;Stanley;Arkansas;6;41.90;824.35;453.52;2721.12
 Hargrave;Stanley;California;12;42.24;928.02;481.63;5779.61
-Hargrave;Stanley;Colorado;10;20.70;767.11;395.92;3959.25
+Hargrave;Stanley;Colorado;10;20.70;767.11;395.93;3959.25
 Hargrave;Stanley;Connecticut;9;44.08;941.64;352.90;3176.11
 Hargrave;Stanley;Delaware;8;97.71;879.45;386.74;3093.89
 Hargrave;Stanley;Florida;13;31.59;993.43;531.02;6903.31
@@ -4078,7 +4078,7 @@ Hargrave;Stanley;Montana;6;266.42;903.01;723.09;4338.56
 Hargrave;Stanley;Nebraska;11;26.42;954.64;479.86;5278.48
 Hargrave;Stanley;Nevada;11;91.30;997.10;485.92;5345.07
 Hargrave;Stanley;New Hampshire;11;85.60;875.31;547.18;6018.97
-Hargrave;Stanley;New Jersey;12;23.52;623.84;367.34;4408.02
+Hargrave;Stanley;New Jersey;12;23.52;623.84;367.33;4408.02
 Hargrave;Stanley;New Mexico;8;32.23;957.52;523.29;4186.31
 Hargrave;Stanley;New York;10;127.49;879.34;630.29;6302.90
 Hargrave;Stanley;North Carolina;12;90.67;857.74;404.17;4850.06
@@ -4143,7 +4143,7 @@ Hart;James;South Dakota;8;221.65;943.41;618.68;4949.44
 Hart;James;Tennessee;11;36.54;995.59;600.28;6603.12
 Hart;James;Texas;7;117.35;884.85;304.30;2130.13
 Hart;James;Utah;10;44.02;784.11;417.23;4172.28
-Hart;James;Vermont;8;94.97;690.68;364.82;2918.52
+Hart;James;Vermont;8;94.97;690.68;364.81;2918.52
 Hart;James;Virginia;7;56.71;849.61;407.53;2852.71
 Hart;James;Washington;2;182.68;218.16;200.42;400.84
 Hart;James;West Virginia;9;304.85;919.99;642.81;5785.27
@@ -4199,7 +4199,7 @@ Hawthorne;James;Washington;10;38.64;963.30;546.30;5462.98
 Hawthorne;James;West Virginia;13;208.78;955.17;539.88;7018.38
 Hawthorne;James;Wisconsin;9;67.67;978.47;538.55;4846.97
 Hawthorne;James;Wyoming;8;25.72;823.84;568.93;4551.44
-Hayes;Martin;Alabama;8;93.40;924.81;466.68;3733.48
+Hayes;Martin;Alabama;8;93.40;924.81;466.69;3733.48
 Hayes;Martin;Alaska;11;559.79;931.66;735.83;8094.15
 Hayes;Martin;Arizona;10;39.08;767.40;422.13;4221.26
 Hayes;Martin;Arkansas;4;46.94;736.09;431.45;1725.78
@@ -4250,7 +4250,7 @@ Hayes;Martin;West Virginia;13;31.17;989.50;595.42;7740.52
 Hayes;Martin;Wisconsin;10;325.82;903.01;635.39;6353.90
 Hayes;Martin;Wyoming;10;80.13;970.46;537.59;5375.87
 Heiser;Vanessa;Alabama;13;67.62;964.45;457.24;5944.07
-Heiser;Vanessa;Alaska;10;22.59;665.21;406.72;4067.25
+Heiser;Vanessa;Alaska;10;22.59;665.21;406.73;4067.25
 Heiser;Vanessa;Arizona;14;21.78;961.08;336.29;4708.09
 Heiser;Vanessa;Arkansas;9;62.17;905.77;563.01;5067.06
 Heiser;Vanessa;California;16;116.73;994.06;600.34;9605.36
@@ -4287,7 +4287,7 @@ Heiser;Vanessa;Ohio;14;120.39;958.32;488.00;6832.02
 Heiser;Vanessa;Oklahoma;8;71.27;698.30;404.46;3235.67
 Heiser;Vanessa;Oregon;9;38.21;912.46;508.56;4577.07
 Heiser;Vanessa;Pennsylvania;6;247.22;897.77;548.81;3292.85
-Heiser;Vanessa;Rhode Island;6;87.87;934.89;569.98;3419.91
+Heiser;Vanessa;Rhode Island;6;87.87;934.89;569.99;3419.91
 Heiser;Vanessa;South Carolina;5;500.28;836.03;684.01;3420.06
 Heiser;Vanessa;South Dakota;13;75.75;986.94;487.87;6342.28
 Heiser;Vanessa;Tennessee;14;83.02;963.40;523.49;7328.91
@@ -4305,7 +4305,7 @@ Herleth;Sarah;Arizona;9;323.85;952.40;669.20;6022.78
 Herleth;Sarah;Arkansas;11;95.10;973.71;586.14;6447.56
 Herleth;Sarah;California;6;141.84;964.11;569.84;3419.04
 Herleth;Sarah;Colorado;12;75.82;987.83;427.26;5127.15
-Herleth;Sarah;Connecticut;6;67.80;876.08;441.64;2649.81
+Herleth;Sarah;Connecticut;6;67.80;876.08;441.63;2649.81
 Herleth;Sarah;Delaware;10;44.16;616.67;234.34;2343.41
 Herleth;Sarah;Florida;10;70.67;984.02;408.10;4080.99
 Herleth;Sarah;Georgia;6;117.09;928.96;563.00;3377.98
@@ -4324,7 +4324,7 @@ Herleth;Sarah;Michigan;10;31.72;858.08;427.59;4275.91
 Herleth;Sarah;Minnesota;8;150.87;651.55;425.88;3407.01
 Herleth;Sarah;Mississippi;6;240.61;983.12;680.76;4084.56
 Herleth;Sarah;Missouri;16;54.85;982.64;529.34;8469.49
-Herleth;Sarah;Montana;14;130.60;956.85;516.48;7230.79
+Herleth;Sarah;Montana;14;130.60;956.85;516.49;7230.79
 Herleth;Sarah;Nebraska;6;388.58;896.46;655.00;3930.02
 Herleth;Sarah;Nevada;8;26.96;959.84;535.00;4279.99
 Herleth;Sarah;New Hampshire;8;30.52;979.25;491.13;3929.06
@@ -4362,7 +4362,7 @@ Herrold, Sr.;John;Georgia;5;31.99;998.93;472.00;2360.00
 Herrold, Sr.;John;Hawaii;13;111.98;833.86;433.72;5638.37
 Herrold, Sr.;John;Idaho;8;42.09;929.61;441.02;3528.16
 Herrold, Sr.;John;Illinois;6;529.84;805.45;677.62;4065.74
-Herrold, Sr.;John;Indiana;14;60.18;921.38;486.20;6806.73
+Herrold, Sr.;John;Indiana;14;60.18;921.38;486.19;6806.73
 Herrold, Sr.;John;Iowa;11;86.99;957.19;525.10;5776.05
 Herrold, Sr.;John;Kansas;11;235.21;986.80;655.03;7205.28
 Herrold, Sr.;John;Kentucky;14;50.04;867.27;402.61;5636.54
@@ -4393,7 +4393,7 @@ Herrold, Sr.;John;South Dakota;9;43.99;985.16;490.75;4416.73
 Herrold, Sr.;John;Tennessee;8;264.29;986.85;521.94;4175.55
 Herrold, Sr.;John;Texas;14;267.44;760.00;591.18;8276.57
 Herrold, Sr.;John;Utah;6;55.32;604.60;345.91;2075.45
-Herrold, Sr.;John;Vermont;10;78.83;887.64;486.20;4861.95
+Herrold, Sr.;John;Vermont;10;78.83;887.64;486.19;4861.95
 Herrold, Sr.;John;Virginia;6;45.05;738.03;439.00;2634.03
 Herrold, Sr.;John;Washington;11;194.03;952.06;662.35;7285.87
 Herrold, Sr.;John;West Virginia;11;47.54;837.71;345.47;3800.19
@@ -4414,7 +4414,7 @@ Hills;Anthony;Idaho;10;28.44;951.31;466.59;4665.91
 Hills;Anthony;Illinois;9;21.78;988.54;496.71;4470.36
 Hills;Anthony;Indiana;9;287.89;813.29;584.88;5263.92
 Hills;Anthony;Iowa;13;27.05;987.16;536.09;6969.15
-Hills;Anthony;Kansas;10;39.61;765.42;430.90;4308.95
+Hills;Anthony;Kansas;10;39.61;765.42;430.89;4308.95
 Hills;Anthony;Kentucky;9;137.44;928.29;534.00;4805.96
 Hills;Anthony;Louisiana;7;125.90;894.18;519.56;3636.95
 Hills;Anthony;Maine;11;117.36;966.65;578.50;6363.46
@@ -4466,7 +4466,7 @@ Holloway;Janessa;Indiana;13;28.42;953.00;461.54;6000.07
 Holloway;Janessa;Iowa;12;30.85;965.35;553.25;6638.98
 Holloway;Janessa;Kansas;10;44.82;908.59;440.05;4400.50
 Holloway;Janessa;Kentucky;14;65.70;979.43;565.18;7912.48
-Holloway;Janessa;Louisiana;10;86.77;891.86;552.56;5525.65
+Holloway;Janessa;Louisiana;10;86.77;891.86;552.57;5525.65
 Holloway;Janessa;Maine;12;138.90;994.83;510.30;6123.55
 Holloway;Janessa;Maryland;8;49.62;945.23;498.38;3987.07
 Holloway;Janessa;Massachusetts;10;277.45;990.28;673.10;6731.02
@@ -4547,7 +4547,7 @@ Huck;Priscila;Vermont;11;33.60;776.47;431.84;4750.22
 Huck;Priscila;Virginia;9;37.50;883.81;514.42;4629.79
 Huck;Priscila;Washington;13;55.82;941.29;452.46;5881.94
 Huck;Priscila;West Virginia;7;196.45;893.51;585.81;4100.67
-Huck;Priscila;Wisconsin;10;78.17;925.13;542.58;5425.85
+Huck;Priscila;Wisconsin;10;78.17;925.13;542.59;5425.85
 Huck;Priscila;Wyoming;4;34.25;961.19;527.55;2110.19
 Hurtado;Theresa;Alabama;8;37.95;943.39;544.66;4357.30
 Hurtado;Theresa;Alaska;11;314.57;977.26;740.01;8140.11
@@ -4768,7 +4768,7 @@ Jenkins;Francene;Kansas;17;55.23;953.71;548.52;9324.91
 Jenkins;Francene;Kentucky;6;299.43;756.64;511.99;3071.92
 Jenkins;Francene;Louisiana;6;89.87;653.75;477.75;2866.48
 Jenkins;Francene;Maine;9;137.95;936.34;559.02;5031.18
-Jenkins;Francene;Maryland;8;61.40;998.56;533.28;4266.20
+Jenkins;Francene;Maryland;8;61.40;998.56;533.27;4266.20
 Jenkins;Francene;Massachusetts;9;183.36;967.34;592.59;5333.32
 Jenkins;Francene;Michigan;11;200.50;990.00;701.29;7714.16
 Jenkins;Francene;Minnesota;13;145.53;726.12;426.35;5542.55
@@ -4801,7 +4801,7 @@ Jenkins;Francene;Wisconsin;7;187.37;845.04;579.43;4056.02
 Jenkins;Francene;Wyoming;8;97.51;996.59;620.59;4964.75
 Jiminez;Michael;Alabama;10;64.62;855.68;556.52;5565.24
 Jiminez;Michael;Alaska;15;157.95;991.02;601.97;9029.62
-Jiminez;Michael;Arizona;4;214.25;835.58;495.26;1981.02
+Jiminez;Michael;Arizona;4;214.25;835.58;495.25;1981.02
 Jiminez;Michael;Arkansas;8;205.71;875.68;601.16;4809.31
 Jiminez;Michael;California;6;165.63;976.20;503.88;3023.25
 Jiminez;Michael;Colorado;6;146.83;925.19;501.35;3008.10
@@ -4863,7 +4863,7 @@ Joslin;Richard;Hawaii;10;31.35;962.59;445.22;4452.19
 Joslin;Richard;Idaho;8;200.28;927.32;523.01;4184.05
 Joslin;Richard;Illinois;11;292.45;909.27;617.14;6788.49
 Joslin;Richard;Indiana;10;92.31;867.76;500.01;5000.08
-Joslin;Richard;Iowa;12;135.60;976.70;661.58;7939.02
+Joslin;Richard;Iowa;12;135.60;976.70;661.59;7939.02
 Joslin;Richard;Kansas;19;64.23;999.84;589.38;11198.27
 Joslin;Richard;Kentucky;11;61.34;993.40;651.18;7163.03
 Joslin;Richard;Louisiana;8;125.81;831.86;487.88;3903.01
@@ -4921,7 +4921,7 @@ Kannisto;Rowan;Maine;14;38.58;880.62;358.09;5013.28
 Kannisto;Rowan;Maryland;13;38.15;936.00;453.30;5892.85
 Kannisto;Rowan;Massachusetts;10;110.57;986.59;528.47;5284.70
 Kannisto;Rowan;Michigan;12;53.31;988.43;417.84;5014.05
-Kannisto;Rowan;Minnesota;8;294.81;892.99;562.80;4502.36
+Kannisto;Rowan;Minnesota;8;294.81;892.99;562.79;4502.36
 Kannisto;Rowan;Mississippi;8;79.97;823.18;504.94;4039.48
 Kannisto;Rowan;Missouri;8;173.95;972.25;582.31;4658.50
 Kannisto;Rowan;Montana;6;182.96;948.14;495.95;2975.68
@@ -4999,14 +4999,14 @@ Kight;Anthony;Washington;11;57.02;934.66;491.87;5410.56
 Kight;Anthony;West Virginia;6;151.85;884.74;536.60;3219.58
 Kight;Anthony;Wisconsin;9;56.26;894.09;443.30;3989.66
 Kight;Anthony;Wyoming;10;193.87;870.53;521.15;5211.52
-Kozlowski;Vanessa;Alabama;10;101.30;956.21;544.64;5446.35
+Kozlowski;Vanessa;Alabama;10;101.30;956.21;544.63;5446.35
 Kozlowski;Vanessa;Alaska;19;90.14;968.19;504.97;9594.43
 Kozlowski;Vanessa;Arizona;9;73.89;776.50;380.33;3422.96
 Kozlowski;Vanessa;Arkansas;9;109.84;771.11;399.27;3593.41
 Kozlowski;Vanessa;California;5;133.79;989.37;544.30;2721.52
 Kozlowski;Vanessa;Colorado;18;20.40;936.61;510.82;9194.84
 Kozlowski;Vanessa;Connecticut;11;273.84;943.72;623.25;6855.76
-Kozlowski;Vanessa;Delaware;4;473.79;918.28;675.46;2701.86
+Kozlowski;Vanessa;Delaware;4;473.79;918.28;675.47;2701.86
 Kozlowski;Vanessa;Florida;11;158.94;980.04;524.09;5765.00
 Kozlowski;Vanessa;Georgia;9;62.01;940.99;371.83;3346.43
 Kozlowski;Vanessa;Hawaii;11;121.15;848.52;519.81;5717.87
@@ -5045,7 +5045,7 @@ Kozlowski;Vanessa;Texas;7;122.95;823.45;490.03;3430.21
 Kozlowski;Vanessa;Utah;7;422.68;898.63;671.43;4700.01
 Kozlowski;Vanessa;Vermont;17;31.07;953.95;562.86;9568.68
 Kozlowski;Vanessa;Virginia;10;40.97;746.15;429.01;4290.10
-Kozlowski;Vanessa;Washington;8;326.33;932.88;671.66;5373.24
+Kozlowski;Vanessa;Washington;8;326.33;932.88;671.65;5373.24
 Kozlowski;Vanessa;West Virginia;14;64.40;996.82;603.68;8451.49
 Kozlowski;Vanessa;Wisconsin;12;102.97;934.77;470.65;5647.83
 Kozlowski;Vanessa;Wyoming;7;229.97;937.34;450.52;3153.65
@@ -5199,7 +5199,7 @@ LaPorte;Priscila;Washington;12;142.00;954.37;573.61;6883.36
 LaPorte;Priscila;West Virginia;3;55.53;853.27;518.62;1555.86
 LaPorte;Priscila;Wisconsin;8;40.45;531.86;266.20;2129.58
 LaPorte;Priscila;Wyoming;8;187.46;967.08;560.10;4480.80
-Lamothe;Annabel;Alabama;12;80.83;845.69;451.54;5418.54
+Lamothe;Annabel;Alabama;12;80.83;845.69;451.55;5418.54
 Lamothe;Annabel;Alaska;10;111.38;996.47;546.96;5469.58
 Lamothe;Annabel;Arizona;13;20.88;998.53;381.18;4955.34
 Lamothe;Annabel;Arkansas;12;91.65;993.00;530.05;6360.61
@@ -5294,7 +5294,7 @@ Laurita;Agatha;Tennessee;12;29.65;992.71;552.86;6634.31
 Laurita;Agatha;Texas;8;60.85;948.99;665.97;5327.79
 Laurita;Agatha;Utah;4;447.51;980.51;695.05;2780.21
 Laurita;Agatha;Vermont;8;57.98;972.25;536.60;4292.78
-Laurita;Agatha;Virginia;8;28.80;979.16;286.48;2291.88
+Laurita;Agatha;Virginia;8;28.80;979.16;286.49;2291.88
 Laurita;Agatha;Washington;13;142.50;980.71;613.14;7970.85
 Laurita;Agatha;West Virginia;9;27.06;980.19;600.98;5408.82
 Laurita;Agatha;Wisconsin;10;45.25;850.62;442.07;4420.67
@@ -5513,7 +5513,7 @@ Lipwick;Agatha;Hawaii;7;259.62;927.93;653.21;4572.47
 Lipwick;Agatha;Idaho;6;288.13;959.80;616.93;3701.60
 Lipwick;Agatha;Illinois;6;49.39;924.01;359.41;2156.44
 Lipwick;Agatha;Indiana;10;319.38;943.54;633.76;6337.60
-Lipwick;Agatha;Iowa;16;39.71;976.51;563.54;9016.56
+Lipwick;Agatha;Iowa;16;39.71;976.51;563.53;9016.56
 Lipwick;Agatha;Kansas;15;70.66;919.59;483.52;7252.75
 Lipwick;Agatha;Kentucky;3;138.03;514.64;283.25;849.75
 Lipwick;Agatha;Louisiana;7;220.14;835.91;438.72;3071.02
@@ -5564,7 +5564,7 @@ Lique;Leonardo;Idaho;10;35.40;896.17;432.77;4327.70
 Lique;Leonardo;Illinois;3;296.26;349.51;324.82;974.45
 Lique;Leonardo;Indiana;10;56.56;915.16;608.47;6084.71
 Lique;Leonardo;Iowa;7;42.76;954.48;492.21;3445.46
-Lique;Leonardo;Kansas;10;101.35;893.88;526.16;5261.55
+Lique;Leonardo;Kansas;10;101.35;893.88;526.15;5261.55
 Lique;Leonardo;Kentucky;11;36.33;847.07;391.37;4305.11
 Lique;Leonardo;Louisiana;14;35.71;910.09;490.82;6871.44
 Lique;Leonardo;Maine;14;33.58;916.42;375.81;5261.35
@@ -5603,7 +5603,7 @@ Littleton;Joseph;Alabama;15;250.71;946.86;592.68;8890.17
 Littleton;Joseph;Alaska;9;304.58;963.63;585.52;5269.67
 Littleton;Joseph;Arizona;10;86.28;951.96;435.00;4349.98
 Littleton;Joseph;Arkansas;12;98.49;777.41;448.82;5385.86
-Littleton;Joseph;California;8;70.55;678.15;371.32;2970.52
+Littleton;Joseph;California;8;70.55;678.15;371.31;2970.52
 Littleton;Joseph;Colorado;13;104.49;953.42;585.41;7610.30
 Littleton;Joseph;Connecticut;10;123.98;979.85;668.05;6680.52
 Littleton;Joseph;Delaware;11;146.39;798.45;463.45;5097.95
@@ -5614,7 +5614,7 @@ Littleton;Joseph;Idaho;10;37.50;982.93;521.91;5219.13
 Littleton;Joseph;Illinois;12;34.78;860.09;400.15;4801.83
 Littleton;Joseph;Indiana;13;75.93;977.89;517.35;6725.53
 Littleton;Joseph;Iowa;8;77.95;995.00;432.48;3459.85
-Littleton;Joseph;Kansas;4;201.01;597.02;435.60;1742.42
+Littleton;Joseph;Kansas;4;201.01;597.02;435.61;1742.42
 Littleton;Joseph;Kentucky;14;55.55;994.98;477.20;6680.79
 Littleton;Joseph;Louisiana;13;21.58;943.90;445.75;5794.79
 Littleton;Joseph;Maine;10;22.79;953.31;500.18;5001.84
@@ -5654,7 +5654,7 @@ Lloyd;Frederick;Alaska;8;160.92;639.71;416.25;3329.98
 Lloyd;Frederick;Arizona;9;22.53;804.37;368.86;3319.77
 Lloyd;Frederick;Arkansas;3;64.59;425.81;248.53;745.58
 Lloyd;Frederick;California;9;23.37;902.83;511.61;4604.53
-Lloyd;Frederick;Colorado;12;28.02;964.33;422.34;5068.14
+Lloyd;Frederick;Colorado;12;28.02;964.33;422.35;5068.14
 Lloyd;Frederick;Connecticut;8;42.86;737.31;369.12;2953.00
 Lloyd;Frederick;Delaware;4;216.67;529.10;333.55;1334.19
 Lloyd;Frederick;Florida;10;143.12;870.35;536.44;5364.35
@@ -5667,7 +5667,7 @@ Lloyd;Frederick;Iowa;3;288.73;794.24;593.18;1779.53
 Lloyd;Frederick;Kansas;10;87.52;915.55;413.89;4138.90
 Lloyd;Frederick;Kentucky;9;75.07;944.41;445.26;4007.38
 Lloyd;Frederick;Louisiana;15;20.38;887.64;476.85;7152.79
-Lloyd;Frederick;Maine;8;194.44;829.23;558.84;4470.76
+Lloyd;Frederick;Maine;8;194.44;829.23;558.85;4470.76
 Lloyd;Frederick;Maryland;11;79.05;879.54;520.65;5727.20
 Lloyd;Frederick;Massachusetts;8;95.63;756.44;448.91;3591.27
 Lloyd;Frederick;Michigan;12;44.89;860.56;478.80;5745.64
@@ -5763,7 +5763,7 @@ Lovett;Richard;Hawaii;9;25.78;939.83;589.77;5307.92
 Lovett;Richard;Idaho;8;195.13;935.99;572.85;4582.77
 Lovett;Richard;Illinois;7;130.35;915.67;497.79;3484.56
 Lovett;Richard;Indiana;6;57.84;524.76;263.43;1580.60
-Lovett;Richard;Iowa;4;117.94;924.26;682.34;2729.38
+Lovett;Richard;Iowa;4;117.94;924.26;682.35;2729.38
 Lovett;Richard;Kansas;7;313.24;853.29;606.13;4242.94
 Lovett;Richard;Kentucky;12;22.52;953.60;627.38;7528.54
 Lovett;Richard;Louisiana;7;319.78;905.88;463.42;3243.93
@@ -5804,7 +5804,7 @@ MacBride;Rosemary;Alaska;14;85.06;918.99;647.35;9062.96
 MacBride;Rosemary;Arizona;12;92.08;997.07;474.04;5688.43
 MacBride;Rosemary;Arkansas;10;113.97;858.14;569.96;5699.63
 MacBride;Rosemary;California;11;175.45;967.77;609.61;6705.75
-MacBride;Rosemary;Colorado;8;115.64;908.09;537.36;4298.92
+MacBride;Rosemary;Colorado;8;115.64;908.09;537.37;4298.92
 MacBride;Rosemary;Connecticut;10;91.66;855.53;400.06;4000.59
 MacBride;Rosemary;Delaware;14;162.22;958.58;533.88;7474.27
 MacBride;Rosemary;Florida;10;56.61;924.25;529.71;5297.07
@@ -5859,7 +5859,7 @@ Mc Nair;James;Connecticut;2;228.54;569.72;399.13;798.26
 Mc Nair;James;Delaware;7;266.96;957.11;609.71;4267.95
 Mc Nair;James;Florida;8;540.26;958.71;802.91;6423.25
 Mc Nair;James;Georgia;10;146.65;865.37;550.34;5503.43
-Mc Nair;James;Hawaii;8;133.32;995.84;574.92;4599.32
+Mc Nair;James;Hawaii;8;133.32;995.84;574.91;4599.32
 Mc Nair;James;Idaho;14;101.94;978.19;558.37;7817.22
 Mc Nair;James;Illinois;8;154.21;931.77;596.46;4771.64
 Mc Nair;James;Indiana;10;39.16;854.26;462.06;4620.61
@@ -5871,7 +5871,7 @@ Mc Nair;James;Maine;10;171.73;978.33;613.89;6138.92
 Mc Nair;James;Maryland;7;153.69;735.10;378.14;2646.96
 Mc Nair;James;Massachusetts;10;88.34;923.33;556.13;5561.27
 Mc Nair;James;Michigan;18;55.50;998.36;592.21;10659.72
-Mc Nair;James;Minnesota;4;219.75;816.65;565.46;2261.86
+Mc Nair;James;Minnesota;4;219.75;816.65;565.47;2261.86
 Mc Nair;James;Mississippi;12;197.85;979.41;637.02;7644.25
 Mc Nair;James;Missouri;11;148.85;942.44;598.28;6581.09
 Mc Nair;James;Montana;11;34.49;944.31;429.25;4721.70
@@ -5920,7 +5920,7 @@ McCance;Tia;Louisiana;14;136.61;998.52;592.17;8290.32
 McCance;Tia;Maine;9;100.49;706.90;327.83;2950.49
 McCance;Tia;Maryland;9;156.15;877.09;459.52;4135.72
 McCance;Tia;Massachusetts;6;34.30;985.24;555.37;3332.19
-McCance;Tia;Michigan;8;91.26;930.00;585.32;4682.60
+McCance;Tia;Michigan;8;91.26;930.00;585.33;4682.60
 McCance;Tia;Minnesota;9;36.22;949.81;555.19;4996.75
 McCance;Tia;Mississippi;16;45.92;995.02;527.48;8439.63
 McCance;Tia;Missouri;12;25.17;935.66;471.17;5654.08
@@ -5981,7 +5981,7 @@ McCartney;Amanda;New Hampshire;9;147.96;942.41;552.94;4976.46
 McCartney;Amanda;New Jersey;10;215.90;992.26;532.82;5328.21
 McCartney;Amanda;New Mexico;14;29.46;946.95;377.76;5288.66
 McCartney;Amanda;New York;10;35.01;779.97;356.94;3569.40
-McCartney;Amanda;North Carolina;6;215.16;812.61;476.42;2858.55
+McCartney;Amanda;North Carolina;6;215.16;812.61;476.43;2858.55
 McCartney;Amanda;North Dakota;15;72.71;861.97;420.21;6303.20
 McCartney;Amanda;Ohio;8;119.07;962.62;490.81;3926.47
 McCartney;Amanda;Oklahoma;8;51.05;997.66;426.09;3408.72
@@ -6001,10 +6001,10 @@ McCartney;Amanda;Wisconsin;14;100.75;950.37;406.64;5692.91
 McCartney;Amanda;Wyoming;12;88.20;990.64;539.39;6472.64
 McNichols;Zoe;Alabama;16;101.02;968.43;524.42;8390.65
 McNichols;Zoe;Alaska;9;101.03;937.07;604.74;5442.63
-McNichols;Zoe;Arizona;6;143.95;978.00;587.98;3527.91
+McNichols;Zoe;Arizona;6;143.95;978.00;587.99;3527.91
 McNichols;Zoe;Arkansas;11;161.71;881.34;625.76;6883.33
 McNichols;Zoe;California;9;72.66;947.03;591.25;5321.22
-McNichols;Zoe;Colorado;14;130.00;949.80;529.84;7417.83
+McNichols;Zoe;Colorado;14;130.00;949.80;529.85;7417.83
 McNichols;Zoe;Connecticut;5;353.51;992.45;611.90;3059.52
 McNichols;Zoe;Delaware;13;28.42;626.95;300.55;3907.09
 McNichols;Zoe;Florida;8;110.15;400.11;253.27;2026.18
@@ -6012,7 +6012,7 @@ McNichols;Zoe;Georgia;8;132.70;860.14;480.39;3843.14
 McNichols;Zoe;Hawaii;8;93.99;820.55;492.67;3941.39
 McNichols;Zoe;Idaho;11;61.88;914.89;526.75;5794.27
 McNichols;Zoe;Illinois;8;21.92;942.36;436.53;3492.22
-McNichols;Zoe;Indiana;8;347.53;854.97;665.20;5321.64
+McNichols;Zoe;Indiana;8;347.53;854.97;665.21;5321.64
 McNichols;Zoe;Iowa;8;92.74;737.81;370.05;2960.42
 McNichols;Zoe;Kansas;11;30.11;899.02;383.51;4218.58
 McNichols;Zoe;Kentucky;6;292.99;667.54;443.78;2662.66
@@ -6069,7 +6069,7 @@ Mcculloch;Richard;Kentucky;6;112.21;978.42;480.51;2883.07
 Mcculloch;Richard;Louisiana;8;78.32;859.01;411.88;3295.07
 Mcculloch;Richard;Maine;7;33.79;834.87;490.48;3433.35
 Mcculloch;Richard;Maryland;7;91.70;977.50;453.00;3170.98
-Mcculloch;Richard;Massachusetts;10;70.37;852.56;517.14;5171.35
+Mcculloch;Richard;Massachusetts;10;70.37;852.56;517.13;5171.35
 Mcculloch;Richard;Michigan;11;93.61;999.35;443.85;4882.40
 Mcculloch;Richard;Minnesota;10;255.37;897.21;548.14;5481.42
 Mcculloch;Richard;Mississippi;13;220.47;880.57;559.43;7272.56
@@ -6118,7 +6118,7 @@ Mejias;Peter;Kansas;8;262.48;903.45;724.31;5794.46
 Mejias;Peter;Kentucky;11;23.01;986.94;587.83;6466.17
 Mejias;Peter;Louisiana;10;122.58;966.89;527.62;5276.20
 Mejias;Peter;Maine;14;28.61;834.73;418.18;5854.47
-Mejias;Peter;Maryland;6;50.05;714.20;321.78;1930.71
+Mejias;Peter;Maryland;6;50.05;714.20;321.79;1930.71
 Mejias;Peter;Massachusetts;10;42.65;602.28;362.49;3624.93
 Mejias;Peter;Michigan;12;51.04;864.40;392.78;4713.34
 Mejias;Peter;Minnesota;17;51.24;829.83;506.55;8611.42
@@ -6163,7 +6163,7 @@ Miwa;Frank;Hawaii;7;27.26;839.88;403.28;2822.97
 Miwa;Frank;Idaho;9;47.03;976.47;588.21;5293.87
 Miwa;Frank;Illinois;5;136.28;457.69;284.07;1420.33
 Miwa;Frank;Indiana;5;68.51;666.12;439.18;2195.91
-Miwa;Frank;Iowa;8;242.29;824.12;601.02;4808.12
+Miwa;Frank;Iowa;8;242.29;824.12;601.01;4808.12
 Miwa;Frank;Kansas;9;29.74;892.16;492.59;4433.30
 Miwa;Frank;Kentucky;11;88.85;826.29;375.65;4132.13
 Miwa;Frank;Louisiana;11;69.29;999.73;529.17;5820.87
@@ -6232,7 +6232,7 @@ Mogenhan;Rosemary;New Jersey;16;78.41;902.58;419.21;6707.29
 Mogenhan;Rosemary;New Mexico;15;204.82;986.14;556.74;8351.07
 Mogenhan;Rosemary;New York;9;188.56;797.66;555.10;4995.94
 Mogenhan;Rosemary;North Carolina;14;69.82;919.01;436.44;6110.09
-Mogenhan;Rosemary;North Dakota;16;157.16;986.19;638.44;10214.96
+Mogenhan;Rosemary;North Dakota;16;157.16;986.19;638.43;10214.96
 Mogenhan;Rosemary;Ohio;6;38.36;706.42;330.43;1982.60
 Mogenhan;Rosemary;Oklahoma;14;70.75;929.34;566.78;7934.95
 Mogenhan;Rosemary;Oregon;13;93.93;910.68;444.47;5778.16
@@ -6359,7 +6359,7 @@ Newland;Mark;Connecticut;11;69.18;982.31;418.22;4600.46
 Newland;Mark;Delaware;14;36.20;998.94;615.01;8610.13
 Newland;Mark;Florida;9;231.53;914.31;537.34;4836.04
 Newland;Mark;Georgia;4;857.08;995.21;930.38;3721.54
-Newland;Mark;Hawaii;8;161.91;947.27;695.56;5564.44
+Newland;Mark;Hawaii;8;161.91;947.27;695.55;5564.44
 Newland;Mark;Idaho;7;457.67;960.10;607.16;4250.10
 Newland;Mark;Illinois;9;51.49;987.73;571.21;5140.90
 Newland;Mark;Indiana;9;85.40;917.02;570.26;5132.36
@@ -6424,7 +6424,7 @@ Nielson;Raquel;Michigan;12;41.54;930.78;543.63;6523.57
 Nielson;Raquel;Minnesota;10;138.66;967.81;615.05;6150.50
 Nielson;Raquel;Mississippi;10;154.98;960.73;488.64;4886.45
 Nielson;Raquel;Missouri;13;45.70;829.39;523.12;6800.54
-Nielson;Raquel;Montana;6;101.27;914.58;413.34;2480.07
+Nielson;Raquel;Montana;6;101.27;914.58;413.35;2480.07
 Nielson;Raquel;Nebraska;6;64.61;926.40;564.88;3389.25
 Nielson;Raquel;Nevada;7;422.50;967.47;653.47;4574.26
 Nielson;Raquel;New Hampshire;10;66.06;807.96;463.79;4637.94
@@ -6520,7 +6520,7 @@ Norlin;George;Louisiana;8;103.41;903.35;472.22;3777.77
 Norlin;George;Maine;11;27.84;703.15;333.78;3671.55
 Norlin;George;Maryland;5;121.40;951.49;548.42;2742.09
 Norlin;George;Massachusetts;11;146.32;668.13;438.80;4826.85
-Norlin;George;Michigan;14;37.70;906.95;396.82;5555.41
+Norlin;George;Michigan;14;37.70;906.95;396.81;5555.41
 Norlin;George;Minnesota;11;28.76;935.74;427.26;4699.84
 Norlin;George;Mississippi;9;103.62;940.27;506.45;4558.04
 Norlin;George;Missouri;12;38.64;810.03;445.97;5351.67
@@ -6620,7 +6620,7 @@ Okane;Arnold;Louisiana;12;35.58;880.65;386.23;4634.76
 Okane;Arnold;Maine;12;219.73;913.37;613.35;7360.23
 Okane;Arnold;Maryland;16;26.63;917.63;555.40;8886.39
 Okane;Arnold;Massachusetts;7;660.36;893.09;758.53;5309.70
-Okane;Arnold;Michigan;18;70.30;958.86;514.40;9259.11
+Okane;Arnold;Michigan;18;70.30;958.86;514.39;9259.11
 Okane;Arnold;Minnesota;7;288.88;798.68;614.79;4303.51
 Okane;Arnold;Mississippi;11;48.26;758.70;303.22;3335.37
 Okane;Arnold;Missouri;11;57.16;854.99;530.02;5830.23
@@ -6708,7 +6708,7 @@ Oliveto;John;Colorado;12;67.12;847.07;479.78;5757.34
 Oliveto;John;Connecticut;9;24.34;785.70;315.32;2837.88
 Oliveto;John;Delaware;12;27.58;946.05;444.18;5330.12
 Oliveto;John;Florida;9;165.89;999.40;537.01;4833.11
-Oliveto;John;Georgia;10;175.51;902.30;450.08;4500.75
+Oliveto;John;Georgia;10;175.51;902.30;450.07;4500.75
 Oliveto;John;Hawaii;11;35.91;925.90;527.91;5806.97
 Oliveto;John;Idaho;8;65.86;989.60;568.00;4544.02
 Oliveto;John;Illinois;11;38.84;932.12;564.01;6204.07
@@ -6729,7 +6729,7 @@ Oliveto;John;Nebraska;15;139.03;911.10;538.31;8074.65
 Oliveto;John;Nevada;6;65.64;836.90;530.48;3182.89
 Oliveto;John;New Hampshire;12;160.41;958.10;539.24;6470.89
 Oliveto;John;New Jersey;9;200.02;963.68;509.10;4581.94
-Oliveto;John;New Mexico;6;352.37;895.66;640.70;3844.23
+Oliveto;John;New Mexico;6;352.37;895.66;640.71;3844.23
 Oliveto;John;New York;16;125.02;939.35;507.31;8116.91
 Oliveto;John;North Carolina;9;230.97;935.70;690.46;6214.11
 Oliveto;John;North Dakota;10;174.90;985.13;566.95;5669.49
@@ -6863,7 +6863,7 @@ Poisson;Stanley;Hawaii;7;105.19;986.14;475.80;3330.62
 Poisson;Stanley;Idaho;10;96.06;967.93;636.70;6367.01
 Poisson;Stanley;Illinois;9;109.46;892.37;516.47;4648.20
 Poisson;Stanley;Indiana;15;24.62;985.08;453.17;6797.48
-Poisson;Stanley;Iowa;8;93.69;904.56;495.64;3965.08
+Poisson;Stanley;Iowa;8;93.69;904.56;495.63;3965.08
 Poisson;Stanley;Kansas;10;209.97;661.26;429.77;4297.72
 Poisson;Stanley;Kentucky;12;62.73;998.29;494.95;5939.36
 Poisson;Stanley;Louisiana;7;137.70;732.98;400.16;2801.10
@@ -6942,13 +6942,13 @@ Pollard;Janessa;South Carolina;7;127.41;892.57;535.34;3747.35
 Pollard;Janessa;South Dakota;8;130.51;940.64;575.97;4607.76
 Pollard;Janessa;Tennessee;15;73.13;935.81;526.76;7901.44
 Pollard;Janessa;Texas;14;69.49;930.62;443.20;6204.74
-Pollard;Janessa;Utah;8;285.35;962.88;567.64;4541.08
+Pollard;Janessa;Utah;8;285.35;962.88;567.63;4541.08
 Pollard;Janessa;Vermont;9;305.85;946.70;592.96;5336.61
 Pollard;Janessa;Virginia;12;110.35;946.45;476.29;5715.49
 Pollard;Janessa;Washington;12;79.40;974.32;574.70;6896.35
 Pollard;Janessa;West Virginia;17;53.84;845.37;396.36;6738.16
 Pollard;Janessa;Wisconsin;12;33.91;943.84;544.50;6533.96
-Pollard;Janessa;Wyoming;8;40.83;727.46;359.48;2875.88
+Pollard;Janessa;Wyoming;8;40.83;727.46;359.49;2875.88
 Pote;James;Alabama;11;29.04;906.55;360.40;3964.36
 Pote;James;Alaska;10;192.66;970.36;596.03;5960.29
 Pote;James;Arizona;7;247.00;855.61;474.11;3318.78
@@ -6998,7 +6998,7 @@ Pote;James;Virginia;5;282.14;724.71;529.72;2648.62
 Pote;James;Washington;11;126.41;834.69;443.48;4878.25
 Pote;James;West Virginia;9;54.48;878.96;364.96;3284.65
 Pote;James;Wisconsin;7;22.72;854.70;545.60;3819.23
-Pote;James;Wyoming;10;41.06;937.75;449.08;4490.75
+Pote;James;Wyoming;10;41.06;937.75;449.07;4490.75
 Primavera;Annabel;Alabama;10;171.09;949.03;538.86;5388.61
 Primavera;Annabel;Alaska;12;78.06;857.99;471.75;5661.01
 Primavera;Annabel;Arizona;8;452.49;973.86;707.68;5661.43
@@ -7071,7 +7071,7 @@ Puchalla;Priscila;Maine;9;32.47;941.15;571.38;5142.42
 Puchalla;Priscila;Maryland;7;166.74;972.46;565.35;3957.45
 Puchalla;Priscila;Massachusetts;11;28.59;965.16;572.29;6295.16
 Puchalla;Priscila;Michigan;9;91.19;745.69;337.10;3033.88
-Puchalla;Priscila;Minnesota;16;53.32;947.58;543.18;8690.80
+Puchalla;Priscila;Minnesota;16;53.32;947.58;543.17;8690.80
 Puchalla;Priscila;Mississippi;9;75.18;799.58;430.41;3873.67
 Puchalla;Priscila;Missouri;10;45.07;967.52;340.60;3405.98
 Puchalla;Priscila;Montana;20;89.95;995.02;479.42;9588.31
@@ -7094,7 +7094,7 @@ Puchalla;Priscila;Tennessee;11;146.06;992.62;544.77;5992.52
 Puchalla;Priscila;Texas;10;129.99;968.29;595.78;5957.80
 Puchalla;Priscila;Utah;12;340.96;970.16;613.38;7360.50
 Puchalla;Priscila;Vermont;9;75.13;835.36;470.96;4238.64
-Puchalla;Priscila;Virginia;8;32.74;757.89;246.14;1969.08
+Puchalla;Priscila;Virginia;8;32.74;757.89;246.13;1969.08
 Puchalla;Priscila;Washington;7;36.44;567.15;266.06;1862.39
 Puchalla;Priscila;West Virginia;12;152.70;924.20;541.44;6497.28
 Puchalla;Priscila;Wisconsin;12;42.83;962.36;484.87;5818.39
@@ -7124,7 +7124,7 @@ Quesinberry;Zoe;Michigan;12;99.62;954.18;490.16;5881.95
 Quesinberry;Zoe;Minnesota;11;196.02;978.46;648.53;7133.80
 Quesinberry;Zoe;Mississippi;12;88.56;930.50;620.13;7441.54
 Quesinberry;Zoe;Missouri;9;108.37;979.13;402.04;3618.38
-Quesinberry;Zoe;Montana;12;22.62;904.67;492.16;5905.86
+Quesinberry;Zoe;Montana;12;22.62;904.67;492.15;5905.86
 Quesinberry;Zoe;Nebraska;11;252.70;939.91;647.33;7120.66
 Quesinberry;Zoe;Nevada;3;104.05;955.03;536.57;1609.70
 Quesinberry;Zoe;New Hampshire;10;62.86;976.91;473.80;4738.04
@@ -7136,7 +7136,7 @@ Quesinberry;Zoe;North Dakota;14;34.72;828.03;427.52;5985.32
 Quesinberry;Zoe;Ohio;7;87.15;934.04;472.05;3304.35
 Quesinberry;Zoe;Oklahoma;14;77.22;847.39;435.55;6097.76
 Quesinberry;Zoe;Oregon;7;34.42;942.89;558.56;3909.94
-Quesinberry;Zoe;Pennsylvania;2;279.64;493.75;386.70;773.39
+Quesinberry;Zoe;Pennsylvania;2;279.64;493.75;386.69;773.39
 Quesinberry;Zoe;Rhode Island;11;142.76;945.36;558.44;6142.88
 Quesinberry;Zoe;South Carolina;8;109.01;898.87;515.25;4121.98
 Quesinberry;Zoe;South Dakota;8;45.01;979.78;493.14;3945.11
@@ -7193,14 +7193,14 @@ Ramsey;Vanessa;South Dakota;11;170.08;976.18;559.17;6150.86
 Ramsey;Vanessa;Tennessee;11;73.24;905.39;382.33;4205.64
 Ramsey;Vanessa;Texas;13;217.31;809.08;548.48;7130.24
 Ramsey;Vanessa;Utah;17;181.66;880.81;558.51;9494.68
-Ramsey;Vanessa;Vermont;6;20.06;848.62;383.72;2302.29
+Ramsey;Vanessa;Vermont;6;20.06;848.62;383.71;2302.29
 Ramsey;Vanessa;Virginia;13;60.29;997.38;537.68;6989.78
 Ramsey;Vanessa;Washington;5;105.45;844.71;533.89;2669.46
 Ramsey;Vanessa;West Virginia;6;91.02;810.32;467.49;2804.93
 Ramsey;Vanessa;Wisconsin;4;37.28;658.24;333.74;1334.95
-Ramsey;Vanessa;Wyoming;8;134.85;789.51;493.24;3945.96
+Ramsey;Vanessa;Wyoming;8;134.85;789.51;493.25;3945.96
 Rebholz;David;Alabama;13;115.49;963.28;395.96;5147.49
-Rebholz;David;Alaska;4;513.77;929.15;710.32;2841.30
+Rebholz;David;Alaska;4;513.77;929.15;710.33;2841.30
 Rebholz;David;Arizona;9;42.65;890.53;436.57;3929.15
 Rebholz;David;Arkansas;12;27.77;916.99;588.16;7057.91
 Rebholz;David;California;13;51.56;942.49;605.41;7870.31
@@ -7375,7 +7375,7 @@ Rupert;Frank;Minnesota;19;44.30;853.64;527.27;10018.13
 Rupert;Frank;Mississippi;7;199.42;990.14;569.72;3988.05
 Rupert;Frank;Missouri;8;358.78;958.97;669.73;5357.85
 Rupert;Frank;Montana;11;99.49;922.75;573.95;6313.42
-Rupert;Frank;Nebraska;10;100.02;856.35;470.26;4702.55
+Rupert;Frank;Nebraska;10;100.02;856.35;470.25;4702.55
 Rupert;Frank;Nevada;10;172.93;935.49;554.69;5546.90
 Rupert;Frank;New Hampshire;13;62.57;904.63;437.35;5685.50
 Rupert;Frank;New Jersey;4;137.31;687.70;374.19;1496.77
@@ -7514,7 +7514,7 @@ Sampson;Michael;Idaho;5;67.58;835.42;328.39;1641.94
 Sampson;Michael;Illinois;10;55.70;954.00;398.37;3983.73
 Sampson;Michael;Indiana;9;190.95;897.63;626.93;5642.34
 Sampson;Michael;Iowa;8;125.87;846.84;497.96;3983.70
-Sampson;Michael;Kansas;6;192.31;980.73;680.44;4082.67
+Sampson;Michael;Kansas;6;192.31;980.73;680.45;4082.67
 Sampson;Michael;Kentucky;10;21.12;843.19;429.88;4298.84
 Sampson;Michael;Louisiana;2;223.65;392.33;307.99;615.98
 Sampson;Michael;Maine;8;70.65;723.71;375.23;3001.83
@@ -7548,7 +7548,7 @@ Sampson;Michael;Virginia;12;37.25;991.02;511.39;6136.66
 Sampson;Michael;Washington;14;199.35;906.40;543.91;7614.77
 Sampson;Michael;West Virginia;8;109.09;873.28;507.68;4061.43
 Sampson;Michael;Wisconsin;10;39.73;847.47;396.73;3967.35
-Sampson;Michael;Wyoming;12;119.35;832.43;530.58;6367.02
+Sampson;Michael;Wyoming;12;119.35;832.43;530.59;6367.02
 Saver;Janessa;Alabama;9;29.53;992.16;448.12;4033.12
 Saver;Janessa;Alaska;13;92.22;963.56;369.24;4800.12
 Saver;Janessa;Arizona;9;251.04;746.39;548.08;4932.72
@@ -7775,7 +7775,7 @@ Senter;Martin;Minnesota;6;176.13;963.84;570.72;3424.33
 Senter;Martin;Mississippi;10;101.56;820.09;393.00;3929.98
 Senter;Martin;Missouri;6;129.15;611.96;388.68;2332.07
 Senter;Martin;Montana;16;30.96;933.69;460.78;7372.56
-Senter;Martin;Nebraska;6;102.66;910.25;476.16;2856.99
+Senter;Martin;Nebraska;6;102.66;910.25;476.17;2856.99
 Senter;Martin;Nevada;14;65.81;910.93;349.29;4890.03
 Senter;Martin;New Hampshire;8;115.01;951.57;460.58;3684.61
 Senter;Martin;New Jersey;8;161.98;924.36;571.25;4569.99
@@ -7790,7 +7790,7 @@ Senter;Martin;Pennsylvania;13;37.63;992.76;435.96;5667.52
 Senter;Martin;Rhode Island;10;64.17;600.44;394.51;3945.07
 Senter;Martin;South Carolina;8;41.49;798.76;361.99;2895.95
 Senter;Martin;South Dakota;12;53.34;895.42;445.95;5351.42
-Senter;Martin;Tennessee;6;106.09;987.27;578.64;3471.81
+Senter;Martin;Tennessee;6;106.09;987.27;578.63;3471.81
 Senter;Martin;Texas;13;102.65;939.54;590.64;7678.30
 Senter;Martin;Utah;5;230.49;998.98;637.43;3187.13
 Senter;Martin;Vermont;8;105.98;852.92;459.24;3673.95
@@ -7799,7 +7799,7 @@ Senter;Martin;Washington;15;137.27;945.46;593.57;8903.57
 Senter;Martin;West Virginia;14;40.81;972.80;397.82;5569.47
 Senter;Martin;Wisconsin;10;48.05;977.84;502.87;5028.65
 Senter;Martin;Wyoming;12;38.08;976.54;600.81;7209.75
-Shane;Priscila;Alabama;12;114.58;903.65;377.96;4535.46
+Shane;Priscila;Alabama;12;114.58;903.65;377.95;4535.46
 Shane;Priscila;Alaska;14;78.42;981.33;537.52;7525.32
 Shane;Priscila;Arizona;10;48.95;912.66;462.78;4627.82
 Shane;Priscila;Arkansas;13;24.21;815.91;375.27;4878.49
@@ -7868,7 +7868,7 @@ Shoaf;Scott;Kansas;13;83.27;953.85;495.88;6446.49
 Shoaf;Scott;Kentucky;10;53.00;919.57;476.76;4767.59
 Shoaf;Scott;Louisiana;6;39.37;832.70;324.72;1948.34
 Shoaf;Scott;Maine;8;63.60;953.58;495.67;3965.38
-Shoaf;Scott;Maryland;14;249.00;921.36;559.78;7836.85
+Shoaf;Scott;Maryland;14;249.00;921.36;559.77;7836.85
 Shoaf;Scott;Massachusetts;12;29.01;976.01;544.77;6537.21
 Shoaf;Scott;Michigan;9;156.46;979.29;620.25;5582.29
 Shoaf;Scott;Minnesota;7;106.98;981.61;661.61;4631.29
@@ -7970,7 +7970,7 @@ Skonnard;Rosemary;Louisiana;8;288.51;968.33;684.80;5478.38
 Skonnard;Rosemary;Maine;7;158.57;937.92;700.11;4900.76
 Skonnard;Rosemary;Maryland;9;125.95;984.81;530.19;4771.70
 Skonnard;Rosemary;Massachusetts;14;25.49;947.46;409.93;5739.01
-Skonnard;Rosemary;Michigan;4;309.76;659.18;492.78;1971.14
+Skonnard;Rosemary;Michigan;4;309.76;659.18;492.79;1971.14
 Skonnard;Rosemary;Minnesota;9;305.88;991.93;623.55;5611.91
 Skonnard;Rosemary;Mississippi;9;127.91;925.73;576.89;5192.00
 Skonnard;Rosemary;Missouri;9;29.16;982.43;404.91;3644.20
@@ -8015,7 +8015,7 @@ Smrt;Raquel;Illinois;14;106.78;937.60;538.35;7536.85
 Smrt;Raquel;Indiana;11;78.68;861.79;489.27;5382.02
 Smrt;Raquel;Iowa;10;36.24;847.16;530.13;5301.33
 Smrt;Raquel;Kansas;13;108.63;886.53;456.26;5931.44
-Smrt;Raquel;Kentucky;12;104.07;999.49;665.26;7983.06
+Smrt;Raquel;Kentucky;12;104.07;999.49;665.25;7983.06
 Smrt;Raquel;Louisiana;10;153.73;930.10;659.11;6591.06
 Smrt;Raquel;Maine;10;139.21;970.90;406.12;4061.16
 Smrt;Raquel;Maryland;12;92.04;962.60;576.83;6921.97
@@ -8184,7 +8184,7 @@ Sparacino;Richard;New York;7;60.95;775.74;498.04;3486.25
 Sparacino;Richard;North Carolina;10;78.46;862.21;391.01;3910.14
 Sparacino;Richard;North Dakota;14;138.95;917.06;483.36;6767.03
 Sparacino;Richard;Ohio;9;126.97;998.70;524.67;4722.06
-Sparacino;Richard;Oklahoma;8;334.46;900.17;646.06;5168.44
+Sparacino;Richard;Oklahoma;8;334.46;900.17;646.05;5168.44
 Sparacino;Richard;Oregon;5;44.76;984.13;431.29;2156.47
 Sparacino;Richard;Pennsylvania;7;127.82;901.89;603.29;4223.00
 Sparacino;Richard;Rhode Island;11;180.77;963.12;612.47;6737.15
@@ -8240,13 +8240,13 @@ Spivey;Jane;Pennsylvania;7;27.45;885.71;413.65;2895.56
 Spivey;Jane;Rhode Island;12;59.40;953.09;636.88;7642.51
 Spivey;Jane;South Carolina;10;216.80;875.47;449.44;4494.37
 Spivey;Jane;South Dakota;6;72.34;817.95;318.02;1908.10
-Spivey;Jane;Tennessee;8;60.95;706.82;307.84;2462.68
+Spivey;Jane;Tennessee;8;60.95;706.82;307.83;2462.68
 Spivey;Jane;Texas;15;27.14;935.05;473.65;7104.71
 Spivey;Jane;Utah;24;41.40;779.59;370.10;8882.50
 Spivey;Jane;Vermont;11;24.01;961.90;501.07;5511.80
 Spivey;Jane;Virginia;7;192.20;866.47;474.29;3320.00
 Spivey;Jane;Washington;18;80.45;989.54;500.87;9015.68
-Spivey;Jane;West Virginia;8;36.44;954.11;434.64;3477.08
+Spivey;Jane;West Virginia;8;36.44;954.11;434.63;3477.08
 Spivey;Jane;Wisconsin;8;34.79;735.42;367.41;2939.31
 Spivey;Jane;Wyoming;8;33.86;923.64;389.26;3114.07
 Storjohann;Janessa;Alabama;7;67.51;933.98;542.50;3797.51
@@ -8254,7 +8254,7 @@ Storjohann;Janessa;Alaska;9;126.00;942.50;421.64;3794.78
 Storjohann;Janessa;Arizona;13;21.08;934.32;556.61;7235.93
 Storjohann;Janessa;Arkansas;5;342.02;893.20;567.40;2837.01
 Storjohann;Janessa;California;10;41.35;976.68;461.65;4616.51
-Storjohann;Janessa;Colorado;14;27.20;994.20;549.76;7696.57
+Storjohann;Janessa;Colorado;14;27.20;994.20;549.75;7696.57
 Storjohann;Janessa;Connecticut;13;109.68;889.77;550.91;7161.78
 Storjohann;Janessa;Delaware;13;62.37;977.00;424.89;5523.61
 Storjohann;Janessa;Florida;12;75.93;988.56;538.76;6465.15
@@ -8343,7 +8343,7 @@ Stricklin;Valerie;South Dakota;9;155.21;880.57;499.81;4498.33
 Stricklin;Valerie;Tennessee;12;98.94;915.79;553.99;6647.93
 Stricklin;Valerie;Texas;12;137.75;973.84;490.71;5888.51
 Stricklin;Valerie;Utah;9;157.97;933.44;626.58;5639.24
-Stricklin;Valerie;Vermont;10;41.98;966.49;516.54;5165.35
+Stricklin;Valerie;Vermont;10;41.98;966.49;516.53;5165.35
 Stricklin;Valerie;Virginia;6;48.82;855.41;490.36;2942.14
 Stricklin;Valerie;Washington;14;72.50;802.63;441.05;6174.73
 Stricklin;Valerie;West Virginia;12;35.12;873.00;328.99;3947.93
@@ -8474,14 +8474,14 @@ Surwill;Mark;Michigan;12;47.13;931.70;522.01;6264.17
 Surwill;Mark;Minnesota;8;76.63;825.06;535.55;4284.41
 Surwill;Mark;Mississippi;11;81.95;953.58;642.17;7063.88
 Surwill;Mark;Missouri;10;201.26;983.98;581.94;5819.42
-Surwill;Mark;Montana;4;104.89;952.63;399.66;1598.66
+Surwill;Mark;Montana;4;104.89;952.63;399.67;1598.66
 Surwill;Mark;Nebraska;7;55.28;969.56;573.10;4011.70
 Surwill;Mark;Nevada;9;69.25;941.50;579.38;5214.42
 Surwill;Mark;New Hampshire;15;41.65;904.76;584.83;8772.46
 Surwill;Mark;New Jersey;8;299.17;935.18;685.66;5485.28
 Surwill;Mark;New Mexico;9;213.45;837.39;502.45;4522.01
 Surwill;Mark;New York;9;190.60;973.17;459.76;4137.85
-Surwill;Mark;North Carolina;8;155.77;917.90;523.02;4184.12
+Surwill;Mark;North Carolina;8;155.77;917.90;523.01;4184.12
 Surwill;Mark;North Dakota;9;118.46;971.92;531.44;4782.95
 Surwill;Mark;Ohio;12;41.74;845.43;370.63;4447.58
 Surwill;Mark;Oklahoma;10;22.07;905.93;508.70;5087.03
@@ -8500,7 +8500,7 @@ Surwill;Mark;West Virginia;14;102.60;890.24;470.47;6586.63
 Surwill;Mark;Wisconsin;14;106.90;939.93;562.62;7876.73
 Surwill;Mark;Wyoming;9;223.41;944.37;451.63;4064.67
 Takeda;David;Alabama;12;163.45;900.25;527.04;6324.45
-Takeda;David;Alaska;10;32.24;785.00;554.24;5542.45
+Takeda;David;Alaska;10;32.24;785.00;554.25;5542.45
 Takeda;David;Arizona;8;49.39;989.67;441.84;3534.70
 Takeda;David;Arkansas;13;90.85;912.05;473.48;6155.30
 Takeda;David;California;8;51.90;861.74;501.60;4012.78
@@ -8530,7 +8530,7 @@ Takeda;David;Nevada;12;162.63;921.66;493.88;5926.55
 Takeda;David;New Hampshire;8;33.01;831.97;362.91;2903.31
 Takeda;David;New Jersey;8;394.08;965.16;701.53;5612.23
 Takeda;David;New Mexico;6;159.00;907.92;352.99;2117.95
-Takeda;David;New York;8;118.52;949.26;576.58;4612.68
+Takeda;David;New York;8;118.52;949.26;576.59;4612.68
 Takeda;David;North Carolina;8;161.56;733.08;520.68;4165.41
 Takeda;David;North Dakota;9;127.47;883.79;545.28;4907.53
 Takeda;David;Ohio;10;39.51;883.23;507.06;5070.59
@@ -8592,7 +8592,7 @@ Thornburgh;Priscila;South Carolina;11;24.95;999.13;470.69;5177.55
 Thornburgh;Priscila;South Dakota;9;28.07;915.57;460.65;4145.82
 Thornburgh;Priscila;Tennessee;7;163.40;809.87;500.88;3506.19
 Thornburgh;Priscila;Texas;16;166.16;820.95;555.46;8887.29
-Thornburgh;Priscila;Utah;6;47.45;876.94;358.18;2149.11
+Thornburgh;Priscila;Utah;6;47.45;876.94;358.19;2149.11
 Thornburgh;Priscila;Vermont;12;24.24;914.64;536.61;6439.27
 Thornburgh;Priscila;Virginia;10;35.75;962.53;593.35;5933.54
 Thornburgh;Priscila;Washington;7;278.09;825.62;537.27;3760.88
@@ -8627,7 +8627,7 @@ Tracey;Theresa;Missouri;11;22.86;736.57;234.92;2584.13
 Tracey;Theresa;Montana;12;21.04;952.79;499.52;5994.29
 Tracey;Theresa;Nebraska;4;501.33;963.19;685.19;2740.77
 Tracey;Theresa;Nevada;10;97.08;967.04;490.22;4902.24
-Tracey;Theresa;New Hampshire;14;108.57;871.68;404.70;5665.73
+Tracey;Theresa;New Hampshire;14;108.57;871.68;404.69;5665.73
 Tracey;Theresa;New Jersey;7;49.99;852.92;493.45;3454.16
 Tracey;Theresa;New Mexico;9;122.04;761.68;397.47;3577.26
 Tracey;Theresa;New York;6;94.68;920.21;433.52;2601.09
@@ -8646,7 +8646,7 @@ Tracey;Theresa;Utah;11;109.81;908.36;575.36;6328.93
 Tracey;Theresa;Vermont;14;25.22;817.95;478.38;6697.38
 Tracey;Theresa;Virginia;12;123.93;946.18;592.46;7109.57
 Tracey;Theresa;Washington;8;99.85;925.73;599.08;4792.61
-Tracey;Theresa;West Virginia;8;40.46;832.75;360.98;2887.88
+Tracey;Theresa;West Virginia;8;40.46;832.75;360.99;2887.88
 Tracey;Theresa;Wisconsin;9;57.26;978.21;520.30;4682.66
 Tracey;Theresa;Wyoming;9;60.55;861.41;290.98;2618.83
 Trigg;Flora;Alabama;6;174.57;921.35;450.92;2705.50
@@ -8676,7 +8676,7 @@ Trigg;Flora;Mississippi;11;129.45;995.34;616.38;6780.22
 Trigg;Flora;Missouri;10;140.10;946.41;517.22;5172.18
 Trigg;Flora;Montana;18;59.11;989.28;510.95;9197.01
 Trigg;Flora;Nebraska;13;75.05;882.41;461.61;6000.90
-Trigg;Flora;Nevada;6;132.20;906.65;427.82;2566.89
+Trigg;Flora;Nevada;6;132.20;906.65;427.81;2566.89
 Trigg;Flora;New Hampshire;11;58.15;878.10;573.41;6307.55
 Trigg;Flora;New Jersey;9;151.65;771.53;504.54;4540.87
 Trigg;Flora;New Mexico;7;159.75;860.13;564.48;3951.38
@@ -8951,7 +8951,7 @@ Turnbloom;Scott;Wisconsin;9;55.21;942.42;441.99;3977.95
 Turnbloom;Scott;Wyoming;11;124.76;990.75;544.73;5991.98
 Tusting;Leonardo;Alabama;6;267.41;996.99;601.01;3606.08
 Tusting;Leonardo;Alaska;11;157.53;971.69;621.39;6835.28
-Tusting;Leonardo;Arizona;12;161.13;903.89;528.66;6343.86
+Tusting;Leonardo;Arizona;12;161.13;903.89;528.65;6343.86
 Tusting;Leonardo;Arkansas;6;496.54;855.16;643.46;3860.75
 Tusting;Leonardo;California;4;353.74;921.54;607.16;2428.64
 Tusting;Leonardo;Colorado;14;92.06;971.31;472.88;6620.33
@@ -9090,24 +9090,24 @@ Vaught;William;Pennsylvania;14;224.05;796.68;449.25;6289.52
 Vaught;William;Rhode Island;8;308.31;978.52;672.75;5382.01
 Vaught;William;South Carolina;13;32.46;794.89;308.46;4009.93
 Vaught;William;South Dakota;5;250.30;628.13;452.25;2261.24
-Vaught;William;Tennessee;14;35.34;996.13;461.18;6456.59
+Vaught;William;Tennessee;14;35.34;996.13;461.19;6456.59
 Vaught;William;Texas;4;91.58;956.01;496.59;1986.37
 Vaught;William;Utah;12;34.78;815.22;506.75;6080.94
 Vaught;William;Vermont;13;37.58;907.26;479.86;6238.16
 Vaught;William;Virginia;10;138.46;814.82;517.44;5174.45
 Vaught;William;Washington;7;280.94;907.82;631.95;4423.67
-Vaught;William;West Virginia;10;212.81;788.57;532.98;5329.85
+Vaught;William;West Virginia;10;212.81;788.57;532.99;5329.85
 Vaught;William;Wisconsin;10;55.48;938.22;523.02;5230.20
 Vaught;William;Wyoming;11;307.26;869.58;667.72;7344.92
 Vegiard;Daniel;Alabama;5;316.54;764.17;486.07;2430.36
 Vegiard;Daniel;Alaska;11;57.04;995.45;439.99;4839.90
 Vegiard;Daniel;Arizona;10;48.17;876.67;552.78;5527.77
 Vegiard;Daniel;Arkansas;20;37.57;848.45;381.30;7626.01
-Vegiard;Daniel;California;8;44.18;999.35;639.30;5114.36
+Vegiard;Daniel;California;8;44.18;999.35;639.29;5114.36
 Vegiard;Daniel;Colorado;13;59.88;972.83;441.26;5736.39
 Vegiard;Daniel;Connecticut;8;82.66;863.35;523.07;4184.56
 Vegiard;Daniel;Delaware;9;91.12;950.52;555.86;5002.73
-Vegiard;Daniel;Florida;2;229.11;367.28;298.20;596.39
+Vegiard;Daniel;Florida;2;229.11;367.28;298.19;596.39
 Vegiard;Daniel;Georgia;12;56.93;994.85;527.97;6335.68
 Vegiard;Daniel;Hawaii;8;78.64;877.98;489.11;3912.88
 Vegiard;Daniel;Idaho;8;32.99;967.07;486.09;3888.68
@@ -9151,7 +9151,7 @@ Vegiard;Daniel;Wisconsin;10;26.06;669.85;284.82;2848.16
 Vegiard;Daniel;Wyoming;8;20.03;968.66;488.46;3907.69
 Verduzco;Charles;Alabama;7;63.39;674.38;291.92;2043.47
 Verduzco;Charles;Alaska;13;80.40;853.08;524.67;6820.67
-Verduzco;Charles;Arizona;2;343.34;717.15;530.24;1060.49
+Verduzco;Charles;Arizona;2;343.34;717.15;530.25;1060.49
 Verduzco;Charles;Arkansas;12;123.65;998.00;563.85;6766.24
 Verduzco;Charles;California;12;89.34;984.21;622.51;7470.10
 Verduzco;Charles;Colorado;9;137.92;836.65;500.04;4500.34
@@ -9181,7 +9181,7 @@ Verduzco;Charles;New Hampshire;9;33.00;972.40;529.77;4767.97
 Verduzco;Charles;New Jersey;13;47.13;923.53;407.54;5298.03
 Verduzco;Charles;New Mexico;12;57.37;942.97;533.74;6404.88
 Verduzco;Charles;New York;10;112.24;804.82;400.65;4006.52
-Verduzco;Charles;North Carolina;8;239.48;875.81;596.68;4773.40
+Verduzco;Charles;North Carolina;8;239.48;875.81;596.67;4773.40
 Verduzco;Charles;North Dakota;19;25.35;992.44;594.90;11303.17
 Verduzco;Charles;Ohio;14;37.06;786.54;394.74;5526.37
 Verduzco;Charles;Oklahoma;9;145.78;998.17;621.16;5590.46
@@ -9199,7 +9199,7 @@ Verduzco;Charles;Washington;7;202.01;942.22;578.05;4046.34
 Verduzco;Charles;West Virginia;9;131.40;917.93;500.56;4505.04
 Verduzco;Charles;Wisconsin;12;32.19;788.52;424.21;5090.56
 Verduzco;Charles;Wyoming;6;293.85;939.59;580.35;3482.08
-Vine;Joseph;Alabama;12;254.43;982.36;542.28;6507.30
+Vine;Joseph;Alabama;12;254.43;982.36;542.27;6507.30
 Vine;Joseph;Alaska;10;79.27;810.11;423.85;4238.48
 Vine;Joseph;Arizona;12;100.81;960.59;513.34;6160.11
 Vine;Joseph;Arkansas;12;24.03;998.93;576.23;6914.79
@@ -9248,7 +9248,7 @@ Vine;Joseph;Virginia;15;209.03;800.88;398.53;5977.91
 Vine;Joseph;Washington;14;59.12;917.21;474.81;6647.28
 Vine;Joseph;West Virginia;6;203.18;882.85;552.02;3312.15
 Vine;Joseph;Wisconsin;10;172.59;728.99;456.59;4565.92
-Vine;Joseph;Wyoming;8;32.26;887.92;387.78;3102.28
+Vine;Joseph;Wyoming;8;32.26;887.92;387.79;3102.28
 Weinzimmer;Ashley;Alabama;10;226.62;998.55;511.99;5119.87
 Weinzimmer;Ashley;Alaska;11;106.15;973.06;577.06;6347.64
 Weinzimmer;Ashley;Arizona;7;107.11;982.61;491.48;3440.33
@@ -9320,7 +9320,7 @@ Westbury;Ashley;Louisiana;10;234.11;981.33;629.29;6292.94
 Westbury;Ashley;Maine;8;71.84;963.97;507.92;4063.36
 Westbury;Ashley;Maryland;8;32.17;933.50;418.18;3345.42
 Westbury;Ashley;Massachusetts;13;25.66;850.28;485.34;6309.48
-Westbury;Ashley;Michigan;4;161.75;986.62;524.74;2098.98
+Westbury;Ashley;Michigan;4;161.75;986.62;524.75;2098.98
 Westbury;Ashley;Minnesota;9;119.91;862.45;532.93;4796.33
 Westbury;Ashley;Mississippi;12;26.17;871.75;431.70;5180.37
 Westbury;Ashley;Missouri;10;207.42;992.64;688.24;6882.39
@@ -9448,7 +9448,7 @@ Williams;Frank;Virginia;6;208.71;837.94;594.56;3567.35
 Williams;Frank;Washington;11;21.93;796.88;390.45;4294.96
 Williams;Frank;West Virginia;11;20.61;937.04;409.84;4508.23
 Williams;Frank;Wisconsin;9;83.43;962.87;433.19;3898.67
-Williams;Frank;Wyoming;8;90.86;940.83;418.48;3347.88
+Williams;Frank;Wyoming;8;90.86;940.83;418.49;3347.88
 Willmott;Raquel;Alabama;7;26.47;915.29;331.63;2321.43
 Willmott;Raquel;Alaska;10;296.04;924.94;680.11;6801.12
 Willmott;Raquel;Arizona;9;77.95;810.16;405.74;3651.70
@@ -9457,7 +9457,7 @@ Willmott;Raquel;California;7;84.81;842.96;396.76;2777.31
 Willmott;Raquel;Colorado;8;62.50;636.39;367.47;2939.73
 Willmott;Raquel;Connecticut;11;23.04;792.04;421.58;4637.41
 Willmott;Raquel;Delaware;9;38.17;971.13;406.36;3657.25
-Willmott;Raquel;Florida;6;434.36;923.45;735.70;4414.23
+Willmott;Raquel;Florida;6;434.36;923.45;735.71;4414.23
 Willmott;Raquel;Georgia;7;77.92;722.27;392.63;2748.43
 Willmott;Raquel;Hawaii;4;268.46;959.99;712.44;2849.75
 Willmott;Raquel;Idaho;9;145.90;803.85;459.83;4138.43
@@ -9516,7 +9516,7 @@ Wolters;Leonardo;Indiana;12;39.72;951.82;430.05;5160.62
 Wolters;Leonardo;Iowa;4;343.11;806.50;584.77;2339.08
 Wolters;Leonardo;Kansas;10;116.96;877.02;481.22;4812.18
 Wolters;Leonardo;Kentucky;8;180.24;972.13;566.80;4534.44
-Wolters;Leonardo;Louisiana;8;344.54;988.83;701.14;5609.08
+Wolters;Leonardo;Louisiana;8;344.54;988.83;701.13;5609.08
 Wolters;Leonardo;Maine;7;218.30;859.02;588.12;4116.81
 Wolters;Leonardo;Maryland;7;74.31;780.57;443.04;3101.29
 Wolters;Leonardo;Massachusetts;13;65.26;962.05;626.13;8139.74
@@ -9557,9 +9557,9 @@ Worland;James;California;10;147.37;855.94;476.13;4761.35
 Worland;James;Colorado;9;36.99;975.46;451.68;4065.13
 Worland;James;Connecticut;8;153.59;807.38;568.14;4545.16
 Worland;James;Delaware;9;318.32;900.13;676.34;6087.04
-Worland;James;Florida;8;50.92;835.40;477.60;3820.84
+Worland;James;Florida;8;50.92;835.40;477.61;3820.84
 Worland;James;Georgia;7;121.80;982.49;715.53;5008.69
-Worland;James;Hawaii;12;72.35;841.26;395.86;4750.38
+Worland;James;Hawaii;12;72.35;841.26;395.87;4750.38
 Worland;James;Idaho;11;39.05;933.70;424.34;4667.78
 Worland;James;Illinois;4;671.35;821.84;730.33;2921.32
 Worland;James;Indiana;11;178.55;923.52;515.65;5672.17
@@ -9577,7 +9577,7 @@ Worland;James;Missouri;8;69.43;949.34;484.17;3873.34
 Worland;James;Montana;13;173.86;959.77;579.21;7529.79
 Worland;James;Nebraska;7;23.87;891.03;539.23;3774.64
 Worland;James;Nevada;6;123.79;986.65;531.23;3187.39
-Worland;James;New Hampshire;4;186.78;960.07;652.32;2609.30
+Worland;James;New Hampshire;4;186.78;960.07;652.33;2609.30
 Worland;James;New Jersey;11;123.02;792.69;443.82;4882.03
 Worland;James;New Mexico;11;39.92;932.92;437.07;4807.73
 Worland;James;New York;13;334.72;923.61;672.67;8744.72
@@ -9641,13 +9641,13 @@ Wynn;Stanley;Rhode Island;9;86.15;958.53;388.69;3498.22
 Wynn;Stanley;South Carolina;8;125.32;969.88;652.92;5223.35
 Wynn;Stanley;South Dakota;6;128.24;864.81;313.53;1881.16
 Wynn;Stanley;Tennessee;14;64.60;885.60;508.61;7120.48
-Wynn;Stanley;Texas;12;111.59;976.02;569.98;6839.82
+Wynn;Stanley;Texas;12;111.59;976.02;569.99;6839.82
 Wynn;Stanley;Utah;11;63.81;958.99;549.04;6039.48
 Wynn;Stanley;Vermont;14;42.00;942.16;526.23;7367.26
 Wynn;Stanley;Virginia;9;101.57;701.86;471.38;4242.40
 Wynn;Stanley;Washington;15;119.87;848.66;450.20;6753.02
 Wynn;Stanley;West Virginia;10;202.83;969.29;602.73;6027.28
-Wynn;Stanley;Wisconsin;4;429.47;891.45;689.84;2759.38
+Wynn;Stanley;Wisconsin;4;429.47;891.45;689.85;2759.38
 Wynn;Stanley;Wyoming;10;113.57;978.24;627.48;6274.77
 Yoes;Valerie;Alabama;7;80.74;989.05;488.65;3420.52
 Yoes;Valerie;Alaska;12;58.22;729.62;477.90;5734.77
@@ -9686,7 +9686,7 @@ Yoes;Valerie;North Dakota;7;29.31;964.93;612.53;4287.72
 Yoes;Valerie;Ohio;8;28.29;929.38;480.11;3840.90
 Yoes;Valerie;Oklahoma;15;53.82;901.52;438.20;6573.07
 Yoes;Valerie;Oregon;11;30.30;929.14;547.25;6019.80
-Yoes;Valerie;Pennsylvania;12;22.58;905.90;387.66;4651.86
+Yoes;Valerie;Pennsylvania;12;22.58;905.90;387.65;4651.86
 Yoes;Valerie;Rhode Island;11;111.55;986.70;582.26;6404.81
 Yoes;Valerie;South Carolina;17;34.22;993.59;516.07;8773.20
 Yoes;Valerie;South Dakota;4;312.85;837.66;631.93;2527.73
@@ -9895,7 +9895,7 @@ Zenarosa;Jacqueline;Texas;11;58.90;967.08;403.22;4435.43
 Zenarosa;Jacqueline;Utah;8;96.13;941.64;449.54;3596.32
 Zenarosa;Jacqueline;Vermont;11;240.21;968.95;654.20;7196.15
 Zenarosa;Jacqueline;Virginia;4;66.56;628.00;440.47;1761.88
-Zenarosa;Jacqueline;Washington;12;103.97;885.08;587.80;7053.54
+Zenarosa;Jacqueline;Washington;12;103.97;885.08;587.79;7053.54
 Zenarosa;Jacqueline;West Virginia;14;63.46;921.12;492.49;6894.84
 Zenarosa;Jacqueline;Wisconsin;4;87.34;752.73;387.41;1549.66
 Zenarosa;Jacqueline;Wyoming;8;195.01;944.73;425.36;3402.85
@@ -9936,7 +9936,7 @@ Ziegler;Flora;North Dakota;9;136.88;899.48;545.01;4905.08
 Ziegler;Flora;Ohio;10;92.44;979.54;547.92;5479.17
 Ziegler;Flora;Oklahoma;7;153.69;703.59;418.65;2930.58
 Ziegler;Flora;Oregon;8;70.08;804.34;502.41;4019.25
-Ziegler;Flora;Pennsylvania;10;108.57;991.29;566.22;5662.25
+Ziegler;Flora;Pennsylvania;10;108.57;991.29;566.23;5662.25
 Ziegler;Flora;Rhode Island;11;126.01;891.80;499.52;5494.76
 Ziegler;Flora;South Carolina;10;205.09;910.85;566.59;5665.88
 Ziegler;Flora;South Dakota;9;33.36;974.93;532.27;4790.47

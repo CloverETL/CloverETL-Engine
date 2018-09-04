@@ -20,13 +20,14 @@ package org.jetel.plugin;
 
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.jetel.util.CompoundEnumeration;
@@ -41,10 +42,11 @@ import org.jetel.util.classloader.GreedyURLClassLoader;
  *
  */
 public class PluginClassLoader extends GreedyURLClassLoader {
+	
 	static final Logger log = Logger.getLogger(PluginClassLoader.class);
 
     private PluginDescriptor pluginDescriptor;
-    private PluginDescriptor[] importPlugins;
+    private PluginDescriptor[] importedPlugins;
     
     /**
      * Constructor.
@@ -57,12 +59,12 @@ public class PluginClassLoader extends GreedyURLClassLoader {
         super(pluginDescriptor.getLibraryURLs(), parent, excludedPackages, greedy);
         this.pluginDescriptor = pluginDescriptor;
         if (log.isTraceEnabled()) {
-        	log.trace("Init "+this+" parent:"+parent+" greedy:"+greedy);
-        	if (pluginDescriptor.getLibraryURLs() != null){
-        		log.trace("Init "+this+" libraries:"+Arrays.asList(pluginDescriptor.getLibraryURLs()));
+        	log.trace("Init " + this + " parent:" + parent + " greedy:" + greedy);
+        	if (pluginDescriptor.getLibraryURLs() != null) {
+        		log.trace("Init " + this + " libraries:" + Arrays.asList(pluginDescriptor.getLibraryURLs()));
         	}
-        	if (excludedPackages != null){
-        		log.trace("Init "+this+" excludedPackages:"+Arrays.asList(excludedPackages) );
+        	if (excludedPackages != null) {
+        		log.trace("Init " + this + " excludedPackages:" + Arrays.asList(excludedPackages) );
         	}
         }
         collectImports();
@@ -73,40 +75,43 @@ public class PluginClassLoader extends GreedyURLClassLoader {
      */
     private void collectImports() {
         PluginDescriptor pluginDescriptor;
-        Collection prerequisites = getPluginDescriptor().getPrerequisites();
+        Collection<PluginPrerequisite> prerequisites = getPluginDescriptor().getPrerequisites();
         List<PluginDescriptor> importPlugins = new ArrayList<PluginDescriptor>();
         
-        for(Iterator it = prerequisites.iterator(); it.hasNext();) {
-            PluginPrerequisite prerequisite = (PluginPrerequisite) it.next();
+        for(Iterator<PluginPrerequisite> it = prerequisites.iterator(); it.hasNext();) {
+            PluginPrerequisite prerequisite = it.next();
             pluginDescriptor = Plugins.getPluginDescriptor(prerequisite.getPluginId());
-            if(pluginDescriptor != null) {
+            if (pluginDescriptor != null) {
                 importPlugins.add(pluginDescriptor);
             }
         }
         
-        this.importPlugins = importPlugins.toArray(new PluginDescriptor[importPlugins.size()]);
-        if (log.isTraceEnabled())
-        	log.trace(this+" importPlugins:"+importPlugins );
+        this.importedPlugins = importPlugins.toArray(new PluginDescriptor[importPlugins.size()]);
+        if (log.isTraceEnabled()) {
+        	log.trace(this + " importPlugins:" + importPlugins);
+        }
     }
 
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         try {
             return super.findClass(name);
-        } catch(ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             return findClassInPrerequisities(name);
         }
     }
     
    private Class<?> findClassInPrerequisities(String name) throws ClassNotFoundException {
        //try all dependant plugins
-       for (PluginDescriptor pluginDescriptor : importPlugins) {
+       for (PluginDescriptor pluginDescriptor : importedPlugins) {
            try {
-               if (log.isTraceEnabled())
-            	   log.trace(this+" trying to find:"+ name + " in "+getClassLoaderId(pluginDescriptor.getClassLoader()));
+               if (log.isTraceEnabled()) {
+                   log.trace(this + " trying to find:" + name + " in " + getClassLoaderId(pluginDescriptor.getClassLoader()));
+               }
                Class<?> cl = pluginDescriptor.getClassLoader().loadClass(name);
-               if (log.isTraceEnabled() && cl != null)
-            	   log.trace(this+" class:"+ name + " found by "+getClassLoaderId(cl.getClassLoader()));
+               if (log.isTraceEnabled() && cl != null) {
+                   log.trace(this + " class:" + name + " found by " + getClassLoaderId(cl.getClassLoader()));
+               }
                return cl;
            } catch(ClassNotFoundException e) {
                //continue;
@@ -120,7 +125,7 @@ public class PluginClassLoader extends GreedyURLClassLoader {
 	public URL getResource(String name) {
 		URL resource = super.getResource(name);
 		if (resource == null) {
-			for (PluginDescriptor pluginDescriptor : importPlugins) {
+			for (PluginDescriptor pluginDescriptor : importedPlugins) {
 				resource = pluginDescriptor.getClassLoader().getResource(name);
 				if (resource != null) {
 					return resource;
@@ -134,41 +139,39 @@ public class PluginClassLoader extends GreedyURLClassLoader {
 	public Enumeration<URL> getResources(String name) throws IOException {
 		List<Enumeration<URL>> resources = new ArrayList<Enumeration<URL>>();
 		resources.add(super.getResources(name));
-		for (PluginDescriptor pluginDescriptor : importPlugins) {
+		for (PluginDescriptor pluginDescriptor : importedPlugins) {
 			resources.add(pluginDescriptor.getClassLoader().getResources(name));
 		}
 		return new CompoundEnumeration<URL>(resources);
 	}
 
-    /**
-     * @return returns the plug-in descriptor
-     */
     public PluginDescriptor getPluginDescriptor() {
         return pluginDescriptor;
     }
-
+    
     /**
-     * @return concatened lists of parent class loader, this class loader and all
-     * dependant class loaders URLs (getURLs())
+     * Answers URLs composing this class loader's class path. Class path of all imported
+     * plugins is included in the result, the lookup is transitive.
      */
-    public URL[] getAllURLs() {
-        List<URL> retURLs = new ArrayList<URL>();
-        ClassLoader parentClassLoader = getParent();
-        
-        if(parentClassLoader instanceof URLClassLoader) {
-           retURLs.addAll(Arrays.asList(((URLClassLoader) parentClassLoader).getURLs()));
-        }
-        retURLs.addAll(Arrays.asList(getURLs()));
-        
-        for(int i = 0; i < importPlugins.length; i++) {
-            retURLs.addAll(Arrays.asList(((PluginClassLoader) importPlugins[i].getClassLoader()).getURLs()));
-        }
-        
-        return retURLs.toArray(new URL[retURLs.size()]);
+    @Override
+    public URL[] getURLs() {
+    	
+    	Set<URL> urls = new LinkedHashSet<>();
+    	
+    	urls.addAll(Arrays.asList(super.getURLs()));
+    	
+    	for (PluginDescriptor pd : importedPlugins) {
+    		if (pd.getClassLoader() instanceof PluginClassLoader) {
+    			PluginClassLoader loader = (PluginClassLoader)pd.getClassLoader();
+    			urls.addAll(Arrays.asList(loader.getURLs()));
+    		}
+    	}
+    	
+    	return urls.toArray(new URL[urls.size()]);
     }
     
     @Override
 	public String toString(){
-    	return "PluginClassLoader:"+this.getPluginDescriptor().getId();
+    	return "PluginClassLoader:" + this.getPluginDescriptor().getId();
     }
 }
