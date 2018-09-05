@@ -127,7 +127,7 @@ function integer generate() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node denormalizeClass="com.cloveretl.components.DataRecordMetadataDenormalize" enabled="enabled" guiName="Denormalizer" guiX="494" guiY="-17" id="DENORMALIZER" key="recordName(i)" type="DENORMALIZER"/>
+<Node denormalizeClass="com.cloverdx.components.DataRecordMetadataDenormalize" enabled="enabled" guiName="Denormalizer" guiX="494" guiY="-17" id="DENORMALIZER" key="recordName(i)" type="DENORMALIZER"/>
 <Node enabled="enabled" guiName="Input mapping" guiX="301" guiY="-17" id="INPUT_MAPPING" type="REFORMAT">
 <attr name="transform"><![CDATA[${INPUT_MAPPING}]]></attr>
 </Node>
