@@ -1714,13 +1714,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){multivalueInput fi = null; map[string, string] str = getMapValue($in.0, -1); return 0;}","test_dynamiclib_getMapValue_expect_error");
+			doCompile("function integer transform(){map[string, string] str = getMapValue($in.0, -1); return 0;}","test_dynamiclib_getMapValue_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){multivalueInput fi = null; map[string, string] str = $in.0.getMapValue(15); return 0;}","test_dynamiclib_getMapValue_expect_error");
+			doCompile("function integer transform(){map[string, string] str = $in.0.getMapValue(15); return 0;}","test_dynamiclib_getMapValue_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing

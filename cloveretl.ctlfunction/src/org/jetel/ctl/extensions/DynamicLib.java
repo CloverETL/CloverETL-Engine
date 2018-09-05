@@ -52,8 +52,8 @@ public class DynamicLib extends TLFunctionLibrary {
 				case "getLongValue": return new GetValueFunction(Long.class);
 				case "getNumValue": return new GetValueFunction(Double.class);
 				case "getStringValue": return new GetValueFunction(String.class);
-				case "getListValue": return new GetValueFunction(Object.class);
-				case "getMapValue": return new GetValueFunction(Object.class);
+				case "getListValue": return new GetValueFunction(List.class);
+				case "getMapValue": return new GetValueFunction(Map.class);
 				case "setBoolValue": return new SetValueFunction<Boolean>() {
 	
 						@Override
@@ -221,24 +221,26 @@ public class DynamicLib extends TLFunctionLibrary {
 	}
 
 	
-	@SuppressWarnings("unchecked")
 	private static final Object getFieldValue(DataField field) {
 		Object value = field.getValue();
 		if (value == null) {
 			return null;
 		} else if(field.getMetadata().getContainerType() == DataFieldContainerType.LIST) {
 			//convert elements to string
-			List<Object> list = (List<Object>)value;
+			List<?> list = (List<?>)value;
 			List<String> strList = new ArrayList<String>();
 			for (Object item : list)
 			{
-				if (item instanceof byte[])
+				if (item == null) 
+				{
+					strList.add(null);
+				}
+				else if (item instanceof byte[])
 				{
 					try {
 						strList.add(new String((byte[]) item, DataParser.DEFAULT_CHARSET_DECODER));
 					} catch (UnsupportedEncodingException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						throw new RuntimeException(e);
 					}			
 				}
 				else
@@ -249,22 +251,23 @@ public class DynamicLib extends TLFunctionLibrary {
 			value = strList;
 		} else if(field.getMetadata().getContainerType() == DataFieldContainerType.MAP) {
 			//convert keys and values to string
-			Map<Object, Object> map = (Map<Object, Object>)value;
+			Map<?, ?> map = (Map<?, ?>)value;
 			Map<String, String> strMap = new HashMap<String, String>();
-			for (Map.Entry<Object, Object> entry : map.entrySet())
+			for (Map.Entry<?, ?> entry : map.entrySet())
 			{
 				if (entry.getValue() instanceof byte[])
 				{
 					try {
 						strMap.put(String.valueOf(entry.getKey()), new String((byte[]) entry.getValue(),DataParser.DEFAULT_CHARSET_DECODER));
 					} catch (UnsupportedEncodingException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						throw new RuntimeException(e);
 					}
 				}
 				else
 				{
-					strMap.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
+					Object key = entry.getKey();
+					Object val = entry.getValue();
+					strMap.put(key == null ? null : String.valueOf(entry.getKey()), val == null ? null : String.valueOf(entry.getValue()));
 				}
 			}
 			value = strMap;
