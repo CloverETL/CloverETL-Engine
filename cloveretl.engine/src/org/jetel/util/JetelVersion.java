@@ -119,7 +119,7 @@ public final class JetelVersion {
      */
     public static String getProductName(){
         final StringBuilder ret = new StringBuilder();
-        ret.append("CloverETL version ");
+        ret.append("CloverDX version ");
         ret.append(MAJOR_VERSION );
         ret.append(".");
         ret.append(MINOR_VERSION);
