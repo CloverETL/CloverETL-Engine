@@ -61,6 +61,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * <h3>JSONExtract Component</h3>
  * 
@@ -446,6 +448,7 @@ public class JsonExtract extends Node {
 	}
 
 	@Override
+	@SuppressFBWarnings("NP_LOAD_OF_KNOWN_NULL_VALUE")
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 		if (checkPorts(status)) {
