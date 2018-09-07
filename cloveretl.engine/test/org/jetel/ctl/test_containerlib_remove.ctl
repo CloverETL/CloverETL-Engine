@@ -58,36 +58,36 @@ function integer transform() {
 	
 	intMap[1] = "a";
 	intMap[2] = "b";
-	intMapVal[1] = 1;
-	intMapVal[2] = 2;
+	intMapVal[1] = 3;
+	intMapVal[2] = 4;
 	strIntVal = intMap.remove(2);
 	intVal1 = intMapVal.remove(1);
 	
 	longMap[1L] = "a";
 	longMap[2L] = "b";
-	longMapVal[1L] = 1L;
-	longMapVal[2L] = 2L;
+	longMapVal[1L] = 3L;
+	longMapVal[2L] = 4L;
 	strLongVal = longMap.remove(2L);
 	longVal1 = longMapVal.remove(1L);
 	
 	decMap[1.0D] = "a";
 	decMap[2.0D] = "b";
-	decimalMapVal[1.0d] = 1.0d;
-	decimalMapVal[2.0d] = 2.0d;
+	decimalMapVal[1.0d] = 3.0d;
+	decimalMapVal[2.0d] = 4.0d;
 	strDecVal = decMap.remove(2.0d);
 	decVal1 = decimalMapVal.remove(1.0d);
 	
 	dateMap[str2date('2001-11-13','yyyy-MM-dd')] = "a";
 	dateMap[str2date('2002-11-13','yyyy-MM-dd')] = "b";
-	dateMapVal[str2date('2001-11-13','yyyy-MM-dd')] = str2date('2001-11-13','yyyy-MM-dd');
-	dateMapVal[str2date('2002-11-13','yyyy-MM-dd')] = str2date('2002-11-13','yyyy-MM-dd');
+	dateMapVal[str2date('2001-11-13','yyyy-MM-dd')] = str2date('2011-11-13','yyyy-MM-dd');
+	dateMapVal[str2date('2002-11-13','yyyy-MM-dd')] = str2date('2012-11-13','yyyy-MM-dd');
 	strDateVal = dateMap.remove(str2date('2002-11-13','yyyy-MM-dd'));
 	dateVal1 = dateMapVal.remove(str2date('2001-11-13','yyyy-MM-dd'));
 
 	strMap["1"] = "a";
 	strMap["2"] = "b";
-	stringMapVal["1"] = "1";
-	stringMapVal["2"] = "2";
+	stringMapVal["1"] = "3";
+	stringMapVal["2"] = "4";
 	strStrVal = strMap.remove("2");
 	strVal1 = stringMapVal.remove("1");
 	

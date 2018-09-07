@@ -52,8 +52,8 @@ public class DynamicLib extends TLFunctionLibrary {
 				case "getLongValue": return new GetValueFunction(Long.class);
 				case "getNumValue": return new GetValueFunction(Double.class);
 				case "getStringValue": return new GetValueFunction(String.class);
-				case "getListValue": return new GetValueFunction(List.class);
-				case "getMapValue": return new GetValueFunction(Map.class);
+				case "getStringListValue": return new GetValueFunction(List.class);
+				case "getStringMapValue": return new GetValueFunction(Map.class);
 				case "setBoolValue": return new SetValueFunction<Boolean>() {
 	
 						@Override
@@ -220,7 +220,6 @@ public class DynamicLib extends TLFunctionLibrary {
 		return LIBRARY_NAME;
 	}
 
-	
 	private static final Object getFieldValue(DataField field) {
 		Object value = field.getValue();
 		if (value == null) {
@@ -249,22 +248,19 @@ public class DynamicLib extends TLFunctionLibrary {
 				}
 			}
 			value = strList;
-		} else if(field.getMetadata().getContainerType() == DataFieldContainerType.MAP) {
+		} else if (field.getMetadata().getContainerType() == DataFieldContainerType.MAP) {
 			//convert keys and values to string
-			Map<?, ?> map = (Map<?, ?>)value;
+			Map<?, ?> map = (Map<?, ?>) value;
 			Map<String, String> strMap = new HashMap<String, String>();
-			for (Map.Entry<?, ?> entry : map.entrySet())
-			{
-				if (entry.getValue() instanceof byte[])
-				{
+			for (Map.Entry<?, ?> entry : map.entrySet()) {
+				if (entry.getValue() instanceof byte[]) {
 					try {
-						strMap.put(String.valueOf(entry.getKey()), new String((byte[]) entry.getValue(),DataParser.DEFAULT_CHARSET_DECODER));
+						strMap.put(String.valueOf(entry.getKey()), new String((byte[]) entry.getValue(), DataParser.DEFAULT_CHARSET_DECODER));
 					} catch (UnsupportedEncodingException e) {
 						throw new RuntimeException(e);
 					}
 				}
-				else
-				{
+				else {
 					Object key = entry.getKey();
 					Object val = entry.getValue();
 					strMap.put(key == null ? null : String.valueOf(entry.getKey()), val == null ? null : String.valueOf(entry.getValue()));
@@ -272,21 +268,19 @@ public class DynamicLib extends TLFunctionLibrary {
 			}
 			value = strMap;
 			
-		} else if(value instanceof CharSequence) {
+		} else if (value instanceof CharSequence) {
 			// convert to String
 			value = ((CharSequence) value).toString();
-		} else if(value instanceof Decimal) {
+		} else if (value instanceof Decimal) {
 			// convert to BigDecimal
 			value = ((Decimal) value).getBigDecimalOutput();
-		} else if(value instanceof Date) {
+		} else if (value instanceof Date) {
 			/* 
 			 * create a new instance for safety
 			 * - DateDataField can modify the returned instance 
 			 */
 			value = new Date(((Date) value).getTime());
-
 		}
-		
 		return value;
 	}
 	
@@ -389,24 +383,24 @@ public class DynamicLib extends TLFunctionLibrary {
 	// GET LIST VALUE
 	@SuppressWarnings("unchecked")
 	@TLFunctionAnnotation("Returns the list value of a field. All elements are cast to string.")
-	public static final List<String> getListValue(TLFunctionCallContext context, DataRecord record, int fieldIndex) {
+	public static final List<String> getStringListValue(TLFunctionCallContext context, DataRecord record, int fieldIndex) {
 		return (List<String>) getFieldValue(record, fieldIndex);
 	}
 	@SuppressWarnings("unchecked")
 	@TLFunctionAnnotation("Returns the list value of a field. All elements are cast to string.")
-	public static final List<String> getListValue(TLFunctionCallContext context, DataRecord record, String fieldName) {
+	public static final List<String> getStringListValue(TLFunctionCallContext context, DataRecord record, String fieldName) {
 		return (List<String>) getFieldValue(record, fieldName);
 	}
 	
 	// GET MAP VALUE
 	@SuppressWarnings("unchecked")
 	@TLFunctionAnnotation("Returns the map value of a field. All keys and values are cast to string.")
-	public static final Map<String, String> getMapValue(TLFunctionCallContext context, DataRecord record, int fieldIndex) {
+	public static final Map<String, String> getStringMapValue(TLFunctionCallContext context, DataRecord record, int fieldIndex) {
 		return (Map<String, String>) getFieldValue(record, fieldIndex);
 	}
 	@SuppressWarnings("unchecked")
 	@TLFunctionAnnotation("Returns the map value of a field. All keys and values are cast to string.")
-	public static final Map<String, String> getMapValue(TLFunctionCallContext context, DataRecord record, String fieldName) {
+	public static final Map<String, String> getStringMapValue(TLFunctionCallContext context, DataRecord record, String fieldName) {
 		return (Map<String, String>) getFieldValue(record, fieldName);
 	}
 	

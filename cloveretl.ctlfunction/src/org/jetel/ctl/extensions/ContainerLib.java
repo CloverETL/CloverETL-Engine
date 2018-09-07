@@ -243,19 +243,19 @@ public class ContainerLib extends TLFunctionLibrary {
 
 
 		@Override
-		public void execute(Stack stack, TLFunctionCallContext context) {	
-		TLType type=context.getParams()[0];
-		if (type.isMap()) {
-			Object value = stack.pop();
-			Map<Object, Object> map = stack.popMap();
-			stack.push(remove(context, map, value));
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			TLType type = context.getParams()[0];
+			if (type.isMap()) {
+				Object value = stack.pop();
+				Map<Object, Object> map = stack.popMap();
+				stack.push(remove(context, map, value));
+			} else if (type.isList()) {
+				final Integer pos = stack.popInt();
+				final List<Object> list = stack.popList();
+				stack.push(remove(context, list, pos));
+			}
 		}
-		else if (type.isList()){
-			final Integer pos = stack.popInt();
-			final List<Object> list = stack.popList();
-			stack.push(remove(context, list, pos));}
-		}
-		
+
 	}
 
 	private static class MyComparator<T extends Comparable<T>> implements Comparator<T> {

@@ -34,11 +34,11 @@ function integer transform(){
 	setMapValue($out.4, "dateMapField", dateMap);
 	setMapValue($out.4, "byteMapField", byteMap);
 	setMapValue($out.4, "decimalMapField", decimalMap);
-	ret1 = getMapValue($out.4, "stringMapField");
-	ret2 = getMapValue($out.4, "integerMapField");
-	ret3 = getMapValue($out.4, "dateMapField");
-	ret4 = getMapValue($out.4, "byteMapField");
-	ret5 = getMapValue($out.4, "decimalMapField");
+	ret1 = getStringMapValue($out.4, "stringMapField");
+	ret2 = getStringMapValue($out.4, "integerMapField");
+	ret3 = getStringMapValue($out.4, "dateMapField");
+	ret4 = getStringMapValue($out.4, "byteMapField");
+	ret5 = getStringMapValue($out.4, "decimalMapField");
 
 	return 0;
 }

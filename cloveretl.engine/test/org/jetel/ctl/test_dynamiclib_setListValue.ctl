@@ -21,11 +21,11 @@ function integer transform(){
 	setListValue($out.4, "dateListField", dateList);
 	setListValue($out.4, "byteListField", byteList);
 	setListValue($out.4, "decimalListField", decimalList);
-	ret1 = getListValue($out.4, "stringListField");
-	ret2 = getListValue($out.4, "integerListField");
-	ret3 = getListValue($out.4, "dateListField");
-	ret4 = getListValue($out.4, "byteListField");
-	ret5 = getListValue($out.4, "decimalListField");
+	ret1 = getStringListValue($out.4, "stringListField");
+	ret2 = getStringListValue($out.4, "integerListField");
+	ret3 = getStringListValue($out.4, "dateListField");
+	ret4 = getStringListValue($out.4, "byteListField");
+	ret5 = getStringListValue($out.4, "decimalListField");
 
 	return 0;
 }
