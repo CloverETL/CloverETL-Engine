@@ -18,6 +18,7 @@
  */
 package org.jetel.component.fileoperation;
 
+import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -41,6 +42,11 @@ public class FileOperationMessages {
 		} catch (MissingResourceException e) {
 			return '!' + key + '!';
 		}
+	}
+	
+	public static String formatMessage(String key, Object... arguments) {
+		String pattern = getString(key);
+		return MessageFormat.format(pattern, arguments);
 	}
 
 }

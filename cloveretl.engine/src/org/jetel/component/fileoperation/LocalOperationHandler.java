@@ -51,8 +51,6 @@ import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
 import org.jetel.util.file.FileUtils;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 public class LocalOperationHandler implements IOperationHandler {
 	
 	static final String FILE_SCHEME = "file"; //$NON-NLS-1$
@@ -100,7 +98,6 @@ public class LocalOperationHandler implements IOperationHandler {
 		}
 	}
 	
-	@SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
 	private boolean copyInternal(File source, File target, CopyParameters params) throws IOException {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
@@ -135,7 +132,11 @@ public class LocalOperationHandler implements IOperationHandler {
 					throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.create_failed"), target)); //$NON-NLS-1$
 				}
 			}
-			for (File child: source.listFiles()) {
+			File[] children = source.listFiles();
+			if (children == null) {
+				throw new IOException(FileOperationMessages.formatMessage("FileManager.failed_to_list_contents", source));
+			}
+			for (File child: children) {
 				success &= copyInternal(child, new File(target, child.getName()), params);
 			}
 			return success;
@@ -223,7 +224,6 @@ public class LocalOperationHandler implements IOperationHandler {
 		return moveInternal(source, target, params) ? SingleCloverURI.createSingleURI(target.toURI()) : null;
 	}
 	
-	@SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
 	private boolean moveInternal(File source, File target, MoveParameters params) throws IOException {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
@@ -265,7 +265,11 @@ public class LocalOperationHandler implements IOperationHandler {
 			if (!target.mkdir()) {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.create_failed"), target)); //$NON-NLS-1$
 			}
-			for (File child: source.listFiles()) {
+			File[] children = source.listFiles();
+			if (children == null) {
+				throw new IOException(FileOperationMessages.formatMessage("FileManager.failed_to_list_contents", source));
+			}
+			for (File child: children) {
 				File childTarget = new File(target, child.getName());
 				success &= moveInternal(child, childTarget, params);
 			}
@@ -363,7 +367,6 @@ public class LocalOperationHandler implements IOperationHandler {
 		return new FileContent(new File(target.toURI()));
 	}
 	
-	@SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
 	private boolean delete(File file, DeleteParameters params) throws IOException {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
@@ -373,8 +376,11 @@ public class LocalOperationHandler implements IOperationHandler {
 		}
 		if (file.isDirectory()) {
 			if (params.isRecursive()) {
-				for (File child: file.listFiles()) {
-					delete(child, params);
+				File[] children = file.listFiles();
+				if (children != null) {
+					for (File child: children) {
+						delete(child, params);
+					}
 				}
 			} else {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_remove_directory"), file)); //$NON-NLS-1$
