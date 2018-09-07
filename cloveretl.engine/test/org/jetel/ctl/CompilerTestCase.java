@@ -7225,11 +7225,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("limit20", Arrays.asList("The quick br", "wn f", "", " jumps " , "ver the lazy d", "g"));
 		
 		check("test_empty", Arrays.asList(""));
-		check("test_empty2", Arrays.asList("","a","a"));
+		check("test_empty2", Arrays.asList("a", "a"));
 		check("test_empty3", Arrays.asList(""));
-		check("test_empty4", Arrays.asList("","a","a"));
+		check("test_empty4", Arrays.asList("a", "a"));
 		check("test_empty5", Arrays.asList(""));
-		check("test_empty6", Arrays.asList("","a","a", "")); // regex is an empty string => trailing empty string
+		check("test_empty6", Arrays.asList("a","a", "")); // regex is an empty string => trailing empty string
 		
 		check("test_null", Collections.EMPTY_LIST);
 		
@@ -10567,7 +10567,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_convertlib_json2xml(){
 		doCompile("test_convertlib_json2xml");
 		String xmlChunk =""
+				+ "<firstName>John</firstName>"
 				+ "<lastName>Smith</lastName>"
+				+ "<address>"
+					+ "<streetAddress>21 2nd Street</streetAddress>"
+					+ "<city>New York</city>"
+					+ "<postalCode>10021</postalCode>"
+					+ "<state>NY</state>"
+				+ "</address>"
 				+ "<phoneNumber>"
 					+ "<number>212 555-1234</number>"
 					+ "<type>home</type>"
@@ -10576,14 +10583,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 					+ "<number>646 555-4567</number>"
 					+ "<type>fax</type>"
 				+ "</phoneNumber>"
-				+ "<address>"
-					+ "<streetAddress>21 2nd Street</streetAddress>"
-					+ "<postalCode>10021</postalCode>"
-					+ "<state>NY</state>"
-					+ "<city>New York</city>"
-				+ "</address>"
-				+ "<age>25</age>"
-				+ "<firstName>John</firstName>";
+				+ "<age>25</age>";
 		check("ret", xmlChunk);
 		check("ret2", "<name/>");
 		check("ret3", "<address></address>");
@@ -10630,7 +10630,17 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	public void test_convertlib_xml2json(){
 		doCompile("test_convertlib_xml2json");
-		String json = "{\"lastName\":\"Smith\",\"phoneNumber\":[{\"number\":\"212 555-1234\",\"type\":\"home\"},{\"number\":\"646 555-4567\",\"type\":\"fax\"}],\"address\":{\"streetAddress\":\"21 2nd Street\",\"postalCode\":10021,\"state\":\"NY\",\"city\":\"New York\"},\"age\":25,\"firstName\":\"John\"}";
+		String json = ""
+			+ "{"
+				+ "\"lastName\":\"Smith\","
+				+ "\"firstName\":\"John\","
+				+ "\"phoneNumber\":["
+					+ "{\"number\":\"212 555-1234\",\"type\":\"home\"},"
+					+"{\"number\":\"646 555-4567\",\"type\":\"fax\"}"
+				+"],"
+				+ "\"address\":{\"streetAddress\":\"21 2nd Street\",\"city\":\"New York\",\"postalCode\":10021,\"state\":\"NY\"},"
+				+ "\"age\":25"
+			+ "}";
 		check("ret1", json);
 		check("ret2", "{\"name\":\"Renektor\"}");
 		check("ret3", "{}");

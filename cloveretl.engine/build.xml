@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="us-ascii"?>
-<project name="cloveretl.engine" default="build" basedir="." xmlns:jacoco="antlib:org.jacoco.ant">
+<project name="cloveretl.engine" default="build" basedir="." xmlns:jacoco="antlib:org.jacoco.ant" xmlns:if="ant:if">
 
 	<property environment="env"/>
 	<property name="script.name" value="cloveretl.engine\build.xml"/>
@@ -135,7 +135,8 @@
 
 	<!-- =========================== LIBRARIES ============================= -->
 	<fileset id="engine-libs" dir="${dir.lib}">
-		<include name="**/*.jar"/>
+		<include name="**/*.jar" />
+		<exclude name="**/jaxb-*.jar" />
 	</fileset>
 
 
@@ -411,6 +412,11 @@ This software is licensed under the terms you may find in the file named "LICENS
 	<target name="compile" depends="init,improve-java-sources" description="Compile sources">
 		<!-- Create directory for binaries. -->
 		<mkdir dir="${dir.bin}"/>
+		
+		<!-- CLO-14010 - java.xml.bind module has to be added on Java 9 -->
+		<condition property="java9">
+				<equals arg1="${ant.java.version}" arg2="1.9"/>
+		</condition>
 
 		<!-- Compile sources -->
 		<javac debug="true" destdir="${dir.bin}" target="${java.src.version}" source="${java.src.version}" encoding="UTF-8">
@@ -422,6 +428,10 @@ This software is licensed under the terms you may find in the file named "LICENS
 			</classpath>
 			<src path="${dir.src.improved}"/>
 			<exclude name="test/**/*"/>
+			
+			<!-- CLO-14010 - java.xml.bind module has to be added on Java 9 -->
+			<compilerarg value="--add-modules" if:set="java9"/>
+			<compilerarg value="java.xml.bind" if:set="java9"/>
 		</javac>
 
 		<!-- copy resources -->
@@ -772,7 +782,8 @@ This software is licensed under the terms you may find in the file named "LICENS
 				author="true"
 				failonerror="true"
 				private="false"
-	        	encoding="UTF-8" charset="UTF-8" docencoding="UTF-8"
+				encoding="UTF-8" charset="UTF-8" docencoding="UTF-8"
+				additionalparam="-Xdoclint:none"
 				>
 			<fileset dir="${dir.src.javadoc}">
 				<include name="**/*.java"/>
@@ -788,7 +799,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 				<param name="-tag" value="revision" />
 			</doclet>
 			<doctitle>
-				<![CDATA[<h1>CloverETL: Java ETL framework</h1>
+				<![CDATA[<h1>CloverDX: Java ETL framework</h1>
 			<h3>version: ]]>${version.major}.${version.minor}<![CDATA[</h3>]]></doctitle>
 			<bottom>
 				<![CDATA[<address>Copyright &#169; 2002-${build.year} Javlin a.s.</address>]]>
@@ -990,7 +1001,6 @@ This software is licensed under the terms you may find in the file named "LICENS
 						>
 				<sysproperty key="file.encoding" value="UTF-8" />
 				<jvmarg value="${runtests.engine.Xmx}"/>
-				<jvmarg value="-XX:MaxPermSize=512m"/>
 				<jvmarg value="-Dderby.system.home=${dir.examples}/ExtExamples"/>
 				<jvmarg value="-Dhttps.protocols=TLSv1.2,TLSv1.1,TLSv1"/>
 				<jvmarg value="-Dcloveretl.smb2.bouncycastle.jar.file=${cloveretl.smb2.bouncycastle.jar.file}"/>
@@ -1094,17 +1104,9 @@ This software is licensed under the terms you may find in the file named "LICENS
 		<property name="test.cloveretl.plugins" value="${dir.package}/plugins"/>
 		<property name="dir.test.additional.classpath" value=""/>
 		<property name="cloveretl.smb2.bouncycastle.jar.file" value="${cloveretl.smb2.bouncycastle.jar.file}"/>
-		<parallel>
-			<daemons>
-				<antcall target="start-testdb" />
-			</daemons>
-			<sequential>
-				<sleep seconds="5" />
-				<antcall target="generate-eval-license" />
-				<antcall target="tests-reset" />
-				<antcall target="clean-eval-license" />
-			</sequential>
-		</parallel>
+		<antcall target="generate-eval-license" />
+		<antcall target="tests-reset" />
+		<antcall target="clean-eval-license" />
 	</target>
 	
 	<target name="tests-reset" depends="build-plugins,runtests-engine"/>
@@ -1210,16 +1212,17 @@ This software is licensed under the terms you may find in the file named "LICENS
 	</target>
 	
 	<target name="pmd-init">
-		<taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" classpathref="pmd.classpath" />
-		<path id="pmd.classpath">
+		<taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" >
+			<classpath>
 				<fileset dir="${dir.pmd.lib}" includes="**/*.jar" />
-		</path>
+			</classpath>
+		</taskdef>
 	</target>
 	
 	<target name="pmd" depends="pmd-init" description="Analyze the source code with PMD">
 		<mkdir dir="${dir.pmdreport}"/>
 		<pmd shortFilenames="true" rulesetfiles="${pmd.ruleset.file}">
-			<sourceLanguage name="java" version="1.7"/>
+			<sourceLanguage name="java" version="${java.src.version}"/>
 			<formatter type="xml" toFile="${dir.pmdreport}/pmdreport.xml"/>
 			<fileset dir="../" includes="**/*.java"/>
 		</pmd>

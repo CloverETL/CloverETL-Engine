@@ -7,7 +7,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="test"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
@@ -41,7 +41,7 @@
 	<classpathentry kind="lib" path="lib/truezip-path-7.7.5.jar"/>
 	<classpathentry kind="lib" path="lib/truezip-swing-7.7.5.jar"/>
 	<classpathentry kind="lib" path="lib/sardine-5.0.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/httpmime-4.5.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/httpmime-4.5.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-3.12-20150511.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-3.12-20150511.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-schemas-3.12-20150511.jar"/>
@@ -61,14 +61,18 @@
 	<classpathentry kind="lib" path="lib/aws-java-sdk-core-1.11.75.jar"/>
 	<classpathentry kind="lib" path="lib/aws-java-sdk-s3-1.11.75.jar"/>
 	<classpathentry kind="lib" path="lib/aws-java-sdk-kms-1.11.75.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/httpclient-4.5.2.jar" sourcepath="lib.src/httpcomponents-client-4.5.2-src.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/httpclient-4.5.3.jar" sourcepath="lib.src/httpcomponents-client-4.5.3-src.zip"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.10.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/httpcore-4.4.4.jar" sourcepath="lib.src/httpcomponents-core-4.4.4-src.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/httpcore-4.4.6.jar" sourcepath="lib.src/httpcomponents-core-4.4.6-src.zip"/>
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="tools/mockito-all-1.9.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jaxb-api.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jaxb-impl.jar"/>
+	<classpathentry kind="lib" path="lib/javax.activation-1.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/jaxb-core.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

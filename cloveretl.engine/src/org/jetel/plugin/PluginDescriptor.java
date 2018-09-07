@@ -100,7 +100,7 @@ public class PluginDescriptor {
     private String[] excludedPackages; 
 
     /**
-     * List of all requires plugins.
+     * List of all required plugins.
      */
     private List<PluginPrerequisite> prerequisites;
     
@@ -426,9 +426,9 @@ public class PluginDescriptor {
 	        isActive = true;
 	        
 	        //first, we activate all prerequisites plugins
-	        for(Iterator it = getPrerequisites().iterator(); it.hasNext();) {
+	        for (Iterator<PluginPrerequisite> it = getPrerequisites().iterator(); it.hasNext();) {
 	            PluginPrerequisite prerequisite = (PluginPrerequisite) it.next();
-	            if(!Plugins.isActive(prerequisite.getPluginId())) {
+	            if (!Plugins.isActive(prerequisite.getPluginId())) {
 	                Plugins.activatePlugin(prerequisite.pluginId);
 	            }
 	        }
@@ -464,7 +464,7 @@ public class PluginDescriptor {
     private PluginActivator instantiatePlugin() {
         if(!StringUtils.isEmpty(getPluginClassName())) {
             try {
-                Class pluginClass = Class.forName(getPluginClassName(), true, getClassLoader());
+                Class<?> pluginClass = Class.forName(getPluginClassName(), true, getClassLoader());
                 Object plugin = pluginClass.newInstance();
                 if(!(plugin instanceof PluginActivator)) {
                     logger.error("Plugin " + getId() + " activation message: Plugin class is not instance of Plugin ascendant - " + getPluginClassName());
@@ -508,7 +508,7 @@ public class PluginDescriptor {
     	if (nativeLibraries.size() > 0) {
 			// Reset the "sys_paths" field of the ClassLoader to null.
 			try {
-				Class clazz = ClassLoader.class;
+				Class<?> clazz = ClassLoader.class;
 				Field field = clazz.getDeclaredField("sys_paths");
 				boolean accessible = field.isAccessible();
 				if (!accessible)

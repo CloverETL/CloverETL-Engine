@@ -55,7 +55,7 @@ import org.w3c.dom.Element;
  * There is created psql command (\copy) depending on input parameters. Data are read from given input file or 
  * from the input port and loaded to database.<br>
  * Any generated commands/files can be optionally logged to help diagnose problems.<br>
- * Before you use this component, make sure that postgreSQL client is installed and configured on the machine where CloverETL runs and
+ * Before you use this component, make sure that postgreSQL client is installed and configured on the machine where CloverDX runs and
  * psql command line tool available.
  * 
  * @author      Miroslav Haupt (Mirek.Haupt@javlinconsulting.cz)

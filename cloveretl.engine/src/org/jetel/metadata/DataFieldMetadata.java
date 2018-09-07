@@ -1068,7 +1068,7 @@ public class DataFieldMetadata implements Serializable {
 
 	/**
 	 * Sets the fieldProperties attribute of the DataRecordMetadata object. Field properties allows defining additional
-	 * parameters for individual fields. These parameters (key-value pairs) are NOT normally handled by CloverETL, but
+	 * parameters for individual fields. These parameters (key-value pairs) are NOT normally handled by CloverDX, but
 	 * can be used in user's code or Components - thus allow for greater flexibility.
 	 * 
 	 * @param properties The new recordProperties value

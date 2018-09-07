@@ -298,7 +298,7 @@ public class DBFDataFormatter extends AbstractFormatter {
 			final int expectedHeaderSize = (DBFAnalyzer.DBF_HEADER_SIZE_BASIC + (getCountOfNotExcludedFields(metadata) * DBFAnalyzer.DBF_FIELD_DEF_SIZE) + 1);
 			final int expectedRecSize = (getRecordSizeConverted(metadata) + 1);
 			if ((headerSize != expectedHeaderSize) || (recSize != expectedRecSize)) {
-				throw new IOException(String.format("Existing target DBase/DBF file does not correspond to provided CloverETL metadata [rec.size DBF/CloverETL  %d/%d bytes].", recSize, expectedRecSize));
+				throw new IOException(String.format("Existing target DBase/DBF file does not correspond to provided CloverDX metadata [rec.size DBF/CloverETL  %d/%d bytes].", recSize, expectedRecSize));
 			}
 			recordCounter = recCount;
 			writer.position(curPosInFile - 1); // removing EOF flag in file, so following write starts after the current

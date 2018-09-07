@@ -11,7 +11,7 @@
 <RichTextNote backgroundColor="404040" enabled="true" folded="false" fontSize="medium" height="102" id="Note4" textColor="FFFFFF" width="929" x="30" y="19">
 <attr name="text"><![CDATA[h3. Big Data - Processing Web Access Log (Unique Visitors): Hadoop solutions
 Report the number of unique visitors per month from a potentially huge web access log using different methods.
-(CloverETL, Hadoop HIVE, and Hadoop MapReduce)]]></attr>
+(CloverDX, Hadoop HIVE, and Hadoop MapReduce)]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="90" id="Note5" textColor="000000" width="929" x="30" y="120">
 <attr name="text"><![CDATA[h3. This graph is part of "[UniqueVisits-HadoopHive.jbf|navigator://BigDataExamples/jobflow/UniqueVisits-HadoopHive.jbf]" and "[UniqueVisits-HadoopMapReduce.jbf|navigator://BigDataExamples/jobflow/UniqueVisits-HadoopMapReduce.jbf]" jobflows.

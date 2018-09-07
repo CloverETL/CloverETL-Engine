@@ -319,7 +319,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		contextURL = getContextURL(contextURL);
 		
 		if (!StringUtils.isEmpty(hadoopCoreJars)) {
-			providerClassPath = new ArrayList<URL>(Arrays.asList(ClassLoaderUtils.getClassloaderUrls(contextURL, hadoopCoreJars)));
+			providerClassPath = new ArrayList<URL>(Arrays.asList(ClassLoaderUtils.getClassLoaderUrls(contextURL, hadoopCoreJars)));
 		}
 		
 		PluginDescriptor hadoopProviderDescriptor = ConnectionFactory.getConnectionDescription(CONNECTION_TYPE_ID).getPluginDescriptor();

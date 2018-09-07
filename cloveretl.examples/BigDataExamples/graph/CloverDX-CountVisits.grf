@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361360266035" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Mar 25 15:54:24 CET 2014" modifiedBy="User" name="RunJobInCloverETL" revision="1.34" showComponentDetails="true">
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361360266035" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Mar 25 15:54:24 CET 2014" modifiedBy="User" name="RunJobInCloverDX" revision="1.34" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata0"/>
@@ -8,12 +8,12 @@
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
 <RichTextNote backgroundColor="404040" enabled="true" folded="false" fontSize="medium" height="110" id="Note4" textColor="FFFFFF" width="929" x="30" y="9">
-<attr name="text"><![CDATA[h3. Big Data - Processing Web Access Log (Unique Visitors):  Pure CloverETL Solution
+<attr name="text"><![CDATA[h3. Big Data - Processing Web Access Log (Unique Visitors):  Pure CloverDX Solution
 Report the number of unique visitors per month from a potentially huge web access log using different methods.
-(CloverETL, Hadoop HIVE, and Hadoop MapReduce)]]></attr>
+(CloverDX, Hadoop HIVE, and Hadoop MapReduce)]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="49" id="Note5" textColor="000000" width="929" x="30" y="118">
-<attr name="text"><![CDATA[h3. This graph is part of the "[UniqueVisits-CloverETL.jbf|navigator://BigDataExamples/jobflow/UniqueVisits-CloverETL.jbf]" jobflow.]]></attr>
+<attr name="text"><![CDATA[h3. This graph is part of the "[UniqueVisits-CloverDX.jbf|navigator://BigDataExamples/jobflow/UniqueVisits-CloverDX.jbf]" jobflow.]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="248" id="Note0" textColor="000000" width="208" x="30" y="217">
 <attr name="text"><![CDATA[h3. Read Weblog (zipped)

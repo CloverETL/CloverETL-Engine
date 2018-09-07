@@ -181,7 +181,7 @@ public class GetHostName extends DataRecordTransform {
 <Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="EXT_SORT1:0"/>
 </Phase>
 <Phase number="2">
-<Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/statistics.xls" firstDataRow="2" guiName="Requests" guiX="1190" guiY="201" id="XLS_WRITER1" namesRow="1" sheetName="Requests" type="XLS_WRITER">
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/statistics.xls" firstDataRow="2" guiName="Requests" guiX="1323" guiY="209" id="XLS_WRITER1" namesRow="1" sheetName="Requests" type="XLS_WRITER">
 <attr name="guiDescription"><![CDATA[Requested pages and some documents sorted by number of accesses.]]></attr>
 </Node>
 </Phase>

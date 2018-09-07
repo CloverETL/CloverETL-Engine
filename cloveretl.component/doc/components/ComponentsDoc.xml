@@ -4057,7 +4057,7 @@
          		Data are read from given input file or from the input port and loaded to database.
          		Any generated scripts/commands can be optionally logged to help diagnose problems.
          		Before you use this component, make sure that mysql client is installed and
-         		configured on the machine where CloverETL runs and mysql command line tool available.
+         		configured on the machine where CloverDX runs and mysql command line tool available.
       </fullDesc>
       <inputPorts>
          <port>

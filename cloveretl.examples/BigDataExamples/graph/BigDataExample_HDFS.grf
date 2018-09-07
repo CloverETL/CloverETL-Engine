@@ -51,7 +51,7 @@
 </GraphParameters>
 <RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="417" id="Note2" textColor="000000" width="233" x="20" y="103">
 <attr name="text"><![CDATA[h3. A. Scenario
-To read and write key/value pairs in Hadoop HDFS using CloverETL
+To read and write key/value pairs in Hadoop HDFS using CloverDX
 
 Such pairing can be further processed in a MapReduce job
 
@@ -59,14 +59,14 @@ In this example, we use the Last Name field as the Key and visit details as Valu
 
 A MapReduce job can then be executed on this data set, e.g. to compute aggregated occurence counts of LastName.
 
-Alternatively in this graph, the same aggregation process is replicated using CloverETL components only(phase 1).
+Alternatively in this graph, the same aggregation process is replicated using CloverDX components only(phase 1).
 
 ]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="404040" enabled="true" folded="false" fontSize="medium" height="84" id="Note3" textColor="FFFFFF" width="929" x="20" y="20">
 <attr name="text"><![CDATA[h3. Big Data Example: HDFS Format for MapReduce Jobs
 
-Demonstrates how CloverETL reads and writes key/value pairs in Hadoop HDFS]]></attr>
+Demonstrates how CloverDX reads and writes key/value pairs in Hadoop HDFS]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="429" id="Note0" textColor="000000" width="201" x="20" y="547">
 <attr name="text"><![CDATA[h3. Note
