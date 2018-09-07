@@ -107,6 +107,7 @@ import com.jcraft.jsch.ChannelSftp;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
 import de.schlichtherle.truezip.file.TFileOutputStream;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  *  Helper class with some useful methods regarding file manipulation
@@ -1836,6 +1837,7 @@ public class FileUtils {
 	 * @param file
 	 * @return true if the file is deleted
 	 */
+	@SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
 	private static boolean deleteFile(File file) {
 		if (!file.exists()) return true;
 

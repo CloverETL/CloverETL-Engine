@@ -51,6 +51,8 @@ import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
 import org.jetel.util.file.FileUtils;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 public class LocalOperationHandler implements IOperationHandler {
 	
 	static final String FILE_SCHEME = "file"; //$NON-NLS-1$
@@ -98,6 +100,7 @@ public class LocalOperationHandler implements IOperationHandler {
 		}
 	}
 	
+	@SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
 	private boolean copyInternal(File source, File target, CopyParameters params) throws IOException {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
@@ -220,6 +223,7 @@ public class LocalOperationHandler implements IOperationHandler {
 		return moveInternal(source, target, params) ? SingleCloverURI.createSingleURI(target.toURI()) : null;
 	}
 	
+	@SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
 	private boolean moveInternal(File source, File target, MoveParameters params) throws IOException {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
@@ -359,6 +363,7 @@ public class LocalOperationHandler implements IOperationHandler {
 		return new FileContent(new File(target.toURI()));
 	}
 	
+	@SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
 	private boolean delete(File file, DeleteParameters params) throws IOException {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
