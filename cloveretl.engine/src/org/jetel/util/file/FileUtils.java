@@ -1832,17 +1832,24 @@ public class FileUtils {
 	}
 	
 	/**
+	 * @deprecated use {@link #deleteRecursively(File)} instead.
+	 * 
 	 * Deletes file.
 	 * @param file
 	 * @return true if the file is deleted
 	 */
 	private static boolean deleteFile(File file) {
-		if (!file.exists()) return true;
+		if (!file.exists()) {
+			return true;
+		}
 
 		//list and delete all sub-directories
-		for (File child: file.listFiles()) {
-			if (!deleteFile(child)) {
-				return false;
+		File[] children = file.listFiles();
+		if (children != null) {
+			for (File child: children) {
+				if (!deleteFile(child)) {
+					return false;
+				}
 			}
 		}
 		return file.delete();
