@@ -224,26 +224,22 @@ public class DynamicLib extends TLFunctionLibrary {
 		Object value = field.getValue();
 		if (value == null) {
 			return null;
-		} else if(field.getMetadata().getContainerType() == DataFieldContainerType.LIST) {
+		} else if (field.getMetadata().getContainerType() == DataFieldContainerType.LIST) {
 			//convert elements to string
-			List<?> list = (List<?>)value;
+			List<?> list = (List<?>) value;
 			List<String> strList = new ArrayList<String>();
-			for (Object item : list)
-			{
-				if (item == null) 
-				{
+			for (Object item : list) {
+				if (item == null) {
 					strList.add(null);
 				}
-				else if (item instanceof byte[])
-				{
+				else if (item instanceof byte[]) {
 					try {
 						strList.add(new String((byte[]) item, DataParser.DEFAULT_CHARSET_DECODER));
 					} catch (UnsupportedEncodingException e) {
 						throw new RuntimeException(e);
-					}			
+					}
 				}
-				else
-				{
+				else {
 					strList.add(String.valueOf(item));
 				}
 			}
