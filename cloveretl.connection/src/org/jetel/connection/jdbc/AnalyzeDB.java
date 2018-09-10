@@ -69,7 +69,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * -f               *Read SQL query from filename"
  * -q               *SQL query on command line
  * -info            *Displays list of driver's properties
- * -cfg             *CloverETL engine property file
+ * -cfg             *CloverDX engine property file
  * -plugins         *directory where to look for plugins/components
  *
  * Parameters marked [*] are optional. Either -f or -q parameter must be present.
