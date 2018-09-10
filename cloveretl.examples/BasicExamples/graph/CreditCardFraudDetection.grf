@@ -50,7 +50,7 @@
 </Record>
 </Metadata>
 <GraphParameters>
-<GraphParameter name="RATES_FILE" value="http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"/>
+<GraphParameter name="RATES_FILE" value="https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"/>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
 <RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="101" id="Note3" textColor="000000" width="979" x="56" y="5">
