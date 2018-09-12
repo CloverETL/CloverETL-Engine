@@ -231,15 +231,13 @@ public class DynamicLib extends TLFunctionLibrary {
 			for (Object item : list) {
 				if (item == null) {
 					strList.add(null);
-				}
-				else if (item instanceof byte[]) {
+				} else if (item instanceof byte[]) {
 					try {
 						strList.add(new String((byte[]) item, DataParser.DEFAULT_CHARSET_DECODER));
 					} catch (UnsupportedEncodingException e) {
 						throw new RuntimeException(e);
 					}
-				}
-				else {
+				} else {
 					strList.add(String.valueOf(item));
 				}
 			}
@@ -255,8 +253,7 @@ public class DynamicLib extends TLFunctionLibrary {
 					} catch (UnsupportedEncodingException e) {
 						throw new RuntimeException(e);
 					}
-				}
-				else {
+				} else {
 					Object key = entry.getKey();
 					Object val = entry.getValue();
 					strMap.put(key == null ? null : String.valueOf(entry.getKey()), val == null ? null : String.valueOf(entry.getValue()));
