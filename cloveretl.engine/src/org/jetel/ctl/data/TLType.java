@@ -929,6 +929,7 @@ public abstract class TLType implements Serializable {
 		return ret;
 	}
 	
+	@SuppressFBWarnings("BC_UNCONFIRMED_CAST")
 	public static int distance(TLType from, TLType to) {
 		if (from.isInteger()) {
 			return	to.isInteger() ?	0	:
