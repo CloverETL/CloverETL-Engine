@@ -132,7 +132,11 @@ public class LocalOperationHandler implements IOperationHandler {
 					throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.create_failed"), target)); //$NON-NLS-1$
 				}
 			}
-			for (File child: source.listFiles()) {
+			File[] children = source.listFiles();
+			if (children == null) {
+				throw new IOException(FileOperationMessages.formatMessage("FileManager.failed_to_list_contents", source));
+			}
+			for (File child: children) {
 				success &= copyInternal(child, new File(target, child.getName()), params);
 			}
 			return success;
@@ -261,7 +265,11 @@ public class LocalOperationHandler implements IOperationHandler {
 			if (!target.mkdir()) {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.create_failed"), target)); //$NON-NLS-1$
 			}
-			for (File child: source.listFiles()) {
+			File[] children = source.listFiles();
+			if (children == null) {
+				throw new IOException(FileOperationMessages.formatMessage("FileManager.failed_to_list_contents", source));
+			}
+			for (File child: children) {
 				File childTarget = new File(target, child.getName());
 				success &= moveInternal(child, childTarget, params);
 			}
@@ -368,8 +376,11 @@ public class LocalOperationHandler implements IOperationHandler {
 		}
 		if (file.isDirectory()) {
 			if (params.isRecursive()) {
-				for (File child: file.listFiles()) {
-					delete(child, params);
+				File[] children = file.listFiles();
+				if (children != null) {
+					for (File child: children) {
+						delete(child, params);
+					}
 				}
 			} else {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_remove_directory"), file)); //$NON-NLS-1$

@@ -929,6 +929,7 @@ public abstract class TLType implements Serializable {
 		return ret;
 	}
 	
+	@SuppressFBWarnings("BC_UNCONFIRMED_CAST")
 	public static int distance(TLType from, TLType to) {
 		if (from.isInteger()) {
 			return	to.isInteger() ?	0	:
@@ -1006,10 +1007,23 @@ public abstract class TLType implements Serializable {
 			if (to.isMap()) {
 				// this handles built-in functions handling generic maps (having any element type)
 				TLTypeMap toMap = (TLTypeMap)to;
-				if (toMap.getKeyType().isTypeVariable() && toMap.getValueType().isTypeVariable()) {
+				TLType keyType = toMap.getKeyType();
+				TLType valueType = toMap.getValueType();
+				if (keyType.isTypeVariable() && valueType.isTypeVariable()) {
+					return 10; // key and value are both generic
+				} else if (from.equals(to)) {
+					return 0; // identical type
+				} else { // either key or value is generic; or incompatible types 
+					TLTypeMap fromMap = (TLTypeMap) from;
+
+					if (!keyType.isTypeVariable() && !keyType.equals(fromMap.getKeyType())) {
+						return Integer.MAX_VALUE;
+					}
+					if (!valueType.isTypeVariable() && !valueType.equals(fromMap.getValueType())) {
+						return Integer.MAX_VALUE;
+					}
+					
 					return 10;
-				} else {
-					return from.equals(to) ? 0 : Integer.MAX_VALUE;
 				}
 			} 
 

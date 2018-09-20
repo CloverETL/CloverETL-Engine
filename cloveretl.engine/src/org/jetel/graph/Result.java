@@ -18,6 +18,11 @@
  */
 package org.jetel.graph;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 /**
  * Enum of different runtime results with numeric codes and
  * string indetifications of results.<br>
@@ -39,33 +44,62 @@ package org.jetel.graph;
  *
  */
 public enum Result {
-    
-    N_A(3,"N/A", false),
-    READY(2,"READY", false),
-    RUNNING(1,"RUNNING", false),
-    WAITING(4,"WAITING", false),
-    FINISHED_OK(0,"FINISHED_OK", true),
-    ERROR(-1,"ERROR", true),
-    ABORTED(-2,"ABORTED", true),
-    TIMEOUT(-3, "TIMEOUT", true), 
-    UNKNOWN(-4, "UNKNOWN", true); 
-    
-    private final int code;
-    private final String message;
-    private boolean stop;
-    
-    Result(int code, String message, boolean stop) {
+
+	N_A(3, "N/A", "Not available", false),
+	READY(2, "READY", "Ready", false),
+	RUNNING(1, "RUNNING", "Running", false),
+	WAITING(4, "WAITING", "Waiting", false),
+	FINISHED_OK(0, "FINISHED_OK", "Finished OK", true),
+	ERROR(-1, "ERROR", "Error", true),
+	ABORTED(-2, "ABORTED", "Aborted", true),
+	TIMEOUT(-3, "TIMEOUT", "Timeout", true), 
+	UNKNOWN(-4, "UNKNOWN", "Unknown", true); 
+	
+	private final int code;
+	private final String message;
+	private final String label;
+	private boolean stop;
+	private static final List<Result> sortedStatusList;
+
+	private static final Comparator<Result> LABEL_COMPARATOR = new Comparator<Result>() {
+		@Override
+		public int compare(Result s1, Result s2) {
+			String label1 = s1.getLabel();
+			String label2 = s2.getLabel();
+			return label1.compareTo(label2);
+		}
+	};
+	
+	static {
+		sortedStatusList = Arrays.asList(Result.values());
+		Collections.sort(sortedStatusList, Result.LABEL_COMPARATOR);
+	}
+
+	Result(int code, String message,String label, boolean stop) {
 		this.code = code;
+		this.label = label;
 		this.message = message;
 		this.stop = stop;
 	}
-    
+
     public int code(){return code;}
     
     public String message(){return message;}
     
     public boolean isStop(){return stop;}
-    
+
+	public String getLabel() {
+		return label;
+	}
+	
+	public String getMessage() {
+		return message;
+	}
+
+	public static List<Result> getResultsSorted() {
+		return sortedStatusList;
+	}
+
     /**
      * Converts string representation to the enum.
      * @param result
