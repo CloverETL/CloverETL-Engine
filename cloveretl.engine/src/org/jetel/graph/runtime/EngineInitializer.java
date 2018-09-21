@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
 import org.apache.log4j.net.SocketAppender;
 import org.jetel.component.fileoperation.FileManager;
+import org.jetel.component.fileoperation.pool.ConnectionPool;
 import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
@@ -273,6 +274,12 @@ public class EngineInitializer {
 	 */
 	public static void shutdown() {
 		CloverJMX.shutdown();
+
+		try {
+			ConnectionPool.getInstance().close();
+		} catch (Exception e) {
+			logger.warn("Failed to close connection pool", e);
+		}
 	}
 
 	/**
