@@ -13,7 +13,7 @@
 		<RegEx expression="# 2 *\|Venezuela *\|46" occurences="1"/>
 	</FunctionalTest>
 	
-	<FunctionalTest ident="DebuggingGraph" graphFile="graph/DebuggingGraph.grf" assertion="false" edgeDebugging="true">
+	<FunctionalTest ident="DebuggingGraph" graphFile="graph/DebuggingGraph.grf" assertion="false" edgeDebugging="true" excludedJavaVendor="ibm" excludedContainers="websphere9">
 		<ExcludeRegEx ident="error"/>
 		<RegEx expression="O is not a valid gender\. Go to record No\. 5820 and replace with \'M\' or \'F\'\." occurences="3"/>
 	</FunctionalTest>
@@ -76,25 +76,21 @@
 	<FunctionalTest ident="OrdersLookup" graphFile="graph/OrdersLookup.grf">
 		<FlatFile outputFile="data-out/orders_late.txt" supposedFile="supposed-out/orders_late.txt"/>
 	</FunctionalTest>
-			
-	<FunctionalTest ident="MetadataWriting" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine,serverWorker,clusterWorker" excludedJavaVersions="1.7" excludedContainers="tomcat85,tomcat9,websphere9,jboss-eap-7-1,tcserver329">
-		<FlatFile outputFile="data-out/employees_txt.fmt" supposedFile="supposed-out/employees_txt.fmt"/>
-		<FlatFile outputFile="data-out/departments_txt.fmt" supposedFile="supposed-out/departments_txt.fmt"/>
-	</FunctionalTest>
 	
-	<FunctionalTest ident="MetadataWriting_version2" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine,serverWorker,clusterWorker" excludedJavaVersions="1.7" excludedContainers="weblogic-12-2-1,jboss-eap-7-1">
-		<FlatFile outputFile="data-out/employees_txt.fmt" supposedFile="supposed-out/employees_txt_version2.fmt"/>
-		<FlatFile outputFile="data-out/departments_txt.fmt" supposedFile="supposed-out/departments_txt_version2.fmt"/>
-	</FunctionalTest>
-	
-	<FunctionalTest ident="MetadataWriting_version3" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine,serverWorker,clusterWorker" excludedJavaVersions="1.7" excludedContainers="tomcat85,tomcat9,weblogic-12-2-1,websphere9,tcserver329">
-		<FlatFile outputFile="data-out/employees_txt.fmt" supposedFile="supposed-out/employees_txt_version3.fmt"/>
-		<FlatFile outputFile="data-out/departments_txt.fmt" supposedFile="supposed-out/departments_txt_version3.fmt"/>
-	</FunctionalTest>
-	
-	<FunctionalTest ident="MetadataWriting_version4" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine,server,cluster" excludedJavaVersions="1.7">
-		<FlatFile outputFile="data-out/employees_txt.fmt" supposedFile="supposed-out/employees_txt_version2.fmt"/>
-		<FlatFile outputFile="data-out/departments_txt.fmt" supposedFile="supposed-out/departments_txt_version2.fmt"/>
+	<FunctionalTest ident="MetadataWriting" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine">
+		<FlatFile outputFile="data-out/employees_txt.fmt">
+			<RegEx expression="&lt;\?xml version=&quot;1\.0&quot; encoding=&quot;UTF-8&quot;\?&gt;" occurences="1" />
+			<RegEx expression="&lt;Record fieldDelimiter=&quot;;&quot; name=&quot;employees_txt&quot; recordDelimiter=&quot;\\r\\n&quot; type=&quot;delimited&quot;&gt;" occurences="1" />
+			<RegEx expression="&lt;Field delimiter=&quot;\|&quot; label=&quot;.+&quot; name=&quot;.+&quot; type=&quot;(string|integer|date|decimal)&quot;/&gt;" occurences="5" />
+			<RegEx expression="&lt;/Record&gt;" occurences="1" />
+		</FlatFile>
+		<FlatFile outputFile="data-out/departments_txt.fmt">
+			<RegEx expression="&lt;\?xml version=&quot;1\.0&quot; encoding=&quot;UTF-8&quot;\?&gt;" occurences="1" />
+			<RegEx expression="&lt;Record fieldDelimiter=&quot;;&quot; name=&quot;departments_txt&quot; recordDelimiter=&quot;\\r\\n&quot;" occurences="1" />
+			<RegEx expression="type=&quot;delimited&quot;&gt;" occurences="1" />
+			<RegEx expression="&lt;Field delimiter=&quot;\|&quot; label=&quot;.+&quot; name=&quot;.+&quot; type=&quot;(string|integer)&quot;/&gt;" occurences="4" />
+			<RegEx expression="&lt;/Record&gt;" occurences="1" />
+		</FlatFile>
 	</FunctionalTest>
 	
 	<FunctionalTest ident="IssuesReport" graphFile="graph/IssuesReport.grf" excludedEtlEnvironment="engine" />
