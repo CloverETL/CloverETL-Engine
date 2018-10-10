@@ -21,7 +21,9 @@ package org.jetel.util.exec;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.string.UnicodeBlanks;
 
 
 /**
@@ -33,6 +35,8 @@ import org.jetel.util.MiscUtils;
  * @created 13.6.2011
  */
 public class PlatformUtils {
+	
+	private static final Logger log = Logger.getLogger(PlatformUtils.class);
 
 	public static enum PlatformType {
 		LINUX, MAC, WINDOWS
@@ -49,6 +53,8 @@ public class PlatformUtils {
 	
 	private static final String osArch = System.getProperty("os.arch");
 	
+	private static final Pattern JAVA_VERSION_PATTERN = Pattern.compile("^(\\d+)(\\.(\\d+).*)?$");
+	
 	static {
 		String platformIdentifier = String.valueOf(MiscUtils.getSystemPropertySafe("os.name")).toLowerCase();
 		
@@ -59,10 +65,12 @@ public class PlatformUtils {
 		} else {
 			platformType = PlatformType.LINUX;
 		}
-		
-		Matcher m = Pattern.compile("1\\.(\\d)\\.(\\d)").matcher(javaVersion);
-		if (m.matches()) {
-			javaMajorVersion = Integer.parseInt(m.group(1));
+
+		try {
+			javaMajorVersion = getJavaMajorVersion(javaVersion);
+		} catch (IllegalArgumentException e) {
+			log.error(e);
+			javaMajorVersion = -1;
 		}
 	}
 	
@@ -117,6 +125,48 @@ public class PlatformUtils {
 	
 	public static int getJavaMajorVersion() {
 		return javaMajorVersion;
+	}
+	
+	/**
+	 * Returns java major version from the given javaVersion string.
+	 * 
+	 * Returns -1 if the string is blank.
+	 * @param javaVersion
+	 * @return
+	 * @throws IllegalArgumentException if javaVersion is invalid.
+	 */
+	public static int getJavaMajorVersion(String javaVersion) throws IllegalArgumentException {
+		int majorVersion = -1;
+		
+		if (!UnicodeBlanks.isBlank(javaVersion)) {
+			Matcher matcher = JAVA_VERSION_PATTERN.matcher(javaVersion);
+			if (matcher.matches()) {
+				try {
+					int firstNumber = Integer.parseInt(matcher.group(1));
+					String secondNumber = matcher.group(3);
+					
+					if (!UnicodeBlanks.isBlank(secondNumber)) {
+						
+						if (firstNumber > 1) {
+							// Java version 9 or newer, e.g. 9.0
+							majorVersion = firstNumber;
+						} else {
+							// Java versions 1.X, valid up to Java 1.8
+							majorVersion = Integer.parseInt(secondNumber);
+						}
+					} else {
+						//since Java 11 there is only one number
+						majorVersion = firstNumber;
+					}
+				} catch (NumberFormatException e) {
+					throw new IllegalArgumentException("Unsupported Java version number format: " + javaVersion);
+				}
+			} else {
+				throw new IllegalArgumentException("Unsupported Java version number format: " + javaVersion);
+			}
+		}
+		
+		return majorVersion;
 	}
 	
 }
