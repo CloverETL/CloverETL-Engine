@@ -13,7 +13,7 @@ E-mail is required and must be a valid email address. e.g. test@test.com</Descri
 <RequestParameter description="The first name of the contact." id="RestJobParameter1" location="form_data" name="first-name" required="false" type="string"/>
 <RequestParameter description="The last name of the contact." id="RestJobParameter2" location="form_data" name="last-name" required="false" type="string"/>
 <RequestParameter description="The phone number of the contact. Must be in the following pattern: 999-999-999." id="RestJobParameter3" location="form_data" name="phone" required="false" type="string"/>
-<RequestParameter description="The e-mail address of the contact. Must be a valid e-mail address." id="RestJobParameter52" location="form_data" name="email" required="false" type="string"/>
+<RequestParameter description="The e-mail address of the contact. Must be a valid e-mail address." id="RestJobParameter4" location="form_data" name="email" required="false" type="string"/>
 </EndpointSettings>
 <RestJobResponseStatus>
 <JobError>
@@ -52,19 +52,6 @@ h3. Highlights
 <Node attachment="false" guiName="Output" guiX="900" guiY="10" id="RESTJOB_OUTPUT0" metadataName="true" responseFormat="CUSTOM" restJobOutput="true" topLevelArray="true" type="RESTJOB_OUTPUT">
 <attr name="noTopLevelArray"><![CDATA[false]]></attr>
 <attr name="noMetadataName"><![CDATA[false]]></attr>
-</Node>
-<Node guiName="GetJobInput" guiX="248" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
-<attr name="mapping"><![CDATA[//#CTL2
-// Transforms input record into output record.
-function integer transform() {
-	if (isEmpty(getRequestParameter("phone"))) { 
-		raiseError("Missing required request parameter: 'phone'");
-	}
-	if (isEmpty(getRequestParameter("email"))) { 
-		raiseError("Missing required request parameter: 'email'");
-	}
-	return ALL;
-}]]></attr>
 </Node>
 <Node guiName="Validate submitted data" guiX="204" guiY="23" id="VALIDATE_SUBMITTED_DATA" jobURL="${SUBGRAPH_DIR}/validateSubmittedData.sgrf" type="SUBGRAPH"/>
 <Edge fromNode="RESTJOB_INPUT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 0 (Parameters)" toNode="VALIDATE_SUBMITTED_DATA:0"/>
