@@ -12,8 +12,8 @@ E-mail is required and must be a valid email address. e.g. test@test.com</Descri
 <RequestMethod name="PUT"/>
 <RequestParameter description="The first name of the contact." id="RestJobParameter1" location="form_data" name="first-name" required="false" type="string"/>
 <RequestParameter description="The last name of the contact." id="RestJobParameter2" location="form_data" name="last-name" required="false" type="string"/>
-<RequestParameter description="The phone number of the contact. Must be in the following pattern: 999-999-999." id="RestJobParameter3" location="form_data" name="phone" required="true" type="string"/>
-<RequestParameter description="The e-mail address of the contact. Must be a valid e-mail address." id="RestJobParameter52" location="form_data" name="email" required="true" type="string"/>
+<RequestParameter description="The phone number of the contact. Must be in the following pattern: 999-999-999." id="RestJobParameter3" location="form_data" name="phone" required="false" type="string"/>
+<RequestParameter description="The e-mail address of the contact. Must be a valid e-mail address." id="RestJobParameter52" location="form_data" name="email" required="false" type="string"/>
 </EndpointSettings>
 <RestJobResponseStatus>
 <JobError>
