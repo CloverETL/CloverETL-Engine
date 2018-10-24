@@ -36,6 +36,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.ProfilerResultData;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.HttpContextNotAvailableException;
 import org.jetel.exception.JetelRuntimeException;
@@ -307,6 +308,8 @@ public abstract class IAuthorityProxy {
 	public abstract RunStatus executeProfilerJobAsync(String profilerJobUrl, GraphRuntimeContext runtimeContext);
 	
 	public abstract RunStatus executeProfilerJobSync(String profilerJobUrl, GraphRuntimeContext runtimeContext, Long timeout);
+	
+	public abstract ProfilerResultData getProfilerJobOuputData(long runId, long profilerRunId);
 	
 	/**
 	 * Checks configuration of the given graph, see {@link TransformationGraph#checkConfig(ConfigurationStatus)}.

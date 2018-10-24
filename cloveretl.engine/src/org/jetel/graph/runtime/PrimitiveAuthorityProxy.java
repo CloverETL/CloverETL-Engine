@@ -47,6 +47,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.Filter;
 import org.apache.log4j.spi.LoggingEvent;
+import org.jetel.data.ProfilerResultData;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
@@ -420,6 +421,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	
 	@Override
 	public RunStatus executeProfilerJobAsync(String profilerJobUrl, GraphRuntimeContext runtimeContext) {
+		throw new UnsupportedOperationException("Profiler job execution is available only in CloverDX Server environment");
+	}
+	
+	@Override
+	public ProfilerResultData getProfilerJobOuputData(long runId, long profilerRunId) {
 		throw new UnsupportedOperationException("Profiler job execution is available only in CloverDX Server environment");
 	}
 	
