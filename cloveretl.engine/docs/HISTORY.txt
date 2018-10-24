@@ -1,6 +1,19 @@
 *******************************************************************************
-                          CloverETL Engine - HISTORY of RELEASES
+                          CloverDX Engine - HISTORY of RELEASES
 *******************************************************************************
+
+REL-5-0-0
+---------
+* Changed brand from CloverETL to CloverDX
+* New CloverDX Server Console user interface
+* G1 garbage collector used as default for worker
+* Improved Worker configuration warning messages
+* State of schedules based on last executions
+* Navigation from Schedules to Execution History
+* ExecuteGraph SOAP operation returns a response as late as its status changes to RUNNING
+* Compatibility
+	* Dropped support of Java7
+	* Updated list of supported application containers 
 
 REL-4-9-1
 ---------
