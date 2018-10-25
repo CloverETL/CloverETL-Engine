@@ -28,7 +28,7 @@ import java.util.Map;
  *
  * @created Oct 22, 2018
  */
-public class ProfilerResultData implements Serializable {
+public class ProfilerResult implements Serializable {
 	private static final long serialVersionUID = -4575298257180154183L;
 
 	private Map<Integer, String> fieldNamesMap = new HashMap<>();
