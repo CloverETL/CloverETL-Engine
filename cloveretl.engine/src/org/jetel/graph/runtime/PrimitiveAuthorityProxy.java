@@ -425,7 +425,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 	
 	@Override
-	public ProfilerResult getProfilerResult(long runId, long profilerRunId) {
+	public ProfilerResult getProfilerResult(long profilerRunId) {
 		throw new UnsupportedOperationException("Profiler job execution is available only in CloverDX Server environment");
 	}
 	

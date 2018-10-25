@@ -309,7 +309,7 @@ public abstract class IAuthorityProxy {
 	
 	public abstract RunStatus executeProfilerJobSync(String profilerJobUrl, GraphRuntimeContext runtimeContext, Long timeout);
 	
-	public abstract ProfilerResult getProfilerResult(long runId, long profilerRunId);
+	public abstract ProfilerResult getProfilerResult(long profilerRunId);
 	
 	/**
 	 * Checks configuration of the given graph, see {@link TransformationGraph#checkConfig(ConfigurationStatus)}.
