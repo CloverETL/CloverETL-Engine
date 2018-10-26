@@ -2,6 +2,18 @@
                           CloverDX Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-5-0-1
+---------
+Fixes in CloverDX Server Console User Interface:
+* CLO-14944	Running graph with subgraphs is not shown in execution hierarchy tree
+* CLO-14972	Server - Sandboxes upload - default encoding
+* CLO-14907	Provided parameters are no longer highlighted
+* CLO-14898	Link to Profiler Console is missing from login page
+* CLO-14883	Disabling failed schedule causes schedule status icon to disappear
+* CLO-14865	Can't import anything else after Data Service import
+* CLO-14845	Monitoring does not keep state after poll refresh
+* CLO-14597	Messages should be always visible in dialogs (shouldn't scroll with content)
+
 REL-5-0-0
 ---------
 * Changed brand from CloverETL to CloverDX
