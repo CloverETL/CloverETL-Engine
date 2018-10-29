@@ -270,26 +270,8 @@
 	</extension>
 
 	<extension point-id="jdbcDriver">
-		<parameter id="database" value="VERTICA70"/>
-		<parameter id="name" value="Vertica 7.0"/>
-		<parameter id="dbDriver" value="com.vertica.jdbc.Driver"/>
-		<parameter id="driverLibrary" value="lib/vertica/vertica-jdbc-7.0.2-1.jar"/>
-		<parameter id="urlHint" value="jdbc:vertica://hostname:5433/database"/>
-		<parameter id="jdbcSpecific" value="VERTICA"/>
-	</extension>
-
-	<extension point-id="jdbcDriver">
-		<parameter id="database" value="VERTICA71"/>
-		<parameter id="name" value="Vertica 7.1"/>
-		<parameter id="dbDriver" value="com.vertica.jdbc.Driver"/>
-		<parameter id="driverLibrary" value="lib/vertica/vertica-jdbc-7.1.1-0.jar"/>
-		<parameter id="urlHint" value="jdbc:vertica://hostname:5433/database"/>
-		<parameter id="jdbcSpecific" value="VERTICA"/>
-	</extension>
-	
-	<extension point-id="jdbcDriver">
-		<parameter id="database" value="VERTICA91"/>
-		<parameter id="name" value="Vertica 9.1"/>
+		<parameter id="database" value="VERTICA"/>
+		<parameter id="name" value="Vertica"/>
 		<parameter id="dbDriver" value="com.vertica.jdbc.Driver"/>
 		<parameter id="driverLibrary" value="lib/vertica/vertica-jdbc-9.1.1-0.jar"/>
 		<parameter id="urlHint" value="jdbc:vertica://hostname:5433/database"/>
