@@ -145,7 +145,7 @@
 		<version>2.5.0</version>
     </dependency>
 
-    <dependency>
+	<dependency>
 		<groupId>com.amazonaws</groupId>
 		<artifactId>aws-java-sdk-core</artifactId>
 		<version>1.11.75</version>
@@ -167,8 +167,8 @@
 				<artifactId>jackson-dataformat-cbor</artifactId>
 			</exclusion>
 		</exclusions>
-    </dependency>
-    <dependency>
+	</dependency>
+	<dependency>
 		<groupId>com.amazonaws</groupId>
 		<artifactId>aws-java-sdk-kms</artifactId>
 		<version>1.11.75</version>
