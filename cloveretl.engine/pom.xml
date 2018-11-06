@@ -13,7 +13,7 @@
 	<packaging>jar</packaging>
 	
 	<properties>
-		<proguardVersion>5.3.3</proguardVersion>
+		<proguardVersion>6.0.3</proguardVersion>
 	</properties>	
 
 	<dependencies>
