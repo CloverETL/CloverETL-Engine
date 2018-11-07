@@ -1002,7 +1002,6 @@ This software is licensed under the terms you may find in the file named "LICENS
 				<sysproperty key="file.encoding" value="UTF-8" />
 				<jvmarg value="${runtests.engine.Xmx}"/>
 				<jvmarg value="-Dderby.system.home=${dir.examples}/ExtExamples"/>
-				<jvmarg value="-Dhttps.protocols=TLSv1.2,TLSv1.1,TLSv1"/>
 				<jvmarg value="-Dcloveretl.smb2.bouncycastle.jar.file=${cloveretl.smb2.bouncycastle.jar.file}"/>
 				<jvmarg line="${additional.jvmargs}"/>
 				

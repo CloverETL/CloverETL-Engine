@@ -23,6 +23,7 @@
 	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="lib/jsch-0.1.54.jar" sourcepath="lib.src/jsch-0.1.54.zip"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-cli-1.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/javax.mail-1.6.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry exported="true" kind="lib" path="lib/annotations.jar"/>
 	<classpathentry kind="lib" path="lib/icu4j-52_1.jar"/>

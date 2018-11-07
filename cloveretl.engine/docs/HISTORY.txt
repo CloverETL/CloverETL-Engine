@@ -2,6 +2,17 @@
                           CloverDX Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-5-0-2
+---------
+Fixes and improvements in CloverDX Server Console User Interface:
+CLO-15082	Layout of GraphStructureInfo in sandboxes
+CLO-14644	Global Error for invalid license
+CLO-14623	Improve layout of Tracking tab table and log file in Execution History
+CLO-15084	Data service cannot be published on multiple connectors
+CLO-14826	Schedules get slow with >= 50 schedules
+CLO-14550	Show logged in user in server UI
+and other minor fixes and improvements
+
 REL-5-0-1
 ---------
 Fixes in CloverDX Server Console User Interface:
