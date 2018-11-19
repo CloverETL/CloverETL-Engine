@@ -47,6 +47,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.Filter;
 import org.apache.log4j.spi.LoggingEvent;
+import org.jetel.component.MetadataProvider;
 import org.jetel.data.ProfilerResult;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -524,6 +525,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	@Override
 	public boolean isHttpContextAvailable() {
 		return false;
+	}
+
+	@Override
+	public MetadataProvider getMetadataProviderForSubgraph(long parentRunId, String parentSubgraphComponentId) {
+		throw new UnsupportedOperationException("subgraphs are not avaible in standalone engine");
 	}
 	
 }

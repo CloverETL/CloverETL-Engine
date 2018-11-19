@@ -36,6 +36,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.MetadataProvider;
 import org.jetel.data.ProfilerResult;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.HttpContextNotAvailableException;
@@ -631,5 +632,12 @@ public abstract class IAuthorityProxy {
 	 * Returns <tt>true</tt> if HTTP context is available, i.e. the job is serving an HTTP request.
 	 */
 	public abstract boolean isHttpContextAvailable();
+
+	/**
+	 * Returns metadata provider from parent graph for given subgraph component.
+	 * Subgraphs need this to know what metadata are on input/output edges in parent graph.
+	 * Used only at runtime.
+	 */
+	public abstract MetadataProvider getMetadataProviderForSubgraph(long parentRunId, String parentSubgraphComponentId);
 	
 }

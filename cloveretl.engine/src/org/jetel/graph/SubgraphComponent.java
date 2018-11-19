@@ -18,17 +18,10 @@
  */
 package org.jetel.graph;
 
-import org.jetel.enums.EdgeTypeEnum;
-import org.jetel.util.GraphUtils;
+import org.jetel.component.MetadataProvider;
 
 /**
- * Only implementation of this interface is Subgraph component. This interface provides
- * input (output edges of SubgraphInput component) and output (input edges of SubgraphOutput component)
- * edges of executed subgraph. These edges are used to decide whether they can share edge base with edges
- * from parent graph. Moreover, if the edge base can be shared, edge types in parent graph needs to be
- * properly updated to satisfy needs from both parent graph and subgraph.
- * 
- * @see GraphUtils#combineEdges(EdgeTypeEnum, EdgeTypeEnum)
+ * Only implementation of this interface is Subgraph component.
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -36,11 +29,6 @@ import org.jetel.util.GraphUtils;
  * @created 31. 10. 2013
  */
 public interface SubgraphComponent {
-
-	/**
-	 * @return URL of executed subgraph
-	 */
-	public String getSubgraphURL();
 	
 	/**
 	 * @param strict should be an exception thrown or just null return in case of some error
@@ -48,18 +36,6 @@ public interface SubgraphComponent {
 	 * (this instance is dedicated for further automatic metadata propagation) 
 	 */
 	public TransformationGraph getSubgraphNoMetadataPropagation(boolean strict);
-	
-	/**
-	 * @param portIndex
-	 * @return input edge of executed subgraph
-	 */
-	public Edge getSubgraphInputEdge(int portIndex);
-
-	/**
-	 * @param portIndex
-	 * @return output edge of executed subgraph
-	 */
-	public Edge getSubgraphOutputEdge(int portIndex);
 
 	/**
 	 * Sets flag which indicates the subgraph should be executed in fast-propagate mode.
@@ -68,5 +44,15 @@ public interface SubgraphComponent {
 	 * @param fastPropagateExection
 	 */
 	public void setFastPropagateExecution(boolean fastPropagateExection);
+	
+	/**
+	 * Returns metadata provider for run-time.
+	 * 
+	 * In design-time, the metadata provider is saved in GraphRuntimeContext and this method will return null.
+	 * For details, see {@link org.jetel.graph.runtime.GraphRuntimeContext#setMetadataProvider(MetadataProvider)}
+	 * 
+	 * @return metadata provider for the subgraph executed by this Subgraph component
+	 */
+	public MetadataProvider getMetadataProvider();
 	
 }
