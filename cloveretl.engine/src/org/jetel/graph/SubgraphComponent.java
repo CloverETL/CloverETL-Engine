@@ -18,8 +18,6 @@
  */
 package org.jetel.graph;
 
-import org.jetel.component.MetadataProvider;
-
 /**
  * Only implementation of this interface is Subgraph component.
  * 
@@ -44,15 +42,5 @@ public interface SubgraphComponent {
 	 * @param fastPropagateExection
 	 */
 	public void setFastPropagateExecution(boolean fastPropagateExection);
-	
-	/**
-	 * Returns metadata provider for run-time.
-	 * 
-	 * In design-time, the metadata provider is saved in GraphRuntimeContext and this method will return null.
-	 * For details, see {@link org.jetel.graph.runtime.GraphRuntimeContext#setMetadataProvider(MetadataProvider)}
-	 * 
-	 * @return metadata provider for the subgraph executed by this Subgraph component
-	 */
-	public MetadataProvider getMetadataProvider();
 	
 }

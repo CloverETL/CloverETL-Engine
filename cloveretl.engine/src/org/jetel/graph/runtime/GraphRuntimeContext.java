@@ -899,8 +899,6 @@ public class GraphRuntimeContext implements Serializable {
 	}
 
 	/**
-	 * Should be used only for design-time, not for execution time. See {@link #setMetadataProvider()}
-	 * 
 	 * @return class which provides input and output metadata of parent graph
 	 */
 	public MetadataProvider getMetadataProvider() {
@@ -908,12 +906,7 @@ public class GraphRuntimeContext implements Serializable {
 	}
 
 	/**
-	 * Should be used only for design-time. At runtime, the metadata provider should be saved somewhere else. See CLO-15275.
-	 * 
-	 * At runtime, the instances of metadata providers should not be saved here because they are only needed in the same jvm.
-	 * Sending instances of MetadataProvider in GraphRuntimeContext between core and worker is useless and wastes memory in the core.
-	 * 
-	 * Sets provider of input and output metadata of parent graph. Used by subgraphs.
+	 * Sets provider of input and output metadata of parent graph.
 	 * @param metadataProvider parent graph metadata provider
 	 */
 	public void setMetadataProvider(MetadataProvider metadataProvider) {
