@@ -135,6 +135,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CTLMapping;
+import org.jetel.util.CTLTransformUtils.Field;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.SystemOutByteChannel;
@@ -551,6 +552,9 @@ public class HttpConnector extends Node {
 	 */
 	private static final int EP_MESSAGE_INDEX = 0;
 	private static final String EP_MESSAGE_NAME = RP_MESSAGE_NAME;
+	
+	private static final String INPUT_FILE_ATTRIBUTE_WARN = "'Input file URL' will be ignored because 'Input field' attribute is set.";
+	private static final String INPUT_FILE_FIELD_WARN = "'Input file URL' will be ignored because field '%s' is mapped.";
 
 	private static String MULTIPART_CONTENT = "EntityContent";
 	private static String MULTIPART_CONTENT_BYTE = "EntityContentByte";
@@ -2598,8 +2602,8 @@ public class HttpConnector extends Node {
 					"Unsupported authentication method: " + authenticationMethod);
 		}
 
+		DataFieldMetadata inField = null;
 		if (inputPort != null) {
-			DataFieldMetadata inField;
 			if (!StringUtils.isEmpty(inputFieldName)) {
 				inField = inputPort.getMetadata().getField(inputFieldName);
 			} else {
@@ -2717,10 +2721,6 @@ public class HttpConnector extends Node {
 			status.addWarning(this, null, "Output port isn't connected and output file is not set.");
 		}
 
-		if (inputPort != null && !StringUtils.isEmpty(inputFileUrl)) {
-			status.addWarning(this, null, "'Input file URL' will be ignored because input port is connected.");
-		}
-
 		if (storeResponseToTempFile && outputFileUrl != null) {
 			status.addError(this, null, "Only one of 'Output file URL' and 'Store response file URL to output field' may be used.");
 		}
@@ -2784,8 +2784,36 @@ public class HttpConnector extends Node {
 		} catch (Exception e) {
 			status.addError(this, null, "Initialization failed.", e);
 		}
-
+		
+		if (inputPort != null && !StringUtils.isEmpty(inputFileUrl)) {
+			if (inputFieldName != null && inField != null) {
+				status.addWarning(this, null, INPUT_FILE_ATTRIBUTE_WARN);
+			} else if (inputMappingTransformation != null) {
+				Set<Field> usedOutputFields = inputMappingTransformation.getUsedOutputFields();
+				
+				if (containsField(usedOutputFields, IP_REQUEST_CONTENT_NAME)) {
+					status.addWarning(this, null, String.format(INPUT_FILE_FIELD_WARN, IP_REQUEST_CONTENT_NAME));
+				} else if (containsField(usedOutputFields, IP_REQUEST_CONTENT_BYTE_NAME)) {
+					status.addWarning(this, null, String.format(INPUT_FILE_FIELD_WARN, IP_REQUEST_CONTENT_BYTE_NAME));
+				}
+			}
+		}
+		
 		return status;
+	}
+	
+	private boolean containsField(Set<Field> fields, String fieldName) {
+		if (fields == null || fields.isEmpty()) {
+			return false;
+		}
+		
+		for (Field field : fields) {
+			if (fieldName.equals(field.name)) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 	/**
