@@ -27,6 +27,8 @@ import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.ctl.debug.DebugCommand.CommandType;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
@@ -47,6 +49,8 @@ import org.jetel.graph.runtime.JMXNotificationMessage;
  */
 public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMXMBean {
 
+	private static final Log log = LogFactory.getLog(DebugJMX.class);
+	
 	public static final String MBEAN_NAME = "org.jetel.ctl:type=DebugJMX";
 
 	private static Map<Long, GraphDebugger> graphDebuggerCache = new ConcurrentHashMap<>();
@@ -60,13 +64,25 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	public static synchronized void registerMBean() {
 		if (debugJMX == null) {
 			debugJMX = new DebugJMX();
-			//register JMX mBean
-	    	try {
+			// register JMX mBean
+			try {
 				ObjectName debugJmxObjectName = new ObjectName(MBEAN_NAME);
 				ManagementFactory.getPlatformMBeanServer().registerMBean(debugJMX, debugJmxObjectName);
-	        } catch (Exception e) {
-	        	throw new JetelRuntimeException("DebugJMX mBean cannot be published.", e);
-	        }
+			} catch (Exception e) {
+				throw new JetelRuntimeException("Debug JMX mbean could not be published", e);
+			}
+		}
+	}
+	
+	public static synchronized void deregisterMBean() {
+		if (debugJMX != null) {
+			try {
+				ManagementFactory.getPlatformMBeanServer().unregisterMBean(new ObjectName(MBEAN_NAME));
+			} catch (Exception e) {
+				log.error("Debug JMX mbean could not be unpublished", e);
+			} finally {
+				debugJMX = null;
+			}
 		}
 	}
 	

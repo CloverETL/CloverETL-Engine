@@ -95,7 +95,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
      */
     private transient List<JobListener> jobListeners = new ArrayList<>();
     
-    private static class DaemonThreadFactory implements ThreadFactory {
+    static class DaemonThreadFactory implements ThreadFactory {
     	
     	private final String threadName;
     	
@@ -127,12 +127,27 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	public static synchronized void registerMBean() {
 		if (cloverJMX == null) {
 			cloverJMX = new CloverJMX();
-	    	try {
+			try {
 				ObjectName objectName = new ObjectName(MBEAN_NAME);
 				ManagementFactory.getPlatformMBeanServer().registerMBean(cloverJMX, objectName);
-	        } catch (Exception e) {
-	        	throw new JetelRuntimeException("CloverJMX mBean cannot be published.", e);
-	        }
+			} catch (Exception e) {
+				throw new JetelRuntimeException("Clover JMX mbean could not be published", e);
+			}
+		}
+	}
+	
+	/**
+	 * Removes Clover JMX mbean from the server.
+	 */
+	public static synchronized void deregisterMBean() {
+		if (cloverJMX != null) {
+			try {
+				ManagementFactory.getPlatformMBeanServer().unregisterMBean(new ObjectName(MBEAN_NAME));
+			} catch (Exception e) {
+				log.error("Clover JMX mbean cannot be unpublished.", e);
+			} finally {
+				cloverJMX = null;
+			}
 		}
 	}
 	
