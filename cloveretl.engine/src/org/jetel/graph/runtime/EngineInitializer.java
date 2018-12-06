@@ -34,10 +34,10 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.jmx.CloverJMX;
-import org.jetel.main.runGraph;
 import org.jetel.plugin.PluginLocation;
 import org.jetel.plugin.PluginRepositoryLocation;
 import org.jetel.plugin.Plugins;
+import org.jetel.util.LogUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -179,7 +179,9 @@ public class EngineInitializer {
         initLogging(logHost);
 
         // print out the basic environment information to log4j interface - has to be after log4j initialization - issue #1911
-        runGraph.printRuntimeHeader();
+        Logger logger = Logger.getLogger(EngineInitializer.class);
+        LogUtils.printRuntimeHeader(logger);
+        LogUtils.printJvmInfo(logger);
 
         //init framework constants
         if (urlDefaultPropertiesFile != null) {
