@@ -20,6 +20,8 @@ package org.jetel.metadata;
 
 import java.util.HashMap;
 
+import javax.xml.XMLConstants;
+
 abstract public class MXAbstract {
 
 	// namespaces
@@ -28,7 +30,7 @@ abstract public class MXAbstract {
 
 	// xsd
 	protected static final String NAMESPACE = "";
-	protected static final String XMLSCHEMA = "http://www.w3.org/2001/XMLSchema";
+	protected static final String XMLSCHEMA = XMLConstants.W3C_XML_SCHEMA_NS_URI;
 	protected static final String XMLNS_XSD = "xmlns:xsd";
 	protected static final String XMLNS = "xmlns";
 

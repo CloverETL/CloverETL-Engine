@@ -21,6 +21,7 @@ package org.jetel.component;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
+import org.jetel.component.TransformLanguageDetector.TransformLanguage;
 import org.jetel.ctl.ErrorMessage;
 import org.jetel.ctl.ITLCompiler;
 import org.jetel.ctl.TLCompilerFactory;
@@ -54,46 +55,127 @@ public class RecordFilterFactory {
 	}
 	
 	public static RecordsFilter createFilter(String filterExpression, DataRecordMetadata[] metadata, TransformationGraph graph, String id, String attributeName, String sourceId, Log logger) throws ComponentNotReadyException {
-		RecordsFilter filter;
+		return commonBuilder(filterExpression, graph, id, sourceId, logger).setMetadata(metadata).setAttributeName(attributeName).build();
+	}
+
+	public static Builder builder(String filterExpression, DataRecordMetadata metadata, TransformationGraph graph, String id, String sourceId, Log logger) throws ComponentNotReadyException {
+		return commonBuilder(filterExpression, graph, id, sourceId, logger).setMetadata(metadata);
+	}
+	
+	private static Builder commonBuilder(String filterExpression, TransformationGraph graph, String id, String sourceId, Log logger) {
+		return new Builder().setFilterExpression(filterExpression).setGraph(graph).setId(id).setSourceId(sourceId).setLogger(logger);
+	}
+
+	public static class Builder {
 		
-		if (filterExpression.contains(org.jetel.ctl.TransformLangExecutor.CTL_TRANSFORM_CODE_ID)) {
-			// new CTL initialization
-			ITLCompiler compiler = TLCompilerFactory.createCompiler(graph, metadata, NO_METADATA, "UTF-8");
+		private String filterExpression;
+		private TransformLanguage defaultLanguage;
+		private DataRecordMetadata[] metadata;
+		private TransformationGraph graph;
+		private String id; 
+		private String attributeName; 
+		private String sourceId;
+		private Log logger;
+		
+		public RecordsFilter build() throws ComponentNotReadyException {
+			RecordsFilter filter;
 			
-			compiler.setSourceId(sourceId != null ? sourceId : createFilterExpressionSourceId(graph, id, attributeName));
-	    	
-			List<ErrorMessage> msgs = compiler.compileExpression(filterExpression, CTLRecordFilter.class, id, CTLRecordFilterAdapter.ISVALID_FUNCTION_NAME, boolean.class);
-	    	if (compiler.errorCount() > 0) {
-	    		ComponentNotReadyException[] errors = new ComponentNotReadyException[msgs.size()];
-	    		for (int i = 0; i < msgs.size(); i++) {
-	    			errors[i] = new ComponentNotReadyException(msgs.get(i).toString());
-		    		if (logger != null) {
-		    			logger.error(msgs.get(i).toString());
+			if (filterExpression.contains(org.jetel.ctl.TransformLangExecutor.CTL_TRANSFORM_CODE_ID) || (defaultLanguage == TransformLanguage.CTL2)) {
+				// new CTL initialization
+				ITLCompiler compiler = TLCompilerFactory.createCompiler(graph, metadata, NO_METADATA, "UTF-8");
+				
+				compiler.setSourceId(sourceId != null ? sourceId : createFilterExpressionSourceId(graph, id, attributeName));
+		    	
+				List<ErrorMessage> msgs = compiler.compileExpression(filterExpression, CTLRecordFilter.class, id, CTLRecordFilterAdapter.ISVALID_FUNCTION_NAME, boolean.class);
+		    	if (compiler.errorCount() > 0) {
+		    		ComponentNotReadyException[] errors = new ComponentNotReadyException[msgs.size()];
+		    		for (int i = 0; i < msgs.size(); i++) {
+		    			errors[i] = new ComponentNotReadyException(msgs.get(i).toString());
+			    		if (logger != null) {
+			    			logger.error(msgs.get(i).toString());
+			    		}
 		    		}
-	    		}
-	    		CompoundException compoundException = new CompoundException(errors);
-	    		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors", compoundException);
-	    	}
-	    	Object ret = compiler.getCompiledCode();
-	    	if (ret instanceof org.jetel.ctl.TransformLangExecutor) {
-	    		// setup interpreted runtime
-	    		filter = new CTLRecordFilterAdapter((org.jetel.ctl.TransformLangExecutor) ret, logger);
-	    	} else if (ret instanceof CTLRecordFilter){
-	    		filter = (CTLRecordFilter) ret;
-	    	} else {
-	    		// this should never happen as compiler always generates correct interface
-	    		throw new ComponentNotReadyException("Invalid type of record transformation");
-	    	}
-	    	// set graph instance to transformation (if CTL it can access lookups etc.)
-	    	filter.setGraph(graph);
-	    	
-	    	// initialize transformation
-	    	filter.init();
-		} else {
-        	throw new JetelRuntimeException("CTL1 is not a supported language any more, please convert your code to CTL2.");
+		    		CompoundException compoundException = new CompoundException(errors);
+		    		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors", compoundException);
+		    	}
+		    	Object ret = compiler.getCompiledCode();
+		    	if (ret instanceof org.jetel.ctl.TransformLangExecutor) {
+		    		// setup interpreted runtime
+		    		filter = new CTLRecordFilterAdapter((org.jetel.ctl.TransformLangExecutor) ret, logger);
+		    	} else if (ret instanceof CTLRecordFilter){
+		    		filter = (CTLRecordFilter) ret;
+		    	} else {
+		    		// this should never happen as compiler always generates correct interface
+		    		throw new ComponentNotReadyException("Invalid type of record transformation");
+		    	}
+		    	// set graph instance to transformation (if CTL it can access lookups etc.)
+		    	filter.setGraph(graph);
+		    	
+		    	// initialize transformation
+		    	filter.init();
+			} else {
+	        	throw new JetelRuntimeException("CTL1 is not a supported language any more, please convert your code to CTL2.");
+			}
+			
+			return filter;
+		}
+
+		public Builder setFilterExpression(String filterExpression) {
+			this.filterExpression = filterExpression;
+			return this;
 		}
 		
-		return filter;
+		public Builder setDefaultLanguage(TransformLanguage defaultLanguage) {
+			this.defaultLanguage = defaultLanguage;
+			return this;
+		}
+		
+		/**
+		 * Sets CTL2 as the default transformation language.
+		 * Filter expressions without a prefix determining the language will be treated as CTL2.
+		 * 
+		 * @return this builder
+		 */
+		public Builder setDefaultLanguageCTL2() {
+			this.defaultLanguage = TransformLanguage.CTL2;
+			return this;
+		}
+		
+		public Builder setMetadata(DataRecordMetadata[] metadata) {
+			this.metadata = metadata;
+			return this;
+		}
+		
+		public Builder setMetadata(DataRecordMetadata metadata) {
+			this.metadata = new DataRecordMetadata[] { metadata };
+			return this;
+		}
+		
+		public Builder setGraph(TransformationGraph graph) {
+			this.graph = graph;
+			return this;
+		}
+		
+		public Builder setId(String id) {
+			this.id = id;
+			return this;
+		}
+		
+		public Builder setAttributeName(String attributeName) {
+			this.attributeName = attributeName;
+			return this;
+		}
+		
+		public Builder setSourceId(String sourceId) {
+			this.sourceId = sourceId;
+			return this;
+		}
+		
+		public Builder setLogger(Log logger) {
+			this.logger = logger;
+			return this;
+		}
+		
 	}
 	
 	private static String createFilterExpressionSourceId(TransformationGraph graph, String graphElemId, String attributeName) {

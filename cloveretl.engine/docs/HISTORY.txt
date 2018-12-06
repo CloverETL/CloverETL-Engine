@@ -2,6 +2,15 @@
                           CloverDX Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-5-0-3
+---------
+Fixes and Improvements
+CLO-9557	Synchronized projects: conflicts when Server runs on OpenJDK or Java 9
+CLO-15203	File content/editor tabs in Sandboxes show "Page Error" for some filetypes
+CLO-15222	Do not wrap lines at Execution History log
+CLO-15235	Sandboxes: Wrong context menu for graph
+CLO-15139	Merge Sandboxes -> File Content/Editor
+
 REL-5-0-2
 ---------
 Fixes and improvements in CloverDX Server Console User Interface:

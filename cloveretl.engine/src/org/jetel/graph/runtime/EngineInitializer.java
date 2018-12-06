@@ -274,7 +274,8 @@ public class EngineInitializer {
 	 */
 	public static void shutdown() {
 		CloverJMX.shutdown();
-
+		CloverJMX.deregisterMBean();
+		DebugJMX.deregisterMBean();
 		try {
 			ConnectionPool.getInstance().close();
 		} catch (Exception e) {

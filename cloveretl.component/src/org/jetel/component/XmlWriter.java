@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -209,7 +210,7 @@ public class XmlWriter extends Node {
 	public static final String ATTRIBUTE_CREATED = "created";
 	
 	
-	public static final String XSI_URI = "http://www.w3.org/2001/XMLSchema-instance";
+	public static final String XSI_URI = XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI;
 	
 	/**
 	 * Map of portIndex => PortDefinition

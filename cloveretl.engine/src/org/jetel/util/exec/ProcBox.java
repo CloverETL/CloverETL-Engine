@@ -37,8 +37,8 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.JetelException;
 
 /**
- * Class for running OS processes. It's main purpose is to provide convenient mechanism
- * for supplying process' input and processing it's output.
+ * Class for running OS processes. Its main purpose is to provide convenient mechanism
+ * for supplying process' input and processing its output.
  * <p> An instance is composed of
  * four components:<ul>
  * <li> externally created process,</li>
