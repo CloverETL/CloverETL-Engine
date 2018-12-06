@@ -539,7 +539,7 @@ public class runGraph {
 			"Running on {0} CPU(s)" +
     		", OS {1}" +
     		", architecture {2}");
-	private static MessageFormat RUNTIME_HEADER_4 = new MessageFormat("Running on {0}, {1}, {2} ({3}), max available memory for JVM {4} KB");
+	private static MessageFormat RUNTIME_HEADER_4 = new MessageFormat("Running on {0}, {1}, {2} ({3}), max available memory for JVM: {4} MB");
 	
 	public static void printRuntimeHeader() {
         logger.info(RUNTIME_HEADER_1.format(new Object[] {JetelVersion.LIBRARY_BUILD_YEAR}));
@@ -557,7 +557,7 @@ public class runGraph {
         		System.getProperty("java.version"),
         		System.getProperty("java.vendor"),
         		(isCompilerAvailable() ? "JDK" : "JRE - runtime compilation is not available!"),
-        		Runtime.getRuntime().maxMemory() / 1024
+        		Long.toString(Runtime.getRuntime().maxMemory() / (1024 * 1024))
         }));
 	}
 

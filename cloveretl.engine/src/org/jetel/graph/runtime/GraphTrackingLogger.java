@@ -18,6 +18,8 @@
  */
 package org.jetel.graph.runtime;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -39,6 +41,7 @@ public class GraphTrackingLogger extends TrackingLogger {
 
     private static final int[] ARG_SIZES_WITH_CPU = { -6, -4, 27, 15, 11, 8, 8 };
     private static final int[] ARG_SIZES_WITHOUT_CPU = { 37, 15, 11, 8, 8 };
+    private static final MemoryMXBean memMXB = ManagementFactory.getMemoryMXBean();
 
     GraphTrackingLogger(WatchDog watchDog) {
     	super(watchDog);
@@ -61,7 +64,7 @@ public class GraphTrackingLogger extends TrackingLogger {
         // France is here just to get 24hour time format
         logger.info("Time: "
             + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, Locale.FRANCE).
-                format(new Date()));
+               format(new Date()) + ", JVM heap used: " + (memMXB.getHeapMemoryUsage().getUsed() / (1024 * 1024)) + " MB");
         if (finalTracking) {
         	logger.info("Node                   ID        Port       #Records        #KB  aRec/s   aKB/s");
         } else {
