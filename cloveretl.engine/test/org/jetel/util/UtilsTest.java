@@ -1,10 +1,8 @@
 /*
- * Copyright 2006-2009 Opensys TM by Javlin, a.s. All rights reserved.
- * Opensys TM by Javlin PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ * CloverETL Engine - Java based ETL application framework.
+ * Copyright (c) Javlin, a.s. (info@cloveretl.com).  Use is subject to license terms.
  *
- * Opensys TM by Javlin a.s.; Kremencova 18; Prague; Czech Republic
- * www.cloveretl.com; info@cloveretl.com
- *
+ * www.cloveretl.com
  */
 
 package org.jetel.util;
