@@ -24,6 +24,8 @@ import java.nio.file.DirectoryStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.jetel.util.file.ArchiveUtils;
+
 /**
  * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -47,7 +49,7 @@ public class ZipDirectoryStream extends ArchiveDirectoryStream<ZipInputStream, Z
 
 	@Override
 	protected ZipInputStream newArchiveInputStream(InputStream is) throws IOException {
-		return new ZipInputStream(is);
+		return ArchiveUtils.getZipInputStream(is);
 	}
 
 	@Override
