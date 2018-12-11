@@ -92,7 +92,7 @@ public class LenientZipInputStream extends FilterInputStream {
 	/**
 	 * local file header signature
 	 */
-	public static final byte[] ZIP_LOCAL = { 0x50, 0x4b, 0x03, 0x04 };
+	private static final byte[] ZIP_LOCAL = { 0x50, 0x4b, 0x03, 0x04 };
 
 	/** index for checking local file header signature */
 	private int checkIndex;
