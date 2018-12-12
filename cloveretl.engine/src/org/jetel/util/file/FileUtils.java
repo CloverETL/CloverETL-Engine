@@ -745,7 +745,7 @@ public class FileUtils {
         }
 
         //resolve url format for zip files
-        ZipInputStream zis = new ZipInputStream(parentStream) ;     
+        ZipInputStream zis = ArchiveUtils.getZipInputStream(parentStream);     
         ZipEntry entry;
 
         while ((entry = zis.getNextEntry()) != null) {
@@ -834,7 +834,7 @@ public class FileUtils {
      * @throws IOException
      */
     public static ZipInputStream getZipInputStream(InputStream parentStream, String entryName) throws IOException {
-        ZipInputStream zis = new ZipInputStream(parentStream) ;     
+        ZipInputStream zis = ArchiveUtils.getZipInputStream(parentStream);     
         ZipEntry entry;
 
         // find a matching entry
@@ -916,7 +916,7 @@ public class FileUtils {
         }
     	
         //resolve url format for zip files
-        ZipInputStream zin = new ZipInputStream(innerStream) ;     
+        ZipInputStream zin = ArchiveUtils.getZipInputStream(innerStream);     
         ZipEntry entry;
 
         // find entries

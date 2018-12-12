@@ -28,14 +28,11 @@ import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.nio.file.Files;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-
-import javax.tools.ToolProvider;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Appender;
@@ -530,46 +527,6 @@ public class runGraph {
         System.out.println("Note: <graph definition file> can be either local filename or URL of local/remote file");
         System.out.println();
         
-	}
-
-	// See also com.cloveretl.server.utils.LogUtils where this code was temporarily duplicated.
-	private static MessageFormat RUNTIME_HEADER_1 = new MessageFormat("***  CloverDX, (c) 2002-{0} Javlin a.s.  ***");
-	private static MessageFormat RUNTIME_HEADER_2 = new MessageFormat("Running with {0}");
-	private static MessageFormat RUNTIME_HEADER_3 = new MessageFormat(
-			"Running on {0} CPU(s)" +
-    		", OS {1}" +
-    		", architecture {2}");
-	private static MessageFormat RUNTIME_HEADER_4 = new MessageFormat("Running on {0}, {1}, {2} ({3}), max available memory for JVM {4} KB");
-	
-	public static void printRuntimeHeader() {
-        logger.info(RUNTIME_HEADER_1.format(new Object[] {JetelVersion.LIBRARY_BUILD_YEAR}));
-        logger.info(RUNTIME_HEADER_2.format(new Object[] {JetelVersion.getProductName()}));
-        logger.info(RUNTIME_HEADER_3.format(new Object[] {
-        		Runtime.getRuntime().availableProcessors(),
-        		System.getProperty("os.name"),
-        		System.getProperty("os.arch")
-        }));
-	}
-
-	public static void printJvmInfo() {
-        logger.info(RUNTIME_HEADER_4.format(new Object[] {
-        		System.getProperty("java.runtime.name"),
-        		System.getProperty("java.version"),
-        		System.getProperty("java.vendor"),
-        		(isCompilerAvailable() ? "JDK" : "JRE - runtime compilation is not available!"),
-        		Runtime.getRuntime().maxMemory() / 1024
-        }));
-	}
-
-	/**
-	 * @return true if JDK with valid java compiler is detected, false for simple JRE
-	 */
-	private static Boolean isCompilerAvailable;
-	private static synchronized boolean isCompilerAvailable() {
-		if (isCompilerAvailable == null) {
-			isCompilerAvailable = ToolProvider.getSystemJavaCompiler() != null;
-		}
-		return isCompilerAvailable;
 	}
 	
 	/**

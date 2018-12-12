@@ -139,13 +139,13 @@ public abstract class TrackingLogger implements NotificationListener {
 	protected void graphFinished() {
 		if (getGraphTracking().getPhaseTracking().length > 0) {
 			logger.info("-----------------------** Summary of Phases execution **---------------------");
-			logger.info("Phase#            Finished Status         RunTime(sec)    MemoryAllocation(KB)");
+			logger.info("Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)");
 			for (PhaseTracking phaseDetail : getGraphTracking().getPhaseTracking()) {
 				if(phaseDetail != null) {
 	    			Object nodeInfo[] = { phaseDetail.getPhaseLabel(), 
 	    					phaseDetail.getResult().message(),
 	    					TrackingUtils.convertTime(phaseDetail.getExecutionTime(), TimeUnit.SECONDS),
-	                        phaseDetail.getMemoryUtilization() >> 10};
+	                        phaseDetail.getMemoryUtilization() / (1024 * 1024)};
 	    			int nodeSizes[] = {-18, -24, 12, 18};
 	    			logger.info(StringUtils.formatString(nodeInfo, nodeSizes));
 				}
