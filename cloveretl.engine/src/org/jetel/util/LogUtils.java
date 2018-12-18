@@ -18,16 +18,19 @@
  */
 package org.jetel.util;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.text.MessageFormat;
+
+import javax.tools.ToolProvider;
+
 import org.apache.log4j.Logger;
 import org.apache.log4j.MDC;
-import org.jetel.data.DataField;
-import org.jetel.data.DataRecord;
-import org.jetel.graph.ContextProvider;
-import org.jetel.graph.Node;
-import org.jetel.graph.TransformationGraph;
 
 /**
- * @author Kokon (info@cloveretl.com)
+ * Logging utilities for engine.
+ * 
+ * @author Kokon, salamonp (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 12 Apr 2012
@@ -35,43 +38,63 @@ import org.jetel.graph.TransformationGraph;
 public class LogUtils {
 
 	public static final String MDC_RUNID_KEY = "runId";
-
-	private static final Logger DEFAULT_LOGGER = Logger.getLogger(LogUtils.class);
 	
-	public static Logger getLogger() {
-		Node component = ContextProvider.getNode();
-		if (component != null) {
-			return component.getLog();
-		}
-
-		TransformationGraph graph = ContextProvider.getGraph();
-		if (graph != null) {
-			return graph.getLog();
-		}
-		
-		return DEFAULT_LOGGER;
-	}
-
+	private static final MemoryMXBean memMXB = ManagementFactory.getMemoryMXBean();
+	
+	private static final Logger logger = Logger.getLogger(LogUtils.class);
+	
+	private static Boolean isCompilerAvailable;
+	
+	private static MessageFormat RUNTIME_HEADER_1 = new MessageFormat("***  CloverDX, (c) 2002-{0} Javlin a.s.  ***");
+	private static MessageFormat RUNTIME_HEADER_2 = new MessageFormat("Running with {0}");
+	private static MessageFormat RUNTIME_HEADER_3 = new MessageFormat(
+			"Running on {0} CPU(s)" +
+			", OS {1}" +
+			", architecture {2}");
+	private static MessageFormat RUNTIME_HEADER_4 = new MessageFormat("Running on {0}, {1}, {2} ({3}), max available memory for JVM: {4} MB");
+	
 	/**
-	 * Converts the given record to a string for logging purpose.
-	 * The result will be one-line string form of data record.  
-	 * @param record converted data record
-	 * @return simple string representation of the given record
+	 * Uses engine Logger.
 	 */
-	public static String toString(DataRecord record) {
-		StringBuffer str = new StringBuffer(80);
-		str.append('{');
-		for (DataField field : record) {
-			str.append(field.getMetadata().getName());
-			str.append("=");
-			str.append(field.toString());
-			str.append(", ");
+	public static void printRuntimeHeader() {
+		printRuntimeHeader(logger);
+	}
+	
+	public static void printRuntimeHeader(Logger logger) {
+		logger.info(RUNTIME_HEADER_1.format(new Object[] {JetelVersion.LIBRARY_BUILD_YEAR}));
+		logger.info(RUNTIME_HEADER_2.format(new Object[] {JetelVersion.getProductName()}));
+		logger.info(RUNTIME_HEADER_3.format(new Object[] {
+				Runtime.getRuntime().availableProcessors(),
+				System.getProperty("os.name"),
+				System.getProperty("os.arch")
+		}));
+	}
+	
+	/**
+	 * Uses engine Logger.
+	 */
+	public static void printJvmInfo() {
+		printJvmInfo(logger);
+	}
+	
+	public static void printJvmInfo(Logger logger) {
+		logger.info(RUNTIME_HEADER_4.format(new Object[] {
+				System.getProperty("java.runtime.name"),
+				System.getProperty("java.version"),
+				System.getProperty("java.vendor"),
+				(isCompilerAvailable() ? "JDK" : "JRE - runtime compilation is not available!"),
+				Long.toString(memMXB.getHeapMemoryUsage().getMax() / (1024 * 1024))
+		}));
+	}
+	
+	/**
+	 * @return true if JDK with valid java compiler is detected, false for simple JRE
+	 */
+	private static synchronized boolean isCompilerAvailable() {
+		if (isCompilerAvailable == null) {
+			isCompilerAvailable = ToolProvider.getSystemJavaCompiler() != null;
 		}
-		if (str.length() > 1) {
-			str.setLength(str.length() - 1);
-		}
-		str.append('}');
-		return str.toString();
+		return isCompilerAvailable;
 	}
 	
 	/**

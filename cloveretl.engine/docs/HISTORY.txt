@@ -2,6 +2,19 @@
                           CloverDX Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-5-1-0
+---------
+CLO-15015	Server - Filtering in Event Listeners
+CLO-14880	Collapsible main server menu
+CLO-15425	Execution History layout - allow to expand right panel
+CLO-15357	Simplify content of Monitoring
+CLO-15142	"Reset state" action in Schedules
+CLO-14632	Add worker support to obtain thread and heap dump
+CLO-15383	simpleHttpApi cluster_status reports just Cores, not Workers
+CLO-14460	Update Vertica driver to 9.1.1
+CLO-15502	MongoDB driver updated to 3.9
+CLO-13237	Reading of self-extracting ZIP archives
+
 REL-5-0-3
 ---------
 Fixes and Improvements
