@@ -70,8 +70,8 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	
 	private static final Logger log = Logger.getLogger(CloverJMX.class);
 
-	static final transient MemoryMXBean MEMORY_MXBEAN = ManagementFactory.getMemoryMXBean();
-    static final transient ThreadMXBean THREAD_MXBEAN = ManagementFactory.getThreadMXBean();
+	public static final transient MemoryMXBean MEMORY_MXBEAN = ManagementFactory.getMemoryMXBean();
+	public static final transient ThreadMXBean THREAD_MXBEAN = ManagementFactory.getThreadMXBean();
     
     private static transient boolean isThreadCpuTimeSupported = THREAD_MXBEAN.isThreadCpuTimeSupported();
 

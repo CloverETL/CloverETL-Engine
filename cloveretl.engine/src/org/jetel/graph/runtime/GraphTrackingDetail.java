@@ -16,89 +16,67 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.graph.runtime.jmx;
+package org.jetel.graph.runtime;
 
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.jmx.GraphError;
+import org.jetel.graph.runtime.jmx.GraphErrorDetail;
+import org.jetel.graph.runtime.jmx.GraphTracking;
+import org.jetel.graph.runtime.jmx.GraphTrackingImpl;
 
 /**
  * This class represents tracking information about whole graph.
  * 
- * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
+ * State of an instance is supposed to be changed over time
+ * (it is used by WatchDog to gather information during an execution of graph).
+ * 
+ * @author Filip Reichman
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  *
- * @created Jun 6, 2008
+ * @created Jan 2, 2019
  */
-public class GraphTrackingDetail implements GraphTracking {
-
-	private static final long serialVersionUID = 7586330827349162718L;
+public class GraphTrackingDetail {
 
 	private transient final TransformationGraph graph;
+	
+	protected String graphName;
+	
+	protected long startTime = -1;
+	
+	protected long endTime = -1;
+
+	protected Result result;
+
+	protected String nodeId;
+    
+	protected long runId;
 	
 	private PhaseTrackingDetail runningPhaseDetail;
 	
 	private PhaseTrackingDetail[] phasesDetails;
 	
-	private String graphName;
+	private GraphErrorDetail graphError;
 	
-	private long startTime = -1;
-	
-	private long endTime = -1;
-
-    private Result result;
-    
-    private GraphErrorDetail graphError;
-
-    private String nodeId;
-    
-    private long runId;
-    
 	/**
 	 * Constructor.
 	 * @param graph
 	 */
 	public GraphTrackingDetail(TransformationGraph graph) {
-		this.graph = graph;
 		this.graphName = graph.getName();
 		this.result = Result.N_A;
+		this.graph = graph;
 		this.phasesDetails = new PhaseTrackingDetail[graph.getPhases().length];
 		
 		int i = 0;
 		for(Phase phase : graph.getPhases()) {
-			phasesDetails[i++] = new PhaseTrackingDetail(this, phase);
+			phasesDetails[i++] = new PhaseTrackingDetail(phase);
 		}
 	}
 	
-	/**
-	 * Allocates a new <tt>GraphTrackingDetail</tt> object.
-	 *
-	 */
-	public GraphTrackingDetail() {
-		graph = null;
-	}
-	
-	public GraphTrackingDetail createCopy() {
-		GraphTrackingDetail detail = new GraphTrackingDetail(this.graph);
-		
-		detail.graphName = this.graphName;
-		detail.startTime = this.startTime;
-		detail.endTime = this.endTime;
-		detail.result = this.result;
-		detail.graphError = this.graphError;
-		detail.nodeId = this.nodeId;
-		detail.runId = this.runId;
-		
-		int i = 0;
-		for (PhaseTrackingDetail phaseDetail : detail.phasesDetails) {
-			phaseDetail.copyFrom(this.phasesDetails[i++]);
-		}
-		
-		if (this.getRunningPhaseTracking() != null) {
-			detail.runningPhaseDetail = detail.getPhaseDetail(this.getRunningPhaseTracking().getPhaseNum());
-		}
-
-		return detail;
+	public GraphTracking createSnapshot() {
+		return new GraphTrackingImpl(this);
 	}
 	
 	TransformationGraph getGraph() {
@@ -112,7 +90,6 @@ public class GraphTrackingDetail implements GraphTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getPhaseTracking(int)
 	 */
-	@Override
 	public PhaseTrackingDetail getPhaseTracking(int phaseNum) {
 		for (PhaseTrackingDetail phaseDetail : phasesDetails) {
 			if (phaseDetail.getPhaseNum() == phaseNum) {
@@ -122,50 +99,30 @@ public class GraphTrackingDetail implements GraphTracking {
 		return null;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getPhaseTracking()
-	 */
-	@Override
 	public PhaseTrackingDetail[] getPhaseTracking() {
 		return phasesDetails;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getRunningPhaseTracking()
-	 */
-	@Override
 	public PhaseTrackingDetail getRunningPhaseTracking() {
 		return runningPhaseDetail;
 	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getGraphName()
-	 */
-	@Override
+	
+	public GraphError getGraphError() {
+		return graphError;
+	}
+	
 	public String getGraphName() {
 		return graphName;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getStartTime()
-	 */
-	@Override
 	public long getStartTime() {
 		return startTime;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getEndTime()
-	 */
-	@Override
 	public long getEndTime() {
 		return endTime;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getExecutionTime()
-	 */
-	@Override
 	public long getExecutionTime() {
 		if (startTime == -1) {
 			return -1;
@@ -176,25 +133,14 @@ public class GraphTrackingDetail implements GraphTracking {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getResult()
-	 */
-	@Override
 	public Result getResult() {
 		return result;
 	}
 	
-	@Override
-	public GraphError getGraphError() {
-		return graphError;
-	}
-
-	@Override
 	public String getNodeId() {
 		return nodeId;
 	}
 	
-	@Override
 	public long getRunId() {
 		return runId;
 	}
@@ -208,37 +154,8 @@ public class GraphTrackingDetail implements GraphTracking {
 		
 		throw new IllegalArgumentException("Phase " + phaseNum + " is not tracked.");
 	}
-
 	
-	//******************* SETTERS *******************/
 	
-	public void setPhasesDetails(PhaseTrackingDetail[] phasesDetails) {
-		this.phasesDetails = phasesDetails;
-	}
-
-	public void setGraphName(String graphName) {
-		this.graphName = graphName;
-	}
-
-	public void setStartTime(long startTime) {
-		this.startTime = startTime;
-	}
-
-	public void setEndTime(long endTime) {
-		this.endTime = endTime;
-	}
-
-	public void setResult(Result result) {
-		this.result = result;
-	}
-	
-	public void setNodeId(String nodeId) {
-		this.nodeId = nodeId;
-	}
-
-	public void setRunId(long runId) {
-		this.runId = runId;
-	}
 	
 	//******************* EVENTS ********************/
 	public void graphStarted() {

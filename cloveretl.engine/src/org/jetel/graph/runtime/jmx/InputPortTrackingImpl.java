@@ -20,39 +20,31 @@ package org.jetel.graph.runtime.jmx;
 
 import java.io.Serializable;
 
-import org.jetel.graph.InputPort;
+import org.jetel.graph.runtime.InputPortTrackingDetail;
 
 /**
- * This class represents tracking information about an input port.
+ * Simple DTO holding tracking information about an input port.
  * 
- * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
+ * @author Filip Reichman
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  *
- * @created Jun 6, 2008
+ * @created Jan 2, 2019
  */
-public class InputPortTrackingDetail extends PortTrackingDetail implements InputPortTracking, Serializable {
+public class InputPortTrackingImpl extends AbstractPortTracking implements InputPortTracking, Serializable {
 
 	private static final long serialVersionUID = 1796185855793703918L;
 	
-	private final transient InputPort inputPort;
-	
 	protected long readerWaitingTime;
-
-	public InputPortTrackingDetail(NodeTrackingDetail parentNodeDetail, InputPort inputPort) {
-		super(parentNodeDetail, inputPort.getInputPortNumber());
-		this.inputPort = inputPort;
-		
+	
+	public InputPortTrackingImpl(NodeTracking parentNodeTracking, int portIndex) {
+		super(parentNodeTracking, portIndex);
 	}
+	
+	public InputPortTrackingImpl(NodeTracking parentNodeTracking, InputPortTrackingDetail inputPortTracking) {
+		super(parentNodeTracking, inputPortTracking.getIndex());
+		super.copyFrom(inputPortTracking);
 
-	public InputPortTrackingDetail(NodeTrackingDetail parentNodeDetail, int portNumber) {
-		super(parentNodeDetail, portNumber);
-		inputPort = null;
-	}
-
-	void copyFrom(InputPortTrackingDetail portDetail) {
-		super.copyFrom(portDetail);
-
-		this.readerWaitingTime = portDetail.readerWaitingTime;
+		this.readerWaitingTime = inputPortTracking.getReaderWaitingTime();
 	}
 
 	@Override
@@ -71,25 +63,4 @@ public class InputPortTrackingDetail extends PortTrackingDetail implements Input
 	public PortType getType() {
 		return InputPortTracking.TYPE;
 	}
-	
-	//******************* EVENTS ********************/
-	@Override
-	void gatherTrackingDetails() {
-		gatherTrackingDetails0(
-				inputPort.getInputRecordCounter(), 
-				inputPort.getInputByteCounter(),
-				(inputPort.getEdge()).getBufferedRecords());
-		
-		//gather memory usage
-		setUsedMemory(inputPort.getUsedMemory());
-		
-		//aggregated time how long the reader thread waits for data
-		setReaderWaitingTime(inputPort.getReaderWaitingTime());
-		
-		//define remote runId for remote edges
-		if (inputPort.getEdge().isRemote()) {
-			remoteRunId = inputPort.getEdge().getWriterRunId();
-		}
-	}
-
 }

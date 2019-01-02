@@ -25,7 +25,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.jmx.GraphTracking;
-import org.jetel.graph.runtime.jmx.GraphTrackingDetail;
+import org.jetel.graph.runtime.jmx.GraphTrackingImpl;
 import org.jetel.graph.runtime.jmx.InputPortTracking;
 import org.jetel.graph.runtime.jmx.NodeTracking;
 import org.jetel.graph.runtime.jmx.OutputPortTracking;
@@ -223,7 +223,7 @@ public class TrackingMetadataToolkit {
 	public static DataRecordMetadata createMetadata(TransformationGraph graph) {
 		DataRecordMetadata metadata = createEmptyTrackingMetadata();
 		
-		GraphTracking graphTracking = new GraphTrackingDetail(graph);
+		GraphTracking graphTracking = new GraphTrackingImpl();
 
 		metadataForGraph(graphTracking, metadata);
 		
