@@ -73,8 +73,6 @@ public interface PhaseTracking extends Serializable {
 	 */
 	Result getResult();
 	
-	void setResult(Result result);
-	
 	/**
 	 * @return tracking of all nodes of the phase.
 	 */

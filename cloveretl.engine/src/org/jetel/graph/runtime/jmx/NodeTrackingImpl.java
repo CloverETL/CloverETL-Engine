@@ -18,6 +18,9 @@
  */
 package org.jetel.graph.runtime.jmx;
 
+import org.jetel.graph.InputPort;
+import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.runtime.InputPortTrackingDetail;
 import org.jetel.graph.runtime.NodeTrackingDetail;
@@ -82,6 +85,27 @@ public class NodeTrackingImpl implements NodeTracking {
 		i = 0;		
 		for (OutputPortTrackingDetail outputPortDetail : nodeTracking.getOutputPortTracking()) {
 			outputPortsDetails[i] = new OutputPortTrackingImpl(this, outputPortDetail);
+			i++;
+		}
+	}
+	
+	public NodeTrackingImpl(PhaseTracking parentPhaseTracking, Node node) {
+		this.parentPhaseTracking = parentPhaseTracking;
+		this.nodeId = node.getId();
+		this.nodeName = node.getName();
+		this.result = Result.N_A;
+		
+		this.inputPortsDetails = new InputPortTrackingImpl[node.getInPorts().size()];
+		int i = 0;
+		for (InputPort inputPort : node.getInPorts()) {
+			inputPortsDetails[i] = new InputPortTrackingImpl(this, inputPort);
+			i++;
+		}
+		
+		this.outputPortsDetails = new OutputPortTrackingImpl[node.getOutPorts().size()];
+		i = 0;
+		for (OutputPort outputPort : node.getOutPorts()) {
+			outputPortsDetails[i] = new OutputPortTrackingImpl(this, outputPort);
 			i++;
 		}
 	}
@@ -208,7 +232,6 @@ public class NodeTrackingImpl implements NodeTracking {
 	
 	//******************* SETTERS *******************/
 	
-	@Override
 	public void setResult(Result result) {
 		this.result = result;
 	}

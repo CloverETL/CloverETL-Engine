@@ -45,7 +45,7 @@ public class NodeTrackingDetail {
 	
 	private final PhaseTrackingDetail parentPhaseDetail;
 	
-	private final transient Node node;
+	private final Node node;
 	
 	protected Result result;
     
@@ -67,8 +67,8 @@ public class NodeTrackingDetail {
      * need to remember initial state of CPU and user time for each of them.
      * Keys are Thread.getId() longs.
      */
-    private final transient Map<Long, Long> initialThreadCpuTime = new HashMap<Long, Long>(); 
-    private final transient Map<Long, Long> initialThreadUserTime = new HashMap<Long, Long>(); 
+    private final Map<Long, Long> initialThreadCpuTime = new HashMap<Long, Long>(); 
+    private final Map<Long, Long> initialThreadUserTime = new HashMap<Long, Long>(); 
     
 	public NodeTrackingDetail(PhaseTrackingDetail parentPhaseDetail, Node node) {
 		this.parentPhaseDetail = parentPhaseDetail;
@@ -90,10 +90,6 @@ public class NodeTrackingDetail {
 			outputPortsDetails[i] = new OutputPortTrackingDetail(this, outputPort);
 			i++;
 		}
-	}
-		
-	Node getNode() {
-		return node;
 	}
 	
 	public Result getResult() {
@@ -136,48 +132,12 @@ public class NodeTrackingDetail {
 		return parentPhaseDetail;
 	}
 	
-	public InputPortTrackingDetail[] getInputPortsDetails() {
-		return inputPortsDetails;
-	}
-
-	public InputPortTrackingDetail getInputPortTracking(int portNumber) {
-		for (InputPortTrackingDetail inputPortDetail : inputPortsDetails) {
-			if (inputPortDetail.getIndex() == portNumber) {
-				return inputPortDetail;
-			}
-		}
-		return null;
-	}
-
-	public OutputPortTrackingDetail[] getOutputPortsDetails() {
-		return outputPortsDetails;
-	}
-
-	public OutputPortTrackingDetail getOutputPortTracking(int portNumber) {
-		for (OutputPortTrackingDetail outputPortDetail : outputPortsDetails) {
-			if (outputPortDetail.getIndex() == portNumber) {
-				return outputPortDetail;
-			}
-		}
-		return null;
-	}
-
 	public InputPortTrackingDetail[] getInputPortTracking() {
 		return inputPortsDetails;
 	}
 
 	public OutputPortTrackingDetail[] getOutputPortTracking() {
 		return outputPortsDetails;
-	}
-	
-	//******************* SETTERS *******************/
-	
-	public void setInputPortsDetails(InputPortTrackingDetail[] inputPortsDetails) {
-		this.inputPortsDetails = inputPortsDetails;
-	}
-
-	public void setOutputPortsDetails(OutputPortTrackingDetail[] outputPortsDetails) {
-		this.outputPortsDetails = outputPortsDetails;
 	}
 
 	//******************* EVENTS ********************/

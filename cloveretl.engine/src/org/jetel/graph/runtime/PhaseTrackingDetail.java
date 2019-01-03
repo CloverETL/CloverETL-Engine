@@ -53,7 +53,7 @@ public class PhaseTrackingDetail {
 	
 	protected String phaseLabel;
 	
-	private final transient Phase phase;
+	private final Phase phase;
 	private NodeTrackingDetail[] nodesDetails;
 
 	/**
@@ -82,16 +82,6 @@ public class PhaseTrackingDetail {
 	
 	public NodeTrackingDetail[] getNodeTracking() {
 		return nodesDetails;
-	}
-	
-	public NodeTrackingDetail getNodeTracking(String nodeID) {
-		for (NodeTrackingDetail nodeDetail : nodesDetails) {
-			if(nodeID.equals(nodeDetail.getNodeID())) {
-				return nodeDetail;
-			}
-		}
-		
-		return null;
 	}
 	
 	public int getPhaseNum() {
@@ -126,12 +116,6 @@ public class PhaseTrackingDetail {
 		} else {
 			return endTime - startTime;
 		}
-	}
-	
-	//******************* SETTERS *******************/
-	
-	public void setNodesDetails(NodeTrackingDetail[] nodesDetails) {
-		this.nodesDetails = nodesDetails;
 	}
 	
 	//******************* EVENTS ********************/

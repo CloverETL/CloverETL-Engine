@@ -87,8 +87,6 @@ public interface NodeTracking extends Serializable {
 	 */
 	Result getResult();
 	
-	void setResult(Result result);
-	
 	/**
 	 * @return <code>true</code> if the node has any ports.
 	 */

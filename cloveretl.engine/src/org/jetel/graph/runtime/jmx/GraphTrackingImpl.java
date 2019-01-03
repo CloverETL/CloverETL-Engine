@@ -18,7 +18,9 @@
  */
 package org.jetel.graph.runtime.jmx;
 
+import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.GraphTrackingDetail;
 import org.jetel.graph.runtime.PhaseTrackingDetail;
 
@@ -75,6 +77,17 @@ public class GraphTrackingImpl implements GraphTracking {
 		
 		if (this.getRunningPhaseTracking() != null) {
 			this.runningPhaseDetail = getPhaseTracking(graphTracking.getRunningPhaseTracking().getPhaseNum());
+		}
+	}
+	
+	public GraphTrackingImpl(TransformationGraph graph) {
+		this.graphName = graph.getName();
+		this.result = Result.N_A;
+		this.phasesDetails = new PhaseTrackingImpl[graph.getPhases().length];
+		
+		int i = 0;
+		for(Phase phase : graph.getPhases()) {
+			phasesDetails[i++] = new PhaseTrackingImpl(phase);
 		}
 	}
 	
@@ -167,7 +180,6 @@ public class GraphTrackingImpl implements GraphTracking {
 		this.phasesDetails = phasesDetails;
 	}
 
-	@Override
 	public void setResult(Result result) {
 		this.result = result;
 	}

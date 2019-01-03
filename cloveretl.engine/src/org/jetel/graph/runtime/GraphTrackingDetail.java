@@ -39,7 +39,7 @@ import org.jetel.graph.runtime.jmx.GraphTrackingImpl;
  */
 public class GraphTrackingDetail {
 
-	private transient final TransformationGraph graph;
+	private final TransformationGraph graph;
 	
 	protected String graphName;
 	
@@ -79,26 +79,10 @@ public class GraphTrackingDetail {
 		return new GraphTrackingImpl(this);
 	}
 	
-	TransformationGraph getGraph() {
-		return graph;
-	}
-
 	public void setRunningPhaseDetail(PhaseTrackingDetail runningphaseDetail) {
 		this.runningPhaseDetail = runningphaseDetail; 
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getPhaseTracking(int)
-	 */
-	public PhaseTrackingDetail getPhaseTracking(int phaseNum) {
-		for (PhaseTrackingDetail phaseDetail : phasesDetails) {
-			if (phaseDetail.getPhaseNum() == phaseNum) {
-				return phaseDetail;
-			}
-		}
-		return null;
-	}
-	
+
 	public PhaseTrackingDetail[] getPhaseTracking() {
 		return phasesDetails;
 	}
@@ -162,7 +146,7 @@ public class GraphTrackingDetail {
 		startTime = System.currentTimeMillis();
 		
 		result = Result.RUNNING;
-		runId = getGraph().getWatchDog().getGraphRuntimeContext().getRunId();
+		runId = graph.getWatchDog().getGraphRuntimeContext().getRunId();
 	}
 
 
@@ -193,5 +177,4 @@ public class GraphTrackingDetail {
 			runningPhaseDetail = null;
 		}
 	}
-
 }

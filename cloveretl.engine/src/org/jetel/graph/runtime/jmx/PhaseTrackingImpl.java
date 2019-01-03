@@ -21,9 +21,13 @@ package org.jetel.graph.runtime.jmx;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jetel.graph.Node;
+import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransformationGraphAnalyzer;
 import org.jetel.graph.runtime.NodeTrackingDetail;
 import org.jetel.graph.runtime.PhaseTrackingDetail;
+import org.jetel.util.ClusterUtils;
 
 /**
  * Simple DTO holding tracking information about a phase.
@@ -69,6 +73,21 @@ public class PhaseTrackingImpl implements PhaseTracking {
 		}
 		
 		this.nodesDetails = details.toArray(new NodeTracking[details.size()]);
+	}
+	
+	public PhaseTrackingImpl(Phase phase) {
+		this.phaseNum = phase.getPhaseNum();
+		this.result = Result.N_A;
+		this.phaseLabel = phase.getLabel();
+		
+		List<NodeTrackingImpl> details = new ArrayList<>();
+		for (Node node : TransformationGraphAnalyzer.nodesTopologicalSorting(new ArrayList<Node>(phase.getNodes().values()))) {
+			if (!ClusterUtils.isRemoteEdgeComponent(node.getType())
+					&& !ClusterUtils.isClusterRegather(node.getType())) {
+				details.add(new NodeTrackingImpl(this, node));
+			}
+		}
+		this.nodesDetails = details.toArray(new NodeTrackingImpl[details.size()]);
 	}
 	
 	@Override
@@ -155,7 +174,6 @@ public class PhaseTrackingImpl implements PhaseTracking {
 		this.nodesDetails = nodesDetails;
 	}
 
-	@Override
 	public void setResult(Result result) {
 		this.result = result;
 	}

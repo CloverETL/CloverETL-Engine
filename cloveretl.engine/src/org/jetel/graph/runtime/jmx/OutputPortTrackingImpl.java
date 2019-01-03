@@ -20,6 +20,7 @@ package org.jetel.graph.runtime.jmx;
 
 import java.io.Serializable;
 
+import org.jetel.graph.OutputPort;
 import org.jetel.graph.runtime.OutputPortTrackingDetail;
 
 /**
@@ -45,6 +46,10 @@ public class OutputPortTrackingImpl extends AbstractPortTracking implements Outp
 		super.copyFrom(outputPortTracking);
 
 		this.writerWaitingTime = outputPortTracking.getWriterWaitingTime();
+	}
+	
+	public OutputPortTrackingImpl(NodeTracking parentNodeTracking, OutputPort outputPort) {
+		super(parentNodeTracking, outputPort.getOutputPortNumber());
 	}
 
 	@Override

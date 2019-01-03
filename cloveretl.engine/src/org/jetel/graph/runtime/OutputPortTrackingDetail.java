@@ -35,7 +35,7 @@ import org.jetel.graph.runtime.jmx.PortTracking.PortType;
  */
 public class OutputPortTrackingDetail extends AbstractPortTrackingDetail {
 
-	private final transient OutputPort outputPort;
+	private final OutputPort outputPort;
 	
 	protected long writerWaitingTime;
 
@@ -66,7 +66,7 @@ public class OutputPortTrackingDetail extends AbstractPortTrackingDetail {
 				(outputPort.getEdge()).getBufferedRecords());
 
 		//gather memory usage
-		setUsedMemory(outputPort.getUsedMemory());
+		usedMemory = outputPort.getUsedMemory();
 
 		//aggregated time how long the writer thread waits for data
 		setWriterWaitingTime(outputPort.getWriterWaitingTime());

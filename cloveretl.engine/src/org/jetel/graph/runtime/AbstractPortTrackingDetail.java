@@ -56,13 +56,9 @@ public abstract class AbstractPortTrackingDetail {
 
 	private long lastGatherTime;
 	
-    protected AbstractPortTrackingDetail(NodeTrackingDetail parentNodeTracking, int index) {
-    	this.parentNodeTracking = parentNodeTracking;
-    	this.index = index;
-	}
-
-	public void setLastGatherTime(long lastGatherTime) {
-		this.lastGatherTime = lastGatherTime;
+	protected AbstractPortTrackingDetail(NodeTrackingDetail parentNodeTracking, int index) {
+		this.parentNodeTracking = parentNodeTracking;
+		this.index = index;
 	}
 
 	abstract void gatherTrackingDetails();
@@ -108,53 +104,6 @@ public abstract class AbstractPortTrackingDetail {
 	
 	public long getRemoteRunId() {
 		return remoteRunId;
-	}
-	
-	public void setTotalRecords(int totalRecords) {
-		this.totalRecords = totalRecords;
-	}
-
-	public void setTotalBytes(long totalBytes) {
-		this.totalBytes = totalBytes;
-	}
-
-	public void setRecordFlow(int recordFlow) {
-		this.recordFlow = recordFlow;
-	}
-
-	public void setRecordPeak(int recordPeak) {
-		this.recordPeak = recordPeak;
-	}
-
-	public void setByteFlow(int byteFlow) {
-		this.byteFlow = byteFlow;
-	}
-
-	public void setBytePeak(int bytePeak) {
-		this.bytePeak = bytePeak;
-	}
-
-	public void setWaitingRecords(int waitingRecords) {
-		this.waitingRecords = waitingRecords;
-	}
-
-	public void setAverageWaitingRecords(int averageWaitingRecords) {
-		this.averageWaitingRecords = averageWaitingRecords;
-	}
-	
-	public void setUsedMemory(int usedMemory) {
-		this.usedMemory = usedMemory;
-	}
-
-	public void setRemoteRunId(long remoteRunId) {
-		this.remoteRunId = remoteRunId;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.PortTracking#getParentNodeTracking()
-	 */
-	private NodeTrackingDetail getParentNodeTracking() {
-		return parentNodeTracking;
 	}
 	
 	protected void gatherTrackingDetails0(long newTotalRecords, long newTotalBytes, int waitingRecords) {
@@ -207,4 +156,7 @@ public abstract class AbstractPortTrackingDetail {
 		}
 	}
 	
+	private NodeTrackingDetail getParentNodeTracking() {
+		return parentNodeTracking;
+	}
 }

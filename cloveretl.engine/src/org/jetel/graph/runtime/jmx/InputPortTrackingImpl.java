@@ -20,6 +20,7 @@ package org.jetel.graph.runtime.jmx;
 
 import java.io.Serializable;
 
+import org.jetel.graph.InputPort;
 import org.jetel.graph.runtime.InputPortTrackingDetail;
 
 /**
@@ -45,6 +46,10 @@ public class InputPortTrackingImpl extends AbstractPortTracking implements Input
 		super.copyFrom(inputPortTracking);
 
 		this.readerWaitingTime = inputPortTracking.getReaderWaitingTime();
+	}
+	
+	public InputPortTrackingImpl(NodeTracking parentNodeTracking, InputPort inputPort) {
+		super(parentNodeTracking, inputPort.getInputPortNumber());
 	}
 
 	@Override
