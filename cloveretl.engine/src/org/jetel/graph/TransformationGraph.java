@@ -130,6 +130,8 @@ public final class TransformationGraph extends GraphElement {
 
 	private TrueZipVFSEntries vfsEntries;
 	
+	final Set<Edge> activeEdges = new HashSet<>();
+	
 	/**
 	 * Set of variables describing this graph instance. All information are retrieved from graph xml file.
 	 */
@@ -742,6 +744,15 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
+		
+		// CLO-15616: post-execute still active phase edges
+		for (Edge edge: activeEdges) {
+			try {
+				edge.postExecute();
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(edge, "Edge " + edge + " post-execution failed.", e);
+			}
+		}
 		
 		//post-execute initialization of dictionary
 		dictionary.postExecute();
