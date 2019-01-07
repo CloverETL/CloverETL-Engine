@@ -1,28 +1,21 @@
 package org.jetel.test;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
-import org.apache.commons.io.IOUtils;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.TransformationGraphXMLReaderWriter;
-import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
-import org.jetel.graph.runtime.SimpleThreadManager;
-import org.jetel.graph.runtime.WatchDog;
-import org.jetel.util.MiscUtils;
-import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
 
 /**
  * A copy of CloverTestCase rewritten for JUnit4.
+ * Engine initialization was moved to {@link InitEngineRule}.
+ * Utility methods were moved to {@link TestUtils}.
  * 
  * @author Milan (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -30,83 +23,26 @@ import org.junit.Before;
  * @created 4. 1. 2019
  */
 public abstract class CloverTestCase4 {
-
-	private static final String PLUGINS_KEY = "cloveretl.plugins";
-
-	private static final String PLUGINS_DEFAULT_DIR = "..";
-
-
-	protected void initEngine() {
-		initEngine(null);
-	}
 	
-	protected void initEngine(String defaultPropertiesFile) {
-		final String pluginsDir;
+	@Rule
+	public final TestRule initEngine = new InitEngineRule(getCloverPropertiesFile());
 
-		final String pluginsProperty = MiscUtils.getEnvSafe(PLUGINS_KEY);
-		if (pluginsProperty != null) {
-			pluginsDir = pluginsProperty;
-		} else {
-			pluginsDir = PLUGINS_DEFAULT_DIR;
-		}
-
-		System.out.println("Cloveretl plugins: " + pluginsDir);
-		EngineInitializer.initEngine(pluginsDir, defaultPropertiesFile, null);
-		EngineInitializer.forceActivateAllPlugins();
-	}
-
-	@Before
-	public void setUp() throws Exception {
-		if (!EngineInitializer.isInitialized()) {
-			initEngine(getCloverPropertiesFile());
-		}
-	}
-	
+	/**
+	 * Override to provide a custom location of the engine configuration file.
+	 * 
+	 * @return
+	 */
 	protected String getCloverPropertiesFile() {
 		return null;
 	}
 	
 	protected TransformationGraph createTransformationGraph(String path, GraphRuntimeContext context)
 		throws FileNotFoundException, GraphConfigurationException, XMLConfigurationException, ComponentNotReadyException {
-		
-		InputStream in = new BufferedInputStream(new FileInputStream(path));
-		try {
-			context.setUseJMX(false);
-			TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(in, context);
-			EngineInitializer.initGraph(graph, context);
-			return graph;
-		} finally {
-			IOUtils.closeQuietly(in);
-		}
+		return TestUtils.createTransformationGraph(path, context);
 	}
 	
-	protected Result runGraph(TransformationGraph graph)
-		throws ExecutionException, InterruptedException {
-		
-		WatchDog watchDog = new WatchDog(graph, graph.getRuntimeContext());
-		watchDog.init();
-		SimpleThreadManager manager = new SimpleThreadManager();
-		Future<Result> result = manager.executeWatchDog(watchDog);
-		Result value = result.get();
-		if (value == Result.ERROR) {
-			if (watchDog.getCauseException() != null) {
-				rethrowRuntime(watchDog.getCauseException());
-			}
-		}
-		return value;
+	protected Result runGraph(TransformationGraph graph) throws ExecutionException, InterruptedException {
+		return TestUtils.runGraph(graph);
 	}
 	
-	protected static void rethrowRuntime(Throwable throwable) {
-		
-		if (throwable == null) {
-			return;
-		}
-		if (throwable instanceof RuntimeException) {
-			throw (RuntimeException)throwable;
-		} else if (throwable instanceof Error) {
-			throw (Error)throwable;
-		} else {
-			throw new RuntimeException(throwable);
-		}
-	}
 }

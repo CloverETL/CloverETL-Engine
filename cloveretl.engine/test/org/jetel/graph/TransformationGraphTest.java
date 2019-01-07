@@ -18,13 +18,11 @@
  */
 package org.jetel.graph;
 
-import java.io.FileInputStream;
+import static org.junit.Assert.fail;
 
-import org.jetel.graph.runtime.EngineInitializer;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.WatchDog;
-import org.jetel.graph.runtime.WatchDogFuture;
-import org.jetel.main.runGraph;
 import org.jetel.test.CloverTestCase4;
 import org.jetel.test.SuspendLoggingRule;
 import org.junit.Rule;
@@ -48,11 +46,9 @@ public class TransformationGraphTest extends CloverTestCase4 {
 
 	@Test
 	public void testFileDescriptorLeak_CLO15616() throws Exception {
-		TransformationGraph graph;
-		try (FileInputStream fis = new FileInputStream("./test-data/FileDescriptorLeak.grf")) {
-			graph = TransformationGraphXMLReaderWriter.loadGraph(fis, new GraphRuntimeContext());
-		}
-		
+		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+		TransformationGraph graph = createTransformationGraph("./test-data/FileDescriptorLeak.grf", runtimeContext);
+
 		final Edge edge = graph.getEdges().values().iterator().next();
 		
 		final Edge edgeSpy = Mockito.spy(edge);
@@ -73,11 +69,12 @@ public class TransformationGraphTest extends CloverTestCase4 {
 		edge.getReader().addInputPort(0, edgeSpy);
 		graph.addEdge(edgeSpy);
 		
-		EngineInitializer.initGraph(graph);
-
-		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
-		WatchDogFuture future = runGraph.executeGraph(graph, runtimeContext);
-		future.get(); // the graph is expected to fail
+		try {
+			runGraph(graph);
+			fail("The graph should fail");
+		} catch (JetelRuntimeException ex) {
+			// expected
+		}
 
 		// postExecute() must be invoked even if the graph fails
 		Mockito.verify(edgeSpy.getEdgeBase(), Mockito.times(1)).postExecute();
