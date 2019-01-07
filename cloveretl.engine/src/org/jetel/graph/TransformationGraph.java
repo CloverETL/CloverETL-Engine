@@ -130,7 +130,8 @@ public final class TransformationGraph extends GraphElement {
 
 	private TrueZipVFSEntries vfsEntries;
 	
-	final Set<Edge> activeEdges = new HashSet<>();
+	/** CLO-15616: a collection of pre-executed edges that have not yet been post-executed */
+	private final Set<Edge> activeEdges = new HashSet<>();
 	
 	/**
 	 * Set of variables describing this graph instance. All information are retrieved from graph xml file.
@@ -753,6 +754,7 @@ public final class TransformationGraph extends GraphElement {
 				throw new ComponentNotReadyException(edge, "Edge " + edge + " post-execution failed.", e);
 			}
 		}
+		activeEdges.clear();
 		
 		//post-execute initialization of dictionary
 		dictionary.postExecute();
@@ -1827,5 +1829,23 @@ public final class TransformationGraph extends GraphElement {
 
 	public String getUniqueEdgeId() {
 		return getUniqueId(DEFAULT_EDGE_ID, getEdges());
+	}
+
+	/**
+	 * CLO-15616: Registers an active edge.
+	 * 
+	 * @param edge
+	 */
+	void addActiveEdge(Edge edge) {
+		activeEdges.add(edge);
+	}
+
+	/**
+	 * CLO-15616: Unregisters an active edge.
+	 * 
+	 * @param edge
+	 */
+	void removeActiveEdge(Edge edge) {
+		activeEdges.remove(edge);
 	}
 }

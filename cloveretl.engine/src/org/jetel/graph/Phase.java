@@ -62,8 +62,6 @@ public class Phase extends GraphElement implements Comparable<Phase> {
 	private Result result;
     private boolean isCheckPoint;
 
-	protected TransformationGraph graph;
-
 	static Log logger = LogFactory.getLog(Phase.class);
 
 	// Operations
@@ -196,12 +194,12 @@ public class Phase extends GraphElement implements Comparable<Phase> {
 	public synchronized void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 		
-		Collection<Edge> activeEdges = getGraph().activeEdges; // CLO-15616
+		TransformationGraph graph = getGraph();
 		
         //pre-execute initialization of all edges
         for (Edge edge : edges.values()) {
         	try {
-        		activeEdges.add(edge);
+        		graph.addActiveEdge(edge); // CLO-15616
         		edge.preExecute();
         	} catch (ComponentNotReadyException e) {
 				result = Result.ERROR;
@@ -249,12 +247,12 @@ public class Phase extends GraphElement implements Comparable<Phase> {
 		    logger.debug("Edges post-execution");
         }
 
-        Collection<Edge> activeEdges = getGraph().activeEdges; // CLO-15616
-        
+		TransformationGraph graph = getGraph();
+		
 		for (Edge edge : getGraph().getEdges().values()) { //release all edges with reader component in this phase
 			if (edge.getReader().getPhase() == this) {
 				try {
-					activeEdges.remove(edge);
+					graph.removeActiveEdge(edge); // CLO-15616
 					edge.postExecute();
 				} catch (ComponentNotReadyException e) {
 					result = Result.ERROR;

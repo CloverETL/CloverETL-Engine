@@ -19,7 +19,10 @@ import org.junit.runner.Description;
 
 
 /**
- * Rule for disable logging
+ * Rule for disable logging.
+ * 
+ * Copied from com.cloveretl.server.worker.commons.SuspendLoggingRule
+ * to avoid the need of changing the build system, engine tests are not on server test classpath.
  * 
  * @author kocik (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  *

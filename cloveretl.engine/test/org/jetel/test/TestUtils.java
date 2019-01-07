@@ -75,7 +75,7 @@ public class TestUtils {
 		return value;
 	}
 
-	public static void rethrowRuntime(Throwable throwable) {
+	private static void rethrowRuntime(Throwable throwable) {
 		if (throwable == null) {
 			return;
 		}
