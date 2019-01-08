@@ -27,6 +27,9 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.runtime.jmx.CloverJMX;
+import org.jetel.graph.runtime.jmx.NodeTracking;
+import org.jetel.graph.runtime.jmx.NodeTrackingImpl;
+import org.jetel.graph.runtime.jmx.PhaseTracking;
 import org.jetel.graph.runtime.jmx.TrackingUtils;
 import org.jetel.util.SubgraphUtils;
 
@@ -48,28 +51,28 @@ public class NodeTrackingDetail {
 	private final Node node;
 	
 	protected Result result;
-    
-    protected String nodeId;
-    protected String nodeName;
-    protected long totalCPUTime;
-    protected long totalUserTime;
-    protected float usageCPU;
-    protected float peakUsageCPU;
-    protected float usageUser;
-    protected float peakUsageUser;
+
+	protected String nodeId;
+	protected String nodeName;
+	protected long totalCPUTime;
+	protected long totalUserTime;
+	protected float usageCPU;
+	protected float peakUsageCPU;
+	protected float usageUser;
+	protected float peakUsageUser;
 	
-    private InputPortTrackingDetail[] inputPortsDetails;
-    private OutputPortTrackingDetail[] outputPortsDetails;
-    
-    /**
-     * Initial CPU time for component's threads.
-     * Component's threads can be recycled, so we
-     * need to remember initial state of CPU and user time for each of them.
-     * Keys are Thread.getId() longs.
-     */
-    private final Map<Long, Long> initialThreadCpuTime = new HashMap<Long, Long>(); 
-    private final Map<Long, Long> initialThreadUserTime = new HashMap<Long, Long>(); 
-    
+	private InputPortTrackingDetail[] inputPortsDetails;
+	private OutputPortTrackingDetail[] outputPortsDetails;
+	
+	/**
+	 * Initial CPU time for component's threads.
+	 * Component's threads can be recycled, so we
+	 * need to remember initial state of CPU and user time for each of them.
+	 * Keys are Thread.getId() longs.
+	 */
+	private final Map<Long, Long> initialThreadCpuTime = new HashMap<Long, Long>(); 
+	private final Map<Long, Long> initialThreadUserTime = new HashMap<Long, Long>(); 
+	
 	public NodeTrackingDetail(PhaseTrackingDetail parentPhaseDetail, Node node) {
 		this.parentPhaseDetail = parentPhaseDetail;
 		this.nodeId = node.getId();
@@ -90,6 +93,10 @@ public class NodeTrackingDetail {
 			outputPortsDetails[i] = new OutputPortTrackingDetail(this, outputPort);
 			i++;
 		}
+	}
+	
+	public NodeTracking createSnapshot(PhaseTracking parentPhaseTracking) {
+		return new NodeTrackingImpl(parentPhaseTracking, this);
 	}
 	
 	public Result getResult() {
@@ -178,17 +185,17 @@ public class NodeTrackingDetail {
 			}
 		}
 				
-        //usageCPU
-        usageCPU = (float) totalCPUTime / phaseExecutionTime;
-        
-        //peakUsageCPU
-        peakUsageCPU = Math.max(peakUsageCPU, usageCPU);
-        
-        //usageUser
-        usageUser = (float) totalUserTime / phaseExecutionTime;
-        
-        //peakUsageUser
-        peakUsageUser = Math.max(peakUsageUser, usageUser);
+		//usageCPU
+		usageCPU = (float) totalCPUTime / phaseExecutionTime;
+
+		//peakUsageCPU
+		peakUsageCPU = Math.max(peakUsageCPU, usageCPU);
+
+		//usageUser
+		usageUser = (float) totalUserTime / phaseExecutionTime;
+
+		//peakUsageUser
+		peakUsageUser = Math.max(peakUsageUser, usageUser);
 
 		//gather input ports related data
 		for(InputPortTrackingDetail inputPortDetail: inputPortsDetails) {

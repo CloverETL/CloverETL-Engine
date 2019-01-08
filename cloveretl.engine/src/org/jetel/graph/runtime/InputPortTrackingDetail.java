@@ -20,6 +20,8 @@ package org.jetel.graph.runtime;
 
 import org.jetel.graph.InputPort;
 import org.jetel.graph.runtime.jmx.InputPortTracking;
+import org.jetel.graph.runtime.jmx.InputPortTrackingImpl;
+import org.jetel.graph.runtime.jmx.NodeTracking;
 import org.jetel.graph.runtime.jmx.PortTracking.PortType;
 
 /**
@@ -40,6 +42,10 @@ public class InputPortTrackingDetail extends AbstractPortTrackingDetail {
 		super(parentNodeDetail, inputPort.getInputPortNumber());
 		this.inputPort = inputPort;
 		
+	}
+	
+	public InputPortTracking createSnaphot(NodeTracking parentNodeTracking) {
+		return new InputPortTrackingImpl(parentNodeTracking, this);
 	}
 
 	public long getReaderWaitingTime() {

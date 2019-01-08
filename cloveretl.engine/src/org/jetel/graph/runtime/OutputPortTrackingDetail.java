@@ -19,7 +19,9 @@
 package org.jetel.graph.runtime;
 
 import org.jetel.graph.OutputPort;
+import org.jetel.graph.runtime.jmx.NodeTracking;
 import org.jetel.graph.runtime.jmx.OutputPortTracking;
+import org.jetel.graph.runtime.jmx.OutputPortTrackingImpl;
 import org.jetel.graph.runtime.jmx.PortTracking.PortType;
 
 /**
@@ -42,7 +44,10 @@ public class OutputPortTrackingDetail extends AbstractPortTrackingDetail {
 	public OutputPortTrackingDetail(NodeTrackingDetail parentNodeDetail, OutputPort outputPort) {
 		super(parentNodeDetail, outputPort.getOutputPortNumber());
 		this.outputPort = outputPort;
-		
+	}
+	
+	public OutputPortTracking createSnaphot(NodeTracking parentNodeTracking) {
+		return new OutputPortTrackingImpl(parentNodeTracking, this);
 	}
 
 	public long getWriterWaitingTime() {

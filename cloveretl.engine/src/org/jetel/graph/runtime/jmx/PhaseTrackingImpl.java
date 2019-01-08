@@ -67,12 +67,11 @@ public class PhaseTrackingImpl implements PhaseTracking {
 		this.phaseNum = phaseTracking.getPhaseNum();
 		this.phaseLabel = phaseTracking.getPhaseLabel();
 		
-		List<NodeTracking> details = new ArrayList<>();
+		this.nodesDetails = new NodeTracking[phaseTracking.getNodeTracking().length];
+		int i = 0;
 		for (NodeTrackingDetail nodeDetail : phaseTracking.getNodeTracking()) {
-			details.add(new NodeTrackingImpl(this, nodeDetail));
+			this.nodesDetails[i++] = nodeDetail.createSnapshot(this);
 		}
-		
-		this.nodesDetails = details.toArray(new NodeTracking[details.size()]);
 	}
 	
 	public PhaseTrackingImpl(Phase phase) {

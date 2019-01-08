@@ -32,7 +32,7 @@ package org.jetel.graph.runtime;
  */
 public abstract class AbstractPortTrackingDetail {
 	
-	private static final int MIN_TIMESLACE = 1000;
+	private static final int MIN_TIMESLICE = 1000;
 	
 	protected final NodeTrackingDetail parentNodeTracking;
 	
@@ -110,7 +110,7 @@ public abstract class AbstractPortTrackingDetail {
 		long currentTime = System.currentTimeMillis();
 		long timespan = lastGatherTime != 0 ? currentTime - lastGatherTime : 0; 
 
-    	if(timespan > MIN_TIMESLACE) { // for too small time slice are statistic values too distorted
+    	if(timespan > MIN_TIMESLICE) { // for too small time slice are statistic values too distorted
     	    //recordFlow
 	        recordFlow = (int) (((long) (newTotalRecords - totalRecords)) * 1000 / timespan);
 

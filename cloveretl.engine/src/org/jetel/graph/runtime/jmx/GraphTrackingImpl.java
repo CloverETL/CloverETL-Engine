@@ -72,7 +72,7 @@ public class GraphTrackingImpl implements GraphTracking {
 		this.phasesDetails = new PhaseTrackingImpl[graphTracking.getPhaseTracking().length];
 		int i = 0;
 		for (PhaseTrackingDetail phaseDetail : graphTracking.getPhaseTracking()) {
-			phasesDetails[i++] = new PhaseTrackingImpl(phaseDetail);
+			phasesDetails[i++] = phaseDetail.createSnapshot();
 		}
 		
 		if (this.getRunningPhaseTracking() != null) {

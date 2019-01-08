@@ -51,13 +51,13 @@ public class NodeTrackingImpl implements NodeTracking {
     protected float usageUser;
     protected float peakUsageUser;
 	
-	private InputPortTracking[] inputPortsDetails;
-	private OutputPortTracking[] outputPortsDetails;
+	private InputPortTracking[] inputPorts;
+	private OutputPortTracking[] outputPorts;
 
 	public NodeTrackingImpl(PhaseTracking parentPhaseTracking) {
 		this.parentPhaseTracking = parentPhaseTracking;
-		inputPortsDetails = new InputPortTracking[0];
-		outputPortsDetails = new OutputPortTracking[0]; 
+		inputPorts = new InputPortTracking[0];
+		outputPorts = new OutputPortTracking[0]; 
 	}
 
 	public NodeTrackingImpl(PhaseTracking parentPhaseTracking, NodeTrackingDetail nodeTracking) {
@@ -74,18 +74,16 @@ public class NodeTrackingImpl implements NodeTracking {
 		this.peakUsageUser = nodeTracking.getPeakUsageUser();
 		
 		
-		this.inputPortsDetails = new InputPortTracking[nodeTracking.getInputPortTracking().length];
+		this.inputPorts = new InputPortTracking[nodeTracking.getInputPortTracking().length];
 		int i = 0;
 		for (InputPortTrackingDetail inputPort : nodeTracking.getInputPortTracking()) {
-			inputPortsDetails[i] = new InputPortTrackingImpl(this, inputPort);
-			i++;
+			inputPorts[i++] = inputPort.createSnaphot(this);
 		}
 		
-		this.outputPortsDetails = new OutputPortTracking[nodeTracking.getOutputPortTracking().length];
+		this.outputPorts = new OutputPortTracking[nodeTracking.getOutputPortTracking().length];
 		i = 0;		
 		for (OutputPortTrackingDetail outputPortDetail : nodeTracking.getOutputPortTracking()) {
-			outputPortsDetails[i] = new OutputPortTrackingImpl(this, outputPortDetail);
-			i++;
+			outputPorts[i++] = outputPortDetail.createSnaphot(this);
 		}
 	}
 	
@@ -95,37 +93,35 @@ public class NodeTrackingImpl implements NodeTracking {
 		this.nodeName = node.getName();
 		this.result = Result.N_A;
 		
-		this.inputPortsDetails = new InputPortTrackingImpl[node.getInPorts().size()];
+		this.inputPorts = new InputPortTrackingImpl[node.getInPorts().size()];
 		int i = 0;
 		for (InputPort inputPort : node.getInPorts()) {
-			inputPortsDetails[i] = new InputPortTrackingImpl(this, inputPort);
-			i++;
+			inputPorts[i++] = new InputPortTrackingImpl(this, inputPort);
 		}
 		
-		this.outputPortsDetails = new OutputPortTrackingImpl[node.getOutPorts().size()];
+		this.outputPorts = new OutputPortTrackingImpl[node.getOutPorts().size()];
 		i = 0;
 		for (OutputPort outputPort : node.getOutPorts()) {
-			outputPortsDetails[i] = new OutputPortTrackingImpl(this, outputPort);
-			i++;
+			outputPorts[i++] = new OutputPortTrackingImpl(this, outputPort);
 		}
 	}
 	
 	@Override
 	public InputPortTracking[] getInputPortTracking() {
-		return inputPortsDetails;
+		return inputPorts;
 	}
 
 	public void setInputPortsDetails(InputPortTracking[] inputPortsDetails) {
-		this.inputPortsDetails = inputPortsDetails;
+		this.inputPorts = inputPortsDetails;
 	}
 
 	@Override
 	public OutputPortTracking[] getOutputPortTracking() {
-		return outputPortsDetails;
+		return outputPorts;
 	}
 	
 	public void setOutputPortsDetails(OutputPortTracking[] outputPortsDetails) {
-		this.outputPortsDetails = outputPortsDetails;
+		this.outputPorts = outputPortsDetails;
 	}
 	
 	@Override

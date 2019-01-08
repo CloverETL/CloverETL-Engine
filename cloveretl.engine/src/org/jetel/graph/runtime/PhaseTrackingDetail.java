@@ -26,6 +26,8 @@ import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraphAnalyzer;
 import org.jetel.graph.runtime.jmx.CloverJMX;
+import org.jetel.graph.runtime.jmx.PhaseTracking;
+import org.jetel.graph.runtime.jmx.PhaseTrackingImpl;
 import org.jetel.util.ClusterUtils;
 
 /**
@@ -46,9 +48,9 @@ public class PhaseTrackingDetail {
 	protected long startTime = -1;
 
 	protected long endTime = -1;
-    
+
 	protected long memoryUtilization;
-    
+
 	protected Result result;
 	
 	protected String phaseLabel;
@@ -74,6 +76,10 @@ public class PhaseTrackingDetail {
 			}
 		}
 		this.nodesDetails = details.toArray(new NodeTrackingDetail[details.size()]);
+	}
+	
+	public PhaseTracking createSnapshot() {
+		return new PhaseTrackingImpl(this);
 	}
 	
 	Phase getPhase() {
@@ -128,7 +134,7 @@ public class PhaseTrackingDetail {
 		memoryUtilization = Math.max(memoryUtilization, CloverJMX.MEMORY_MXBEAN.getHeapMemoryUsage().getUsed());
 		
 		//gather node related data
-		for(NodeTrackingDetail nodeDetail : nodesDetails) {
+		for (NodeTrackingDetail nodeDetail : nodesDetails) {
 			nodeDetail.gatherTrackingDetails();
 		}
 	}
@@ -138,7 +144,7 @@ public class PhaseTrackingDetail {
 		endTime = System.currentTimeMillis();
 
 		//notice all node - phase finished
-		for(NodeTrackingDetail nodeDetail : nodesDetails) {
+		for (NodeTrackingDetail nodeDetail : nodesDetails) {
 			nodeDetail.phaseFinished();
 		}
 	}
