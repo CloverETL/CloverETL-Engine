@@ -44,9 +44,9 @@ import org.jetel.util.SubgraphUtils;
  *
  * @created Jun 6, 2008
  */
-public class NodeTrackingDetail {
+public class NodeTrackingProvider {
 	
-	private final PhaseTrackingDetail parentPhaseDetail;
+	private final PhaseTrackingProvider parentPhaseDetail;
 	
 	private final Node node;
 	
@@ -61,8 +61,8 @@ public class NodeTrackingDetail {
 	protected float usageUser;
 	protected float peakUsageUser;
 	
-	private InputPortTrackingDetail[] inputPortsDetails;
-	private OutputPortTrackingDetail[] outputPortsDetails;
+	private InputPortTrackingProvider[] inputPortsDetails;
+	private OutputPortTrackingProvider[] outputPortsDetails;
 	
 	/**
 	 * Initial CPU time for component's threads.
@@ -73,24 +73,24 @@ public class NodeTrackingDetail {
 	private final Map<Long, Long> initialThreadCpuTime = new HashMap<Long, Long>(); 
 	private final Map<Long, Long> initialThreadUserTime = new HashMap<Long, Long>(); 
 	
-	public NodeTrackingDetail(PhaseTrackingDetail parentPhaseDetail, Node node) {
+	public NodeTrackingProvider(PhaseTrackingProvider parentPhaseDetail, Node node) {
 		this.parentPhaseDetail = parentPhaseDetail;
 		this.nodeId = node.getId();
 		this.nodeName = node.getName();
 		this.result = Result.N_A;
 		this.node = node;
 		
-		this.inputPortsDetails = new InputPortTrackingDetail[node.getInPorts().size()];
+		this.inputPortsDetails = new InputPortTrackingProvider[node.getInPorts().size()];
 		int i = 0;
 		for (InputPort inputPort : node.getInPorts()) {
-			inputPortsDetails[i] = new InputPortTrackingDetail(this, inputPort);
+			inputPortsDetails[i] = new InputPortTrackingProvider(this, inputPort);
 			i++;
 		}
 		
-		this.outputPortsDetails = new OutputPortTrackingDetail[node.getOutPorts().size()];
+		this.outputPortsDetails = new OutputPortTrackingProvider[node.getOutPorts().size()];
 		i = 0;
 		for (OutputPort outputPort : node.getOutPorts()) {
-			outputPortsDetails[i] = new OutputPortTrackingDetail(this, outputPort);
+			outputPortsDetails[i] = new OutputPortTrackingProvider(this, outputPort);
 			i++;
 		}
 	}
@@ -135,15 +135,15 @@ public class NodeTrackingDetail {
 		return nodeName;
 	}
 	
-	public PhaseTrackingDetail getParentPhaseTracking() {
+	public PhaseTrackingProvider getParentPhaseTracking() {
 		return parentPhaseDetail;
 	}
 	
-	public InputPortTrackingDetail[] getInputPortTracking() {
+	public InputPortTrackingProvider[] getInputPortTracking() {
 		return inputPortsDetails;
 	}
 
-	public OutputPortTrackingDetail[] getOutputPortTracking() {
+	public OutputPortTrackingProvider[] getOutputPortTracking() {
 		return outputPortsDetails;
 	}
 
@@ -198,24 +198,24 @@ public class NodeTrackingDetail {
 		peakUsageUser = Math.max(peakUsageUser, usageUser);
 
 		//gather input ports related data
-		for(InputPortTrackingDetail inputPortDetail: inputPortsDetails) {
+		for(InputPortTrackingProvider inputPortDetail: inputPortsDetails) {
 			inputPortDetail.gatherTrackingDetails();
 		}
 
 		//gather output ports related data
-		for(OutputPortTrackingDetail outputPortDetail: outputPortsDetails) {
+		for(OutputPortTrackingProvider outputPortDetail: outputPortsDetails) {
 			outputPortDetail.gatherTrackingDetails();
 		}
 	}
 
 	void phaseFinished() {
 		//gather input ports related data
-		for(InputPortTrackingDetail inputPortDetail: inputPortsDetails) {
+		for(InputPortTrackingProvider inputPortDetail: inputPortsDetails) {
 			inputPortDetail.phaseFinished();
 		}
 
 		//gather output ports related data
-		for(OutputPortTrackingDetail outputPortDetail: outputPortsDetails) {
+		for(OutputPortTrackingProvider outputPortDetail: outputPortsDetails) {
 			outputPortDetail.phaseFinished();
 		}
 	}

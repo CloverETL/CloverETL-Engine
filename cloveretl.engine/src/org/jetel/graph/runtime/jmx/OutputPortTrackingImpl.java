@@ -21,7 +21,7 @@ package org.jetel.graph.runtime.jmx;
 import java.io.Serializable;
 
 import org.jetel.graph.OutputPort;
-import org.jetel.graph.runtime.OutputPortTrackingDetail;
+import org.jetel.graph.runtime.OutputPortTrackingProvider;
 
 /**
  * This class represents tracking information about an output port.
@@ -41,7 +41,7 @@ public class OutputPortTrackingImpl extends AbstractPortTracking implements Outp
 		super(parentNodeDetail, portIndex);
 	}
 	
-	public OutputPortTrackingImpl(NodeTracking parentNodeDetail, OutputPortTrackingDetail outputPortTracking) {
+	public OutputPortTrackingImpl(NodeTracking parentNodeDetail, OutputPortTrackingProvider outputPortTracking) {
 		super(parentNodeDetail, outputPortTracking.getIndex());
 		super.copyFrom(outputPortTracking);
 

@@ -37,7 +37,7 @@ import org.jetel.graph.runtime.jmx.GraphTrackingImpl;
  *
  * @created Jan 2, 2019
  */
-public class GraphTrackingDetail {
+public class GraphTrackingProvider {
 
 	private final TransformationGraph graph;
 	
@@ -53,9 +53,9 @@ public class GraphTrackingDetail {
     
 	protected long runId;
 	
-	private PhaseTrackingDetail runningPhaseDetail;
+	private PhaseTrackingProvider runningPhaseDetail;
 	
-	private PhaseTrackingDetail[] phasesDetails;
+	private PhaseTrackingProvider[] phasesDetails;
 	
 	private GraphErrorDetail graphError;
 	
@@ -63,15 +63,15 @@ public class GraphTrackingDetail {
 	 * Constructor.
 	 * @param graph
 	 */
-	public GraphTrackingDetail(TransformationGraph graph) {
+	public GraphTrackingProvider(TransformationGraph graph) {
 		this.graphName = graph.getName();
 		this.result = Result.N_A;
 		this.graph = graph;
-		this.phasesDetails = new PhaseTrackingDetail[graph.getPhases().length];
+		this.phasesDetails = new PhaseTrackingProvider[graph.getPhases().length];
 		
 		int i = 0;
 		for(Phase phase : graph.getPhases()) {
-			phasesDetails[i++] = new PhaseTrackingDetail(phase);
+			phasesDetails[i++] = new PhaseTrackingProvider(phase);
 		}
 	}
 	
@@ -79,15 +79,15 @@ public class GraphTrackingDetail {
 		return new GraphTrackingImpl(this);
 	}
 	
-	public void setRunningPhaseDetail(PhaseTrackingDetail runningphaseDetail) {
+	public void setRunningPhaseDetail(PhaseTrackingProvider runningphaseDetail) {
 		this.runningPhaseDetail = runningphaseDetail; 
 	}
 
-	public PhaseTrackingDetail[] getPhaseTracking() {
+	public PhaseTrackingProvider[] getPhaseTracking() {
 		return phasesDetails;
 	}
 
-	public PhaseTrackingDetail getRunningPhaseTracking() {
+	public PhaseTrackingProvider getRunningPhaseTracking() {
 		return runningPhaseDetail;
 	}
 	
@@ -129,8 +129,8 @@ public class GraphTrackingDetail {
 		return runId;
 	}
 
-	private PhaseTrackingDetail getPhaseDetail(int phaseNum) {
-		for(PhaseTrackingDetail phaseTracking : phasesDetails) {
+	private PhaseTrackingProvider getPhaseDetail(int phaseNum) {
+		for(PhaseTrackingProvider phaseTracking : phasesDetails) {
 			if(phaseTracking.getPhaseNum() == phaseNum) {
 				return phaseTracking;
 			}

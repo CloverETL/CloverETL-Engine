@@ -25,8 +25,8 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraphAnalyzer;
-import org.jetel.graph.runtime.NodeTrackingDetail;
-import org.jetel.graph.runtime.PhaseTrackingDetail;
+import org.jetel.graph.runtime.NodeTrackingProvider;
+import org.jetel.graph.runtime.PhaseTrackingProvider;
 import org.jetel.util.ClusterUtils;
 
 /**
@@ -59,7 +59,7 @@ public class PhaseTrackingImpl implements PhaseTracking {
 		this.nodesDetails = new NodeTracking[0];
 	}
 	
-	public PhaseTrackingImpl(PhaseTrackingDetail phaseTracking) {
+	public PhaseTrackingImpl(PhaseTrackingProvider phaseTracking) {
 		this.startTime = phaseTracking.getStartTime();
 		this.endTime = phaseTracking.getEndTime();
 		this.memoryUtilization = phaseTracking.getMemoryUtilization();
@@ -69,7 +69,7 @@ public class PhaseTrackingImpl implements PhaseTracking {
 		
 		this.nodesDetails = new NodeTracking[phaseTracking.getNodeTracking().length];
 		int i = 0;
-		for (NodeTrackingDetail nodeDetail : phaseTracking.getNodeTracking()) {
+		for (NodeTrackingProvider nodeDetail : phaseTracking.getNodeTracking()) {
 			this.nodesDetails[i++] = nodeDetail.createSnapshot(this);
 		}
 	}

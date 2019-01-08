@@ -122,7 +122,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 * Tracking information about the running graph. The tracking information
 	 * are available for clients using {@link CloverJMX} mBean.
 	 */
-	private GraphTrackingDetail graphTracking;
+	private GraphTrackingProvider graphTracking;
 
     /**
      * Synchronized indication of phase number, which can be executed.
@@ -177,7 +177,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		}
 		
 		//initialize graph tracking
-		graphTracking = new GraphTrackingDetail(graph);
+		graphTracking = new GraphTrackingProvider(graph);
 		
 		//start CloverJMX
 		if (provideJMX) {

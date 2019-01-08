@@ -22,9 +22,9 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
-import org.jetel.graph.runtime.InputPortTrackingDetail;
-import org.jetel.graph.runtime.NodeTrackingDetail;
-import org.jetel.graph.runtime.OutputPortTrackingDetail;
+import org.jetel.graph.runtime.InputPortTrackingProvider;
+import org.jetel.graph.runtime.NodeTrackingProvider;
+import org.jetel.graph.runtime.OutputPortTrackingProvider;
 
 /**
  * Simple DTO holding tracking information about a node.
@@ -60,7 +60,7 @@ public class NodeTrackingImpl implements NodeTracking {
 		outputPorts = new OutputPortTracking[0]; 
 	}
 
-	public NodeTrackingImpl(PhaseTracking parentPhaseTracking, NodeTrackingDetail nodeTracking) {
+	public NodeTrackingImpl(PhaseTracking parentPhaseTracking, NodeTrackingProvider nodeTracking) {
 		this.parentPhaseTracking = parentPhaseTracking;
 		this.nodeId = nodeTracking.getNodeID();
 		this.nodeName = nodeTracking.getNodeName();
@@ -76,13 +76,13 @@ public class NodeTrackingImpl implements NodeTracking {
 		
 		this.inputPorts = new InputPortTracking[nodeTracking.getInputPortTracking().length];
 		int i = 0;
-		for (InputPortTrackingDetail inputPort : nodeTracking.getInputPortTracking()) {
+		for (InputPortTrackingProvider inputPort : nodeTracking.getInputPortTracking()) {
 			inputPorts[i++] = inputPort.createSnaphot(this);
 		}
 		
 		this.outputPorts = new OutputPortTracking[nodeTracking.getOutputPortTracking().length];
 		i = 0;		
-		for (OutputPortTrackingDetail outputPortDetail : nodeTracking.getOutputPortTracking()) {
+		for (OutputPortTrackingProvider outputPortDetail : nodeTracking.getOutputPortTracking()) {
 			outputPorts[i++] = outputPortDetail.createSnaphot(this);
 		}
 	}

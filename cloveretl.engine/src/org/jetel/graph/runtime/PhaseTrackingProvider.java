@@ -41,7 +41,7 @@ import org.jetel.util.ClusterUtils;
  *
  * @created Jan 2, 2019
  */
-public class PhaseTrackingDetail {
+public class PhaseTrackingProvider {
 
 	protected int phaseNum;
 	
@@ -56,26 +56,26 @@ public class PhaseTrackingDetail {
 	protected String phaseLabel;
 	
 	private final Phase phase;
-	private NodeTrackingDetail[] nodesDetails;
+	private NodeTrackingProvider[] nodesDetails;
 
 	/**
 	 * Constructor.
 	 * @param phase
 	 */
-	public PhaseTrackingDetail(Phase phase) {
+	public PhaseTrackingProvider(Phase phase) {
 		this.phase = phase;
 		this.phaseNum = phase.getPhaseNum();
 		this.result = Result.N_A;
 		this.phaseLabel = phase.getLabel();
 		
-		List<NodeTrackingDetail> details = new ArrayList<>();
+		List<NodeTrackingProvider> details = new ArrayList<>();
 		for (Node node : TransformationGraphAnalyzer.nodesTopologicalSorting(new ArrayList<Node>(phase.getNodes().values()))) {
 			if (!ClusterUtils.isRemoteEdgeComponent(node.getType())
 					&& !ClusterUtils.isClusterRegather(node.getType())) {
-				details.add(new NodeTrackingDetail(this, node));
+				details.add(new NodeTrackingProvider(this, node));
 			}
 		}
-		this.nodesDetails = details.toArray(new NodeTrackingDetail[details.size()]);
+		this.nodesDetails = details.toArray(new NodeTrackingProvider[details.size()]);
 	}
 	
 	public PhaseTracking createSnapshot() {
@@ -86,7 +86,7 @@ public class PhaseTrackingDetail {
 		return phase;
 	}
 	
-	public NodeTrackingDetail[] getNodeTracking() {
+	public NodeTrackingProvider[] getNodeTracking() {
 		return nodesDetails;
 	}
 	
@@ -134,7 +134,7 @@ public class PhaseTrackingDetail {
 		memoryUtilization = Math.max(memoryUtilization, CloverJMX.MEMORY_MXBEAN.getHeapMemoryUsage().getUsed());
 		
 		//gather node related data
-		for (NodeTrackingDetail nodeDetail : nodesDetails) {
+		for (NodeTrackingProvider nodeDetail : nodesDetails) {
 			nodeDetail.gatherTrackingDetails();
 		}
 	}
@@ -144,7 +144,7 @@ public class PhaseTrackingDetail {
 		endTime = System.currentTimeMillis();
 
 		//notice all node - phase finished
-		for (NodeTrackingDetail nodeDetail : nodesDetails) {
+		for (NodeTrackingProvider nodeDetail : nodesDetails) {
 			nodeDetail.phaseFinished();
 		}
 	}

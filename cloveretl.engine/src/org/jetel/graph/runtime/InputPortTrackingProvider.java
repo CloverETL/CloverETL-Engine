@@ -32,13 +32,13 @@ import org.jetel.graph.runtime.jmx.PortTracking.PortType;
  *
  * @created Jan 2, 2019
  */
-public class InputPortTrackingDetail extends AbstractPortTrackingDetail {
+public class InputPortTrackingProvider extends AbstractPortTrackingProvider {
 	
 	private final InputPort inputPort;
 	
 	protected long readerWaitingTime;
 
-	public InputPortTrackingDetail(NodeTrackingDetail parentNodeDetail, InputPort inputPort) {
+	public InputPortTrackingProvider(NodeTrackingProvider parentNodeDetail, InputPort inputPort) {
 		super(parentNodeDetail, inputPort.getInputPortNumber());
 		this.inputPort = inputPort;
 		

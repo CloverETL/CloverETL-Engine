@@ -21,8 +21,8 @@ package org.jetel.graph.runtime.jmx;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.GraphTrackingDetail;
-import org.jetel.graph.runtime.PhaseTrackingDetail;
+import org.jetel.graph.runtime.GraphTrackingProvider;
+import org.jetel.graph.runtime.PhaseTrackingProvider;
 
 /**
  * Simple DTO holding tracking information about whole graph.
@@ -58,7 +58,7 @@ public class GraphTrackingImpl implements GraphTracking {
 		this.phasesDetails = new PhaseTrackingImpl[0];
 	}
 
-	public GraphTrackingImpl(GraphTrackingDetail graphTracking) {
+	public GraphTrackingImpl(GraphTrackingProvider graphTracking) {
 		this.graphName = graphTracking.getGraphName();
 		this.result = graphTracking.getResult();
 		
@@ -71,7 +71,7 @@ public class GraphTrackingImpl implements GraphTracking {
 		
 		this.phasesDetails = new PhaseTrackingImpl[graphTracking.getPhaseTracking().length];
 		int i = 0;
-		for (PhaseTrackingDetail phaseDetail : graphTracking.getPhaseTracking()) {
+		for (PhaseTrackingProvider phaseDetail : graphTracking.getPhaseTracking()) {
 			phasesDetails[i++] = phaseDetail.createSnapshot();
 		}
 		

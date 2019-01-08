@@ -30,11 +30,11 @@ package org.jetel.graph.runtime;
  *
  * @created Jan 2, 2019
  */
-public abstract class AbstractPortTrackingDetail {
+public abstract class AbstractPortTrackingProvider {
 	
 	private static final int MIN_TIMESLICE = 1000;
 	
-	protected final NodeTrackingDetail parentNodeTracking;
+	protected final NodeTrackingProvider parentNodeTracking;
 	
 	protected final int index;
 	
@@ -56,7 +56,7 @@ public abstract class AbstractPortTrackingDetail {
 
 	private long lastGatherTime;
 	
-	protected AbstractPortTrackingDetail(NodeTrackingDetail parentNodeTracking, int index) {
+	protected AbstractPortTrackingProvider(NodeTrackingProvider parentNodeTracking, int index) {
 		this.parentNodeTracking = parentNodeTracking;
 		this.index = index;
 	}
@@ -156,7 +156,7 @@ public abstract class AbstractPortTrackingDetail {
 		}
 	}
 	
-	private NodeTrackingDetail getParentNodeTracking() {
+	private NodeTrackingProvider getParentNodeTracking() {
 		return parentNodeTracking;
 	}
 }

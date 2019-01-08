@@ -18,7 +18,7 @@
  */
 package org.jetel.graph.runtime.jmx;
 
-import org.jetel.graph.runtime.AbstractPortTrackingDetail;
+import org.jetel.graph.runtime.AbstractPortTrackingProvider;
 
 /**
  * This abstract class represents common tracking information on a port.
@@ -57,7 +57,7 @@ public abstract class AbstractPortTracking implements PortTracking {
     	this.index = index;
 	}
 
-    public void copyFrom(AbstractPortTrackingDetail portDetail) {
+    public void copyFrom(AbstractPortTrackingProvider portDetail) {
     	this.totalRecords = portDetail.getTotalRecords();
     	this.totalBytes = portDetail.getTotalBytes();
     	this.recordFlow = portDetail.getRecordFlow();

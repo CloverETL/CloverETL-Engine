@@ -21,7 +21,7 @@ package org.jetel.graph.runtime.jmx;
 import java.io.Serializable;
 
 import org.jetel.graph.InputPort;
-import org.jetel.graph.runtime.InputPortTrackingDetail;
+import org.jetel.graph.runtime.InputPortTrackingProvider;
 
 /**
  * Simple DTO holding tracking information about an input port.
@@ -41,7 +41,7 @@ public class InputPortTrackingImpl extends AbstractPortTracking implements Input
 		super(parentNodeTracking, portIndex);
 	}
 	
-	public InputPortTrackingImpl(NodeTracking parentNodeTracking, InputPortTrackingDetail inputPortTracking) {
+	public InputPortTrackingImpl(NodeTracking parentNodeTracking, InputPortTrackingProvider inputPortTracking) {
 		super(parentNodeTracking, inputPortTracking.getIndex());
 		super.copyFrom(inputPortTracking);
 
