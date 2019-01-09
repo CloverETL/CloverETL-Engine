@@ -18,28 +18,22 @@
  */
 package org.jetel.graph.runtime.jmx;
 
+import org.jetel.graph.runtime.AbstractPortTrackingProvider;
 
 /**
- * This abstract class represents common tracking information on an port.
+ * This abstract class represents common tracking information on a port.
  * 
- * @see InputPortTrackingDetail
- * @see OutputPortTrackingDetail
- * 
- * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
+ * @author Filip Reichman
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  *
- * @created Jun 6, 2008
+ * @created Jan 2, 2019
  */
-public abstract class PortTrackingDetail implements PortTracking {
+public abstract class AbstractPortTracking implements PortTracking {
 
 	private static final long serialVersionUID = -8999440507780259714L;
+
+	private final NodeTracking parentNodeTracking;
 	
-	private static final int MIN_TIMESLACE = 1000;
-
-	private long lastGatherTime;
-
-	private final NodeTrackingDetail parentNodeDetail;
-
 	protected final int index;
 	
 	protected long totalRecords;
@@ -58,32 +52,23 @@ public abstract class PortTrackingDetail implements PortTracking {
 	
 	protected long remoteRunId;
 	
-    protected PortTrackingDetail(NodeTrackingDetail parentNodeDetail, int index) {
-    	this.parentNodeDetail = parentNodeDetail;
+    protected AbstractPortTracking(NodeTracking parentNodeTracking, int index) {
+    	this.parentNodeTracking = parentNodeTracking;
     	this.index = index;
 	}
 
-    public void copyFrom(PortTrackingDetail portDetail) {
-    	this.lastGatherTime = portDetail.lastGatherTime;
-    	this.totalRecords = portDetail.totalRecords;
-    	this.totalBytes = portDetail.totalBytes;
-    	this.recordFlow = portDetail.recordFlow;
-    	this.recordPeak = portDetail.recordPeak;
-    	this.byteFlow = portDetail.byteFlow;
-    	this.bytePeak = portDetail.bytePeak;
-    	this.waitingRecords= portDetail.waitingRecords;
-    	this.averageWaitingRecords = portDetail.averageWaitingRecords;
-    	this.usedMemory = portDetail.usedMemory;
-    	this.remoteRunId = portDetail.remoteRunId;
+    public void copyFrom(AbstractPortTrackingProvider portDetail) {
+    	this.totalRecords = portDetail.getTotalRecords();
+    	this.totalBytes = portDetail.getTotalBytes();
+    	this.recordFlow = portDetail.getRecordFlow();
+    	this.recordPeak = portDetail.getRecordPeak();
+    	this.byteFlow = portDetail.getByteFlow();
+    	this.bytePeak = portDetail.getBytePeak();
+    	this.waitingRecords = portDetail.getWaitingRecords();
+    	this.averageWaitingRecords = portDetail.getAverageWaitingRecords();
+    	this.usedMemory = portDetail.getUsedMemory();
+    	this.remoteRunId = portDetail.getRemoteRunId();
     }
-    
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.PortTracking#getParentNodeTracking()
-	 */
-	@Override
-	public NodeTrackingDetail getParentNodeTracking() {
-		return parentNodeDetail;
-	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PortTracking#getIndex()
@@ -160,10 +145,11 @@ public abstract class PortTrackingDetail implements PortTracking {
 		return remoteRunId;
 	}
 	
-	public void setLastGatherTime(long lastGatherTime) {
-		this.lastGatherTime = lastGatherTime;
+	@Override
+	public NodeTracking getParentNodeTracking() {
+		return parentNodeTracking;
 	}
-
+	
 	public void setTotalRecords(int totalRecords) {
 		this.totalRecords = totalRecords;
 	}
@@ -203,57 +189,4 @@ public abstract class PortTrackingDetail implements PortTracking {
 	public void setRemoteRunId(long remoteRunId) {
 		this.remoteRunId = remoteRunId;
 	}
-	
-	abstract void gatherTrackingDetails();
-	
-	protected void gatherTrackingDetails0(long newTotalRecords, long newTotalBytes, int waitingRecords) {
-		long currentTime = System.currentTimeMillis();
-		long timespan = lastGatherTime != 0 ? currentTime - lastGatherTime : 0; 
-
-    	if(timespan > MIN_TIMESLACE) { // for too small time slice are statistic values too distorted
-    	    //recordFlow
-	        recordFlow = (int) (((long) (newTotalRecords - totalRecords)) * 1000 / timespan);
-
-	        //recordPeak
-	        recordPeak = Math.max(recordPeak, recordFlow);
-
-    	    //byteFlow
-	        byteFlow = (int) (((long) (newTotalBytes - totalBytes)) * 1000 / timespan);
-
-	        //bytePeak
-	        bytePeak = Math.max(bytePeak, byteFlow);
-	        
-	    	lastGatherTime = currentTime;
-    	} else {
-    		if(lastGatherTime == 0) {
-    	    	lastGatherTime = currentTime;
-    		}
-    	}
-		
-		//totalRows
-	    totalRecords = newTotalRecords;
-
-	    //totalBytes
-	    totalBytes = newTotalBytes;
-	    
-    	//waitingRecords
-        this.waitingRecords = waitingRecords;
-        
-	    //averageWaitingRecords
-        averageWaitingRecords = Math.abs(waitingRecords - averageWaitingRecords) / 2;
-	}
-
-	void phaseFinished() {
-		long executionTime = getParentNodeTracking().getParentPhaseTracking().getExecutionTime();
-		if (executionTime > 0) {
-		    //recordFlow - average flow is calculated
-			recordFlow = (int) ((totalRecords * 1000) / executionTime);
-		    //byteFlow - average flow is calculated
-	        byteFlow = (int) ((totalBytes * 1000) / executionTime);
-		} else {
-			recordFlow = 0;
-			byteFlow = 0;
-		}
-	}
-	
 }

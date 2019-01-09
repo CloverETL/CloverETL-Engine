@@ -56,7 +56,6 @@ import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.graph.runtime.jmx.CloverJMX;
 import org.jetel.graph.runtime.jmx.CloverJMXMBean;
 import org.jetel.graph.runtime.jmx.GraphTracking;
-import org.jetel.graph.runtime.jmx.GraphTrackingDetail;
 import org.jetel.graph.runtime.tracker.TokenTracker;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.LogUtils;
@@ -123,7 +122,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 * Tracking information about the running graph. The tracking information
 	 * are available for clients using {@link CloverJMX} mBean.
 	 */
-	private GraphTrackingDetail graphTracking;
+	private GraphTrackingProvider graphTracking;
 
     /**
      * Synchronized indication of phase number, which can be executed.
@@ -178,7 +177,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		}
 		
 		//initialize graph tracking
-		graphTracking = new GraphTrackingDetail(graph);
+		graphTracking = new GraphTrackingProvider(graph);
 		
 		//start CloverJMX
 		if (provideJMX) {
@@ -821,7 +820,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     
 	public GraphTracking getGraphTracking() {
 		synchronized (graphTrackingMonitor) {
-			return graphTracking != null ? graphTracking.createCopy() : null;
+			return graphTracking != null ? graphTracking.createSnapshot() : null;
 		}
 	}
 
@@ -985,7 +984,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		}
 		
 		if (provideJMX) {
-			CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.TRACKING_UPDATED, null, graphTracking);
+			CloverJMX.getInstance().sendNotification(getGraphRuntimeContext().getRunId(), CloverJMXMBean.TRACKING_UPDATED, null, getGraphTracking());
 		}
 	}
 

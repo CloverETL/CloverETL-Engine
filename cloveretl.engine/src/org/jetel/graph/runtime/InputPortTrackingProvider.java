@@ -16,46 +16,38 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.graph.runtime.jmx;
-
-import java.io.Serializable;
+package org.jetel.graph.runtime;
 
 import org.jetel.graph.InputPort;
+import org.jetel.graph.runtime.jmx.InputPortTracking;
+import org.jetel.graph.runtime.jmx.InputPortTrackingImpl;
+import org.jetel.graph.runtime.jmx.NodeTracking;
+import org.jetel.graph.runtime.jmx.PortTracking.PortType;
 
 /**
  * This class represents tracking information about an input port.
  * 
- * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
+ * @author Filip Reichman
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  *
- * @created Jun 6, 2008
+ * @created Jan 2, 2019
  */
-public class InputPortTrackingDetail extends PortTrackingDetail implements InputPortTracking, Serializable {
-
-	private static final long serialVersionUID = 1796185855793703918L;
+public class InputPortTrackingProvider extends AbstractPortTrackingProvider {
 	
-	private final transient InputPort inputPort;
+	private final InputPort inputPort;
 	
 	protected long readerWaitingTime;
 
-	public InputPortTrackingDetail(NodeTrackingDetail parentNodeDetail, InputPort inputPort) {
+	public InputPortTrackingProvider(NodeTrackingProvider parentNodeDetail, InputPort inputPort) {
 		super(parentNodeDetail, inputPort.getInputPortNumber());
 		this.inputPort = inputPort;
 		
 	}
-
-	public InputPortTrackingDetail(NodeTrackingDetail parentNodeDetail, int portNumber) {
-		super(parentNodeDetail, portNumber);
-		inputPort = null;
+	
+	public InputPortTracking createSnaphot(NodeTracking parentNodeTracking) {
+		return new InputPortTrackingImpl(parentNodeTracking, this);
 	}
 
-	void copyFrom(InputPortTrackingDetail portDetail) {
-		super.copyFrom(portDetail);
-
-		this.readerWaitingTime = portDetail.readerWaitingTime;
-	}
-
-	@Override
 	public long getReaderWaitingTime() {
 		return readerWaitingTime;
 	}
@@ -63,11 +55,7 @@ public class InputPortTrackingDetail extends PortTrackingDetail implements Input
 	public void setReaderWaitingTime(long readerWaitingTime) {
 		this.readerWaitingTime = readerWaitingTime;
 	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.PortTrackingDetail#getType()
-	 */
-	@Override
+	
 	public PortType getType() {
 		return InputPortTracking.TYPE;
 	}
@@ -81,7 +69,7 @@ public class InputPortTrackingDetail extends PortTrackingDetail implements Input
 				(inputPort.getEdge()).getBufferedRecords());
 		
 		//gather memory usage
-		setUsedMemory(inputPort.getUsedMemory());
+		usedMemory = inputPort.getUsedMemory();
 		
 		//aggregated time how long the reader thread waits for data
 		setReaderWaitingTime(inputPort.getReaderWaitingTime());

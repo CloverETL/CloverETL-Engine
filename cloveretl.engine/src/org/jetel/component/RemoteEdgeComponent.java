@@ -18,15 +18,13 @@
  */
 package org.jetel.component;
 
-import org.jetel.graph.runtime.jmx.InputPortTrackingDetail;
-import org.jetel.graph.runtime.jmx.OutputPortTrackingDetail;
+import org.jetel.graph.runtime.jmx.AbstractPortTracking;
 
 /**
  * This simple interface is implemented by both artificial components
  * (RemoteEdgeDataReceiver and RemoteEdgeDataTransmitter) which are used
  * for connection establishing for remote edges. The only method
- * {@link #getRemoteRunId()} is used by {@link InputPortTrackingDetail}
- * and by {@link OutputPortTrackingDetail} to provide runId of job,
+ * {@link #getRemoteRunId()} is used by {@link AbstractPortTracking} to provide runId of job,
  * where the remote edge is connected. This tracking information is necessary
  * for details visualised on edge in designer.  
  * 

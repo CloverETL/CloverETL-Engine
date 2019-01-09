@@ -16,47 +16,40 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.graph.runtime.jmx;
-
-import java.io.Serializable;
+package org.jetel.graph.runtime;
 
 import org.jetel.graph.OutputPort;
+import org.jetel.graph.runtime.jmx.NodeTracking;
+import org.jetel.graph.runtime.jmx.OutputPortTracking;
+import org.jetel.graph.runtime.jmx.OutputPortTrackingImpl;
+import org.jetel.graph.runtime.jmx.PortTracking.PortType;
 
 /**
  * This class represents tracking information about an output port.
  * 
- * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
+ * State of an instance is supposed to be changed over time
+ * (it is used by WatchDog to gather information during an execution of graph).
+ * 
+ * @author Filip Reichman
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  *
- * @created Jun 6, 2008
+ * @created Jan 2, 2019
  */
-public class OutputPortTrackingDetail extends PortTrackingDetail implements OutputPortTracking, Serializable {
+public class OutputPortTrackingProvider extends AbstractPortTrackingProvider {
 
-	private static final long serialVersionUID = 7091559190536591635L;
-	
-	private final transient OutputPort outputPort;
+	private final OutputPort outputPort;
 	
 	protected long writerWaitingTime;
 
-	public OutputPortTrackingDetail(NodeTrackingDetail parentNodeDetail, OutputPort outputPort) {
+	public OutputPortTrackingProvider(NodeTrackingProvider parentNodeDetail, OutputPort outputPort) {
 		super(parentNodeDetail, outputPort.getOutputPortNumber());
 		this.outputPort = outputPort;
-		
+	}
+	
+	public OutputPortTracking createSnaphot(NodeTracking parentNodeTracking) {
+		return new OutputPortTrackingImpl(parentNodeTracking, this);
 	}
 
-	public OutputPortTrackingDetail(NodeTrackingDetail parentNodeDetail, int portNumber) {
-		super(parentNodeDetail, portNumber);
-		this.outputPort = null;
-		
-	}
-
-	void copyFrom(OutputPortTrackingDetail portDetail) {
-		super.copyFrom(portDetail);
-
-		this.writerWaitingTime = portDetail.writerWaitingTime;
-	}
-
-	@Override
 	public long getWriterWaitingTime() {
 		return writerWaitingTime;
 	}
@@ -65,10 +58,6 @@ public class OutputPortTrackingDetail extends PortTrackingDetail implements Outp
 		this.writerWaitingTime = writerWaitingTime;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.PortTrackingDetail#getType()
-	 */
-	@Override
 	public PortType getType() {
 		return OutputPortTracking.TYPE;
 	}
@@ -82,7 +71,7 @@ public class OutputPortTrackingDetail extends PortTrackingDetail implements Outp
 				(outputPort.getEdge()).getBufferedRecords());
 
 		//gather memory usage
-		setUsedMemory(outputPort.getUsedMemory());
+		usedMemory = outputPort.getUsedMemory();
 
 		//aggregated time how long the writer thread waits for data
 		setWriterWaitingTime(outputPort.getWriterWaitingTime());

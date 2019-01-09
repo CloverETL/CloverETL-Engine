@@ -67,7 +67,7 @@ public interface GraphTracking extends Serializable {
 	 * @return current graph result.
 	 */
 	Result getResult();
-
+	
 	/**
 	 * @return graph error descriptor for failed graphs ({@link #getResult()}
 	 * is {@link Result#ERROR}) or null for aborted and successful graphs.
