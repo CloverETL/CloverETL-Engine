@@ -18,6 +18,8 @@
  */
 package org.jetel.graph.runtime.jmx;
 
+import java.io.Serializable;
+
 import org.jetel.graph.runtime.AbstractPortTrackingProvider;
 
 /**
@@ -28,7 +30,7 @@ import org.jetel.graph.runtime.AbstractPortTrackingProvider;
  *
  * @created Jan 2, 2019
  */
-public abstract class AbstractPortTracking implements PortTracking {
+public abstract class AbstractPortTracking implements Serializable {
 
 	private static final long serialVersionUID = -8999440507780259714L;
 
@@ -70,82 +72,50 @@ public abstract class AbstractPortTracking implements PortTracking {
     	this.remoteRunId = portDetail.getRemoteRunId();
     }
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.PortTracking#getIndex()
-	 */
-	@Override
 	public int getIndex() {
 		return index;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.PortTracking#getTotalRecords()
-	 */
-	@Override
 	public long getTotalRecords() {
 		return totalRecords;
 	}
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.PortTracking#getTotalBytes()
-	 */
-	@Override
+	
 	public long getTotalBytes() {
 		return totalBytes;
 	}
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.PortTracking#getRecordFlow()
-	 */
-	@Override
+	
 	public int getRecordFlow() {
 		return recordFlow;
 	}
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.PortTracking#getRecordPeak()
-	 */
-	@Override
+
 	public int getRecordPeak() {
 		return recordPeak;
 	}
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.PortTracking#getByteFlow()
-	 */
-	@Override
+
 	public int getByteFlow() {
 		return byteFlow;
 	}
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.PortTracking#getBytePeak()
-	 */
-	@Override
+	
 	public int getBytePeak() {
 		return bytePeak;
 	}
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.PortTracking#getWaitingRecords()
-	 */
-	@Override
+
 	public int getWaitingRecords() {
 		return waitingRecords;
 	}
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.jmx.PortTracking#getAverageWaitingRecords()
-	 */
-	@Override
+
 	public int getAverageWaitingRecords() {
 		return averageWaitingRecords;
 	}
 
-	@Override
 	public int getUsedMemory() {
 		return usedMemory;
 	}
 	
-	@Override
 	public long getRemoteRunId() {
 		return remoteRunId;
 	}
 	
-	@Override
 	public NodeTracking getParentNodeTracking() {
 		return parentNodeTracking;
 	}

@@ -18,8 +18,6 @@
  */
 package org.jetel.graph.runtime.jmx;
 
-import java.io.Serializable;
-
 import org.jetel.graph.InputPort;
 import org.jetel.graph.runtime.InputPortTrackingProvider;
 
@@ -31,11 +29,11 @@ import org.jetel.graph.runtime.InputPortTrackingProvider;
  *
  * @created Jan 2, 2019
  */
-public class InputPortTrackingImpl extends AbstractPortTracking implements InputPortTracking, Serializable {
+public class InputPortTrackingImpl extends AbstractPortTracking implements InputPortTracking {
 
 	private static final long serialVersionUID = 1796185855793703918L;
 	
-	protected long readerWaitingTime;
+	private long readerWaitingTime;
 	
 	public InputPortTrackingImpl(NodeTracking parentNodeTracking, int portIndex) {
 		super(parentNodeTracking, portIndex);
