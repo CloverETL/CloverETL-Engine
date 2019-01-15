@@ -152,7 +152,6 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("DataIntersection_order_check_A.grf") // ok, is to fail
 							&& !file.getName().equals("DataIntersection_order_check_B.grf") // ok, is to fail
 							&& !file.getName().equals("UDR_Logging_SFTP_CL1469.grf") // ok, is to fail
-							&& !file.getName().startsWith("AddressDoctor") //wrong path to db file, try to fix when AD installed on jenkins machines 
 							&& !file.getName().equals("EmailReader_Local.grf") // remove after CL-2167 solved
 							&& !file.getName().equals("EmailReader_Server.grf") // remove after CLD-3437 solved (or mail.javlin.eu has valid certificate)
 							&& !file.getName().equals("EmailValidation.grf") // runs too long
