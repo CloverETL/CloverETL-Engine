@@ -509,7 +509,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 			<keep name="org.jetel.graph.runtime.jmx.CloverJMXMBean"></keep>
 			<keep name="org.jetel.graph.runtime.jmx.CloverJMX"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.runtime.jmx.*Tracking"><field access="public"/><method access="public"/></keep>
-			<keep name="org.jetel.graph.runtime.jmx.*TrackingDetail"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.*TrackingProvider"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.runtime.jmx.TrackingUtils"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.runtime.WatchDog"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.runtime.SingleThreadWatchDog"><field access="public"/><method access="public"/></keep>
