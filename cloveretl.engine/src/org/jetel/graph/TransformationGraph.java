@@ -266,17 +266,6 @@ public final class TransformationGraph extends GraphElement {
 		vfsEntries = new TrueZipVFSEntries();
 	}
 
-    public void setPassword(String password) {
-    	this.password = password;
-    }
-    
-    public Enigma getEnigma() {
-    	if(enigma == null && !StringUtils.isEmpty(password)) {
-    		enigma = new Enigma(password);
-    	}
-    	return enigma;
-    }
-    
 	/**
      * Sets debug mode on the edges.
 	 * @param debug

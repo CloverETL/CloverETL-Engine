@@ -54,7 +54,6 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.compile.ClassLoaderUtils;
-import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -200,7 +199,6 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		setJdbcSpecificId(typedProperties.getStringProperty(XML_JDBC_SPECIFIC_ATTRIBUTE, null));
 		setJndiName(typedProperties.getStringProperty(XML_JNDI_NAME_ATTRIBUTE, null));
 		setThreadSafeConnections(typedProperties.getBooleanProperty(XML_THREAD_SAFE_CONNECTIONS, true));
-		setPasswordEncrypted(typedProperties.getBooleanProperty(XML_IS_PASSWORD_ENCRYPTED, false));
 		try {
 			setHoldability(typedProperties.getIntProperty(XML_HOLDABILITY));
 		} catch (NumberFormatException e) {
@@ -299,9 +297,6 @@ public class DBConnectionImpl extends AbstractDBConnection {
         } catch (SQLException e) {
             throw new ComponentNotReadyException(e);
         } 
-
-        //decrypt password
-        decryptPassword();
     }
 
     private void prepareJdbcDriver() throws ComponentNotReadyException {
@@ -572,39 +567,6 @@ public class DBConnectionImpl extends AbstractDBConnection {
         
         return strBuf.toString();
     }
-    
-    /** 
-     * Decrypts the password entry in the configuration properties if the
-     * isPasswordEncrypted property is set to "y" or "yes". If any error occurs
-     * and decryption fails, the original password entry will be used.
-     * 
-     * @param configProperties configuration properties
-     * @throws ComponentNotReadyException 
-     */
-    private void decryptPassword() throws ComponentNotReadyException {
-        if (isPasswordEncrypted()) {
-        	if (getGraph() == null)
-        		return; 
-            Enigma enigma = getGraph().getEnigma();
-            if (enigma == null) {
-            	logger.error("Cannot decrypt password for DBConnection (id=" + this.getId() + "). Set the password as the engine parameter -pass.");
-                //throw new ComponentNotReadyException(this, "Can't decrypt password on DBConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");
-                return;
-            }
-            String decryptedPassword = null;
-            try {
-                decryptedPassword = enigma.decrypt(getPassword());
-            } catch (JetelException e) {
-                logger.error("Cannot decrypt password on DBConnection (id=" + this.getId() + "). Incorrect password.");
-                //throw new ComponentNotReadyException(this, "Can't decrypt password on DBConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.", e);
-            }
-            // If password decryption returns failure, try with the password
-            // as it is.
-            if (decryptedPassword != null) {
-            	setPassword(decryptedPassword);
-            }
-        }
-    } 
 
     /* (non-Javadoc)
      * @see org.jetel.graph.GraphElement#checkConfig()

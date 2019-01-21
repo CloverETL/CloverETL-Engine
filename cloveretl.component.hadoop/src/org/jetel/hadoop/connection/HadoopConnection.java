@@ -34,7 +34,6 @@ import org.jetel.database.IConnection;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.GraphElement;
@@ -53,7 +52,6 @@ import org.jetel.hadoop.service.mapreduce.HadoopMapReduceService;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.plugin.PluginDescriptor;
 import org.jetel.util.compile.ClassLoaderUtils;
-import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertiesUtils;
@@ -590,36 +588,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 
 	public String getUserName() {
 		return prop.getProperty(XML_USER_NAME_KEY);
-	}
-
-	/**
-	 * Decrypts password based on set enigma.
-	 * @param encryptedPasword Encrypted password to be decrypted.
-	 * @return Decrypted password.
-	 * @throws JetelException If enigma is not set or it cannot be used to decrypt given password.
-	 * @see Enigma
-	 */
-	protected String decryptPassword(String encryptedPasword) throws JetelException {
-		if (encryptedPasword == null) {
-			throw new NullPointerException("encryptedPasword");
-		}
-		Enigma enigma = getGraph().getEnigma();
-		if (enigma == null) {
-			throw new JetelException(String.format(CANNOT_DECRYPT_PASSWORD_MESSAGE_FORMAT, getId())
-					+ " Please set the decryption password as engine parameter -pass.");
-		}
-
-		String decryptedPassword;
-		try {
-			decryptedPassword = enigma.decrypt(encryptedPasword);
-		} catch (JetelException ex) {
-			throw new JetelException(String.format(CANNOT_DECRYPT_PASSWORD_MESSAGE_FORMAT, getId())
-					+ " Probably incorrect decryption password (engine parameter -pass).", ex);
-		}
-		if (decryptedPassword == null || decryptedPassword.isEmpty()) {
-			throw new JetelException(String.format(CANNOT_DECRYPT_PASSWORD_MESSAGE_FORMAT, getId()));
-		}
-		return decryptedPassword;
 	}
 
 	/**

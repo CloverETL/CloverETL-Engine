@@ -53,7 +53,6 @@ public interface DBConnection extends IConnection {
     public static final String XML_PASSWORD_ATTRIBUTE = "password";
     public static final String XML_USER_ATTRIBUTE = "user";
     public static final String XML_THREAD_SAFE_CONNECTIONS = "threadSafeConnection";
-    public static final String XML_IS_PASSWORD_ENCRYPTED = "passwordEncrypted";
     public static final String XML_HOLDABILITY  = "holdability";
     public static final String XML_TRANSACTION_ISOLATION = "transactionIsolation";
 	

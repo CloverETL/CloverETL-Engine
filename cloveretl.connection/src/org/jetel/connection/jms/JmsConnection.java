@@ -44,14 +44,12 @@ import org.jetel.database.IConnection;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.compile.ClassLoaderUtils;
-import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -242,25 +240,6 @@ public class JmsConnection extends GraphElement implements IConnection {
 				}
 				if (factory == null)
 					throw new ComponentNotReadyException("Cannot create connection factory");
-
-				if (passwordEncrypted) {
-					Enigma enigma = getGraph().getEnigma();
-					if (enigma == null) {
-						throw new ComponentNotReadyException("Can't decrypt password on JmsConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");
-					}
-					// Enigma enigma = Enigma.getInstance();
-					String decryptedPassword = null;
-					try {
-						decryptedPassword = enigma.decrypt(pwd);
-					} catch (JetelException e) {
-						throw new ComponentNotReadyException("Can't decrypt password on JmsConnection (id=" + this.getId() + "). Incorrect password.", e);
-					}
-					// If password decryption fails, try to use the unencrypted password
-					if (decryptedPassword != null) {
-						pwd = decryptedPassword;
-						passwordEncrypted = false;
-					}
-				}
 			} finally {
 				if (loader != null)
 					Thread.currentThread().setContextClassLoader(prevCl);

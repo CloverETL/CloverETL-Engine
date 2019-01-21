@@ -159,7 +159,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
         provideJMX = runtimeContext.useJMX();
         
         //passes a password from context to the running graph
-        graph.setPassword(runtimeContext.getPassword());
 	}
 
 	/**

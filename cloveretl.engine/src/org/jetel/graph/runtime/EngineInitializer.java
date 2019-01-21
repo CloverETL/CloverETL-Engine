@@ -259,7 +259,6 @@ public class EngineInitializer {
 	 * @throws ComponentNotReadyException
 	 */
 	public static void initGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext, Boolean skipCheckConfig) throws ComponentNotReadyException {
-		graph.setPassword(runtimeContext.getPassword());
 		graph.setInitialRuntimeContext(runtimeContext);
 		
 		//first perform checkConfig() method on the graph 
