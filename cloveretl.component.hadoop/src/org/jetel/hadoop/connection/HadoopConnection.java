@@ -102,11 +102,9 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	public static final String XML_MAPRED_PORT_KEY = "portMapred"; // mapReducePort
 	public static final String XML_USER_NAME_KEY = "username";
 	public static final String XML_PASSWORD_KEY = "password";
-	public static final String XML_PASSWORD_ENCRYPTED_KEY = "passwordEncrypted";
 
 	public static final String INVALID_URL_MESSAGE_WITH_ID = "Failed to create Hadoop connection with ID '%s': couldn't parse Hadoop libraries into URLs.";
 	public static final String INVALID_URL_MESSAGE = "Cannot parse Hadoop libraries into URLs.";
-	public static final String CANNOT_DECRYPT_PASSWORD_MESSAGE_FORMAT = "Can't decrypt password of HadoopConnection (id=%s).";
 
 	// default connection settings constants
 	public static final int DEFAULT_FS_PORT = 8020;

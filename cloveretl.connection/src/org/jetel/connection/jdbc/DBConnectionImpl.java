@@ -137,7 +137,6 @@ public class DBConnectionImpl extends AbstractDBConnection {
     
     private String dbUrl;
     private boolean threadSafeConnections;
-    private boolean isPasswordEncrypted;
     private String jndiName;
     private String database;
     private String dbDriver;
@@ -587,15 +586,6 @@ public class DBConnectionImpl extends AbstractDBConnection {
         this.threadSafeConnections = threadSafeConnections;
     }
  
-    @Override
-	public boolean isPasswordEncrypted() {
-        return isPasswordEncrypted;
-    }
-    
-    protected void setPasswordEncrypted(boolean isPasswordEncrypted) {
-        this.isPasswordEncrypted = isPasswordEncrypted;
-    }
-
     @Override
     public void lookupJndiConnection() throws ComponentNotReadyException {
 		//initiate  JNDI data source

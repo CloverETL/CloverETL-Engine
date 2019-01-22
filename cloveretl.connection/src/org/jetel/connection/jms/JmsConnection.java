@@ -105,7 +105,6 @@ public class JmsConnection extends GraphElement implements IConnection {
 	public static final String XML_CON_FACTORY_ATTRIBUTE = "connectionFactory";
 	public static final String XML_USERNAME_ATTRIBUTE = "username";
 	public static final String XML_PASSWORD_ATTRIBUTE = "password";
-	public static final String XML_PASSWORD_ENCRYPTED = "passwordEncrypted";
 	public static final String XML_DESTINATION_ATTRIBUTE = "destId";
 
 	private String iniCtxFtory;
@@ -115,7 +114,6 @@ public class JmsConnection extends GraphElement implements IConnection {
 	private String user;
 	private String pwd;
 	private String destId;
-	private boolean passwordEncrypted;
 	
 	private Connection connection = null;
 	private Session session = null;
@@ -128,7 +126,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 	private Context initCtx = null;
 
 	public JmsConnection(String id, String iniCtxFtory, String providerUrl, String conFtory,
-			String user, String pwd, String destId, boolean passwordEncrypted, String libraries) {
+			String user, String pwd, String destId, String libraries) {
 		super(id);
 		this.iniCtxFtory = iniCtxFtory;
 		this.providerUrl = providerUrl;
@@ -136,7 +134,6 @@ public class JmsConnection extends GraphElement implements IConnection {
 		this.user = user;
 		this.pwd = pwd;
 		this.destId = destId;
-		this.passwordEncrypted = passwordEncrypted;
 		this.libraries = libraries;
 		
 		if (iniCtxFtory == null) { // use jndi.properties
@@ -439,8 +436,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 					config.getStringProperty(XML_CON_FACTORY_ATTRIBUTE, null),
 					config.getStringProperty(XML_USERNAME_ATTRIBUTE, null),
 					config.getStringProperty(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.PASSWORD),
-					config.getStringProperty(XML_DESTINATION_ATTRIBUTE, null),
-					config.getBooleanProperty(XML_PASSWORD_ENCRYPTED, false), 
+					config.getStringProperty(XML_DESTINATION_ATTRIBUTE, null), 
 					config.getStringProperty(XML_LIBRARIES_ATTRIBUTE, null)
 					);
 		} else {
@@ -451,7 +447,6 @@ public class JmsConnection extends GraphElement implements IConnection {
 					xattribs.getString(XML_USERNAME_ATTRIBUTE, null),
 					xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.PASSWORD),
 					xattribs.getString(XML_DESTINATION_ATTRIBUTE, null),
-					xattribs.getBoolean(XML_PASSWORD_ENCRYPTED, false),
 					xattribs.getString(XML_LIBRARIES_ATTRIBUTE, null)
 					);
 		}

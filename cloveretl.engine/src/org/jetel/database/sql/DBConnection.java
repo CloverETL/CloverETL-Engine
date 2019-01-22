@@ -118,8 +118,6 @@ public interface DBConnection extends IConnection {
 
     public boolean isThreadSafeConnections();
     
-    public boolean isPasswordEncrypted();
-
     public void lookupJndiConnection() throws ComponentNotReadyException;
     
     public String getJndiName();
