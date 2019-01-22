@@ -9,30 +9,29 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
 
-import junit.framework.TestCase;
-
-public abstract class CloverTestCase extends TestCase {
-
-	public final InitEngineRule initEngineRule = new InitEngineRule(getCloverPropertiesFile());
-
-	public CloverTestCase() {
-		super();
-	}
-
-	public CloverTestCase(String name) {
-		super(name);
-	}
-
-	@Override
-	protected void setUp() throws Exception {
-		initEngine();
-	}
+/**
+ * A copy of CloverTestCase rewritten for JUnit4.
+ * Engine initialization was moved to {@link InitEngineRule}.
+ * Utility methods were moved to {@link TestUtils}.
+ * 
+ * @author Milan (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created 4. 1. 2019
+ */
+public abstract class CloverTestCase4 {
 	
-	protected void initEngine() {
-		initEngineRule.before();
-	}
+	@Rule
+	public final TestRule initEngine = new InitEngineRule(getCloverPropertiesFile());
 
+	/**
+	 * Override to provide a custom location of the engine configuration file.
+	 * 
+	 * @return
+	 */
 	protected String getCloverPropertiesFile() {
 		return null;
 	}

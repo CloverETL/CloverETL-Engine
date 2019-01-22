@@ -36,10 +36,6 @@ import org.jetel.graph.Result;
  * @since May 14, 2009
  */
 public interface PhaseTracking extends Serializable {
-	/**
-	 * @return tracking of the phase's graph.
-	 */
-	GraphTracking getParentGraphTracking();
 	
 	/**
 	 * @return phase number.
@@ -76,7 +72,6 @@ public interface PhaseTracking extends Serializable {
 	 * @return current result of the phase.
 	 */
 	Result getResult();
-	
 	
 	/**
 	 * @return tracking of all nodes of the phase.

@@ -232,7 +232,6 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("SubgraphsReuse.grf") // contains subgraphs
 							&& !file.getName().startsWith("Issues") // contains subgraphs
 							&& !file.getName().equals("SubgraphsSimplifyingGraph.grf") // contains subgraphs
-							&& !file.getName().equals("GEOCoding.grf") // contains subgraphs
 							&& !file.getName().equals("RandomDataGenerator.grf") // contains subgraphs
 							&& !file.getName().equals("graphHTTPConnector.grf") // external service is unstable
 							&& !file.getName().equals("WSC_Soap12_CLO-3349.grf") // external service is unstable (see CLO-9877)
