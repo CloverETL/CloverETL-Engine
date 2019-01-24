@@ -2,7 +2,7 @@
 <Graph author="jansedlacek" created="Thu Aug 31 14:44:51 CEST 2017" guiVersion="0.0.0.devel" id="1504183627516" licenseCode="CLP1DJAVLI15742443BY" name="html" nature="restJob" showComponentDetails="true">
 <Global>
 <EndpointSettings>
-<UrlPath>/example/html/{filename}</UrlPath>
+<UrlPath>/example/html/{filename:.+}</UrlPath>
 <Description>The job serves HTML and CSS resources.&#13;
 The job takes one required path parameter: filename. The name of the file to be served.</Description>
 <EndpointName>Example - Frontend pages - Use static file as response</EndpointName>
