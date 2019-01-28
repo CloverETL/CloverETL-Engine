@@ -190,7 +190,7 @@ if( !runTests ){
 		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
 	}
 	if (testName == "performance") {
-		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
+		antArgs += "-Drunscenarios.Xmx=-Xmx2176m"
 	}
 	if (testName == "after-commit" && testJVM.endsWith("IBM")) {
 		// disable Hadoop tests
