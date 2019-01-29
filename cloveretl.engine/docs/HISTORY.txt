@@ -2,6 +2,14 @@
                           CloverDX Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-5-1-1
+---------
+CLO-15739	DataService path parameters - support for regular expressions
+CLO-15818	FIXED: Designer breaks edges for subgraphs
+CLO-15754	FIXED: Table paginator is not working on SQLServer
+CLO-15677	FIXED: MDM TskPut component initialization fails
+CLO-15692	FIXED: Custom error page does not work correctly on weblogic and websphere
+
 REL-5-1-0
 ---------
 CLO-15015	Server - Filtering in Event Listeners
@@ -58,7 +66,7 @@ REL-5-0-0
 * ExecuteGraph SOAP operation returns a response as late as its status changes to RUNNING
 * Compatibility
 	* Dropped support of Java7
-	* Updated list of supported application containers 
+	* Updated list of supported application containers
 
 REL-4-9-1
 ---------
@@ -83,7 +91,7 @@ REL-4-9-0
 	* CLO-13846 Passwords for JNDI resources are specified as encrypted configuration properties
 	* CLO-13807 Automatically set -Dhttps.protocols=TLSv1.2,TLSv1.1,TLSv1 property for Worker
 	* CLO-13798 Worker JNDI - support all parameters of Apache DBCP2
-	* CLO-13565 Worker classpath parsing should support any OS specific separator	
+	* CLO-13565 Worker classpath parsing should support any OS specific separator
 	* CLO-13463 accessibilityTest.jsp to indicate also not ready Worker
 	* CLO-13437 Rename workerManager.* properties to worker.* properties
 	* CLO-13232 Worker stability under heavy system load
@@ -178,9 +186,9 @@ REL-4-9-0-M1
   * CLO-11479 	Manage worker
   * CLO-11410 	Extend worker classpath
   * CLO-11472 	Access worker's stdout and logs
-  * CLO-11463 	Display full command line used to run the worker 
-  * CLO-11466 	Force job execution in core Server 
-  * CLO-11465 	Determine which jobs run in worker and which in core Server 
+  * CLO-11463 	Display full command line used to run the worker
+  * CLO-11466 	Force job execution in core Server
+  * CLO-11465 	Determine which jobs run in worker and which in core Server
   * CLO-12758 	Designer calls to Server are proxied to Worker
 * Changes:
   * CLO-11163 	Introduce filtering and paging in scheduling tab
@@ -189,7 +197,7 @@ REL-4-9-0-M1
   * CLO-11441 	Decrypt global secure parameters only once per project
 * Compatibility (Job Execution in Separate JVM):
   * CLO-12553 	Server property 'server.http.url' is required for multi-jvm
-  * CLO-12796 	JNDI resources need separate configuration for worker 
+  * CLO-12796 	JNDI resources need separate configuration for worker
   * CLO-12552 	JMS event listener cannot pass non-serializable objects to worker
   * CLO-12271 	ProfilerProbe cannot persist results in Worker
 
