@@ -70,9 +70,6 @@ import org.w3c.dom.Element;
 *  <tr><td><b>connectionFactory</b></td><td>factory creating JMS connections</td>
 *  <tr><td><b>username</b></td><td>username for connection factory</td>
 *  <tr><td><b>password</b></td><td>password for connection factory</td>
-*  <tr><td><b>passwordEncrypted</b></td><td>if this flag is true, 
-*  attribute password is encrypted and 
-*  another password will be required to decrypt password attribute and establish this connection.</td>
 *  <tr><td><b>destId</b></td><td>JMS destination</td>
 *  <tr><td><b>libraries</b></td><td>List of URLs to libraries (jar or zip files) neccessery for JMS connector. URLs are separated by ";".</td>
  * </table>

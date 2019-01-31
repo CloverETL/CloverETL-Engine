@@ -117,7 +117,6 @@ import org.w3c.dom.Element;
  *              user CDATA #IMPLIED
  *              password CDATA #IMPLIED
  *              threadSafeConnection NMTOKEN (true | false) #IMPLIED
- *              passwordEncrypted NMTOKEN (true | false) #IMPLIED
  *              transactionIsolation (READ_UNCOMMITTED | READ_COMMITTED |
  *                                 REPEATABLE_READ | SERIALIZABLE ) #IMPLIED&gt;
  *                                 
