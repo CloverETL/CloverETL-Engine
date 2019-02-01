@@ -34,7 +34,6 @@ import org.jetel.database.IConnection;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.GraphElement;
@@ -53,7 +52,6 @@ import org.jetel.hadoop.service.mapreduce.HadoopMapReduceService;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.plugin.PluginDescriptor;
 import org.jetel.util.compile.ClassLoaderUtils;
-import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertiesUtils;
@@ -104,11 +102,9 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	public static final String XML_MAPRED_PORT_KEY = "portMapred"; // mapReducePort
 	public static final String XML_USER_NAME_KEY = "username";
 	public static final String XML_PASSWORD_KEY = "password";
-	public static final String XML_PASSWORD_ENCRYPTED_KEY = "passwordEncrypted";
 
 	public static final String INVALID_URL_MESSAGE_WITH_ID = "Failed to create Hadoop connection with ID '%s': couldn't parse Hadoop libraries into URLs.";
 	public static final String INVALID_URL_MESSAGE = "Cannot parse Hadoop libraries into URLs.";
-	public static final String CANNOT_DECRYPT_PASSWORD_MESSAGE_FORMAT = "Can't decrypt password of HadoopConnection (id=%s).";
 
 	// default connection settings constants
 	public static final int DEFAULT_FS_PORT = 8020;
@@ -590,36 +586,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 
 	public String getUserName() {
 		return prop.getProperty(XML_USER_NAME_KEY);
-	}
-
-	/**
-	 * Decrypts password based on set enigma.
-	 * @param encryptedPasword Encrypted password to be decrypted.
-	 * @return Decrypted password.
-	 * @throws JetelException If enigma is not set or it cannot be used to decrypt given password.
-	 * @see Enigma
-	 */
-	protected String decryptPassword(String encryptedPasword) throws JetelException {
-		if (encryptedPasword == null) {
-			throw new NullPointerException("encryptedPasword");
-		}
-		Enigma enigma = getGraph().getEnigma();
-		if (enigma == null) {
-			throw new JetelException(String.format(CANNOT_DECRYPT_PASSWORD_MESSAGE_FORMAT, getId())
-					+ " Please set the decryption password as engine parameter -pass.");
-		}
-
-		String decryptedPassword;
-		try {
-			decryptedPassword = enigma.decrypt(encryptedPasword);
-		} catch (JetelException ex) {
-			throw new JetelException(String.format(CANNOT_DECRYPT_PASSWORD_MESSAGE_FORMAT, getId())
-					+ " Probably incorrect decryption password (engine parameter -pass).", ex);
-		}
-		if (decryptedPassword == null || decryptedPassword.isEmpty()) {
-			throw new JetelException(String.format(CANNOT_DECRYPT_PASSWORD_MESSAGE_FORMAT, getId()));
-		}
-		return decryptedPassword;
 	}
 
 	/**

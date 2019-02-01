@@ -63,13 +63,11 @@ import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.RestJobUtils;
 import org.jetel.util.SubgraphUtils;
-import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.TrueZipVFSEntries;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
-import org.jetel.util.string.StringUtils;
 
 /**
  * A class that represents Transformation Graph - all the Nodes and connecting Edges
@@ -108,10 +106,6 @@ public final class TransformationGraph extends GraphElement {
 	final static String DEFAULT_EDGE_ID = "Edge0";
 
 	private Dictionary dictionary;
-	
-	private String password = null;
-	
-	private Enigma enigma = null;
 	
     private boolean edgeDebugging = true;
     
@@ -266,17 +260,6 @@ public final class TransformationGraph extends GraphElement {
 		vfsEntries = new TrueZipVFSEntries();
 	}
 
-    public void setPassword(String password) {
-    	this.password = password;
-    }
-    
-    public Enigma getEnigma() {
-    	if(enigma == null && !StringUtils.isEmpty(password)) {
-    		enigma = new Enigma(password);
-    	}
-    	return enigma;
-    }
-    
 	/**
      * Sets debug mode on the edges.
 	 * @param debug

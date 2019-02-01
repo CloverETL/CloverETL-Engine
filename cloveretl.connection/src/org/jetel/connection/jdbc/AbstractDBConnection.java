@@ -280,7 +280,6 @@ public abstract class AbstractDBConnection extends GraphElement implements DBCon
         	propsToStore.setProperty(XML_TRANSACTION_ISOLATION, Integer.toString(getTransactionIsolation()));
         }
         propsToStore.setProperty(XML_THREAD_SAFE_CONNECTIONS, Boolean.toString(isThreadSafeConnections()));
-        propsToStore.setProperty(XML_IS_PASSWORD_ENCRYPTED, Boolean.toString(isPasswordEncrypted()));
 
         propsToStore.store(outStream, null);
     }

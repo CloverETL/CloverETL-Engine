@@ -82,7 +82,6 @@ public class GraphRuntimeContext implements Serializable {
 	private boolean verboseMode;
 	private Properties additionalProperties;
 	private boolean skipCheckConfig;
-	private String password;
 	private boolean edgeDebugging;
 	private String debugDirectory;
 	private boolean tokenTracking;
@@ -231,7 +230,6 @@ public class GraphRuntimeContext implements Serializable {
 		ret.workerExecution = isWorkerExecution();
 		ret.forceParentJvm = isForceParentJvm();
 		ret.useJMX = useJMX();
-		ret.password = getPassword();
 		ret.edgeDebugging = isEdgeDebugging();
 		ret.debugDirectory = getDebugDirectory();
 		ret.runtimeClassPath = getRuntimeClassPath();
@@ -280,7 +278,6 @@ public class GraphRuntimeContext implements Serializable {
 		prop.setProperty("workerExecution", String.valueOf(isWorkerExecution()));
 		prop.setProperty("forceParentJvm", Boolean.toString(isForceParentJvm()));
 		prop.setProperty("useJMX", Boolean.toString(useJMX()));
-		prop.setProperty("password", String.valueOf(getPassword()));
 		prop.setProperty("edgeDebugging", Boolean.toString(isEdgeDebugging()));
 		prop.setProperty("debugDirectory", String.valueOf(getDebugDirectory()));
 		prop.setProperty("runtimeClassPath", Arrays.toString(getRuntimeClassPath()));
@@ -475,21 +472,6 @@ public class GraphRuntimeContext implements Serializable {
 	 */
 	public Properties getAdditionalProperties() {
 		return additionalProperties;
-	}
-
-	/**
-	 * Sets password for decryption of connection's passwords.
-	 * @param password
-	 */
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IGraphRuntimeContext#getPassword()
-	 */
-	public String getPassword() {
-		return password;
 	}
 
 	/**

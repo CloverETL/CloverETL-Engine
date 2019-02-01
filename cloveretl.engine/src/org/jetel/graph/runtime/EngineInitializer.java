@@ -60,9 +60,6 @@ public class EngineInitializer {
      * @param pluginsRootDirectory directory path, where plugins specification is located 
      *        (can be null, then is used constant from Defaults.DEFAULT_PLUGINS_DIRECTORY)
      * @param defaultPropertiesFile file with external definition of default values usually stored in defaultProperties
-     * @param password password for encrypting some hidden part of graphs
-     *        <br>i.e. connections password can be encrypted
-     *        <br>can be null
      */
     public static synchronized void initEngine(String pluginsRootDirectory, String defaultPropertiesFile, String logHost) {
     	if (alreadyInitialized) {
@@ -83,9 +80,6 @@ public class EngineInitializer {
      * Clover.ETL engine initialization. Should be called only once.
      * @param pluginsUrls locations of all individual engine plugins 
      * @param defaultPropertiesFile file with external definition of default values usually stored in defaultProperties
-     * @param password password for encrypting some hidden part of graphs
-     *        <br>i.e. connections password can be encrypted
-     *        <br>can be null
      */
     public static synchronized void initEngine(URL[] pluginsUrls, String defaultPropertiesFile, String logHost) {
     	if (alreadyInitialized) {
@@ -129,9 +123,6 @@ public class EngineInitializer {
      * Clover.ETL engine initialization. Should be called only once.
      * @param pluginRepositories locations of all engine plugins 
      * @param defaultPropertiesFile file with external definition of default values usually stored in defaultProperties
-     * @param password password for encrypting some hidden part of graphs
-     *        <br>i.e. connections password can be encrypted
-     *        <br>can be null
      */
     public static synchronized void initEngine(PluginRepositoryLocation[] pluginRepositories, String defaultPropertiesFile, String logHost) {
     	if(alreadyInitialized) {
@@ -152,9 +143,6 @@ public class EngineInitializer {
      * Clover.ETL engine initialization. Should be called only once.
      * @param plugin locations of all engine plugins 
      * @param defaultPropertiesFile file with external definition of default values usually stored in defaultProperties
-     * @param password password for encrypting some hidden part of graphs
-     *        <br>i.e. connections password can be encrypted
-     *        <br>can be null
      * @param pluginRepositories
      * @param defaultPropertiesFile
      * @param logHost
@@ -259,7 +247,6 @@ public class EngineInitializer {
 	 * @throws ComponentNotReadyException
 	 */
 	public static void initGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext, Boolean skipCheckConfig) throws ComponentNotReadyException {
-		graph.setPassword(runtimeContext.getPassword());
 		graph.setInitialRuntimeContext(runtimeContext);
 		
 		//first perform checkConfig() method on the graph 

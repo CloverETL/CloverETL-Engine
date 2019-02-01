@@ -343,7 +343,6 @@ public class runGraph {
         runtimeContext.setVerboseMode(isVerboseMode);
         runtimeContext.addAdditionalProperties(additionalProperties);
         if (trackingInterval > 0) runtimeContext.setTrackingInterval(trackingInterval);
-        runtimeContext.setPassword(password);
         runtimeContext.setSkipCheckConfig(skipCheckConfig);
         runtimeContext.setUseJMX(useJMX);
         runtimeContext.setTokenTracking(tokenTracking);

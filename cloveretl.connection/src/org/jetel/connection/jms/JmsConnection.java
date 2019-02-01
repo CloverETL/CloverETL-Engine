@@ -44,14 +44,12 @@ import org.jetel.database.IConnection;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.compile.ClassLoaderUtils;
-import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -72,9 +70,6 @@ import org.w3c.dom.Element;
 *  <tr><td><b>connectionFactory</b></td><td>factory creating JMS connections</td>
 *  <tr><td><b>username</b></td><td>username for connection factory</td>
 *  <tr><td><b>password</b></td><td>password for connection factory</td>
-*  <tr><td><b>passwordEncrypted</b></td><td>if this flag is true, 
-*  attribute password is encrypted and 
-*  another password will be required to decrypt password attribute and establish this connection.</td>
 *  <tr><td><b>destId</b></td><td>JMS destination</td>
 *  <tr><td><b>libraries</b></td><td>List of URLs to libraries (jar or zip files) neccessery for JMS connector. URLs are separated by ";".</td>
  * </table>
@@ -107,7 +102,6 @@ public class JmsConnection extends GraphElement implements IConnection {
 	public static final String XML_CON_FACTORY_ATTRIBUTE = "connectionFactory";
 	public static final String XML_USERNAME_ATTRIBUTE = "username";
 	public static final String XML_PASSWORD_ATTRIBUTE = "password";
-	public static final String XML_PASSWORD_ENCRYPTED = "passwordEncrypted";
 	public static final String XML_DESTINATION_ATTRIBUTE = "destId";
 
 	private String iniCtxFtory;
@@ -117,7 +111,6 @@ public class JmsConnection extends GraphElement implements IConnection {
 	private String user;
 	private String pwd;
 	private String destId;
-	private boolean passwordEncrypted;
 	
 	private Connection connection = null;
 	private Session session = null;
@@ -130,7 +123,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 	private Context initCtx = null;
 
 	public JmsConnection(String id, String iniCtxFtory, String providerUrl, String conFtory,
-			String user, String pwd, String destId, boolean passwordEncrypted, String libraries) {
+			String user, String pwd, String destId, String libraries) {
 		super(id);
 		this.iniCtxFtory = iniCtxFtory;
 		this.providerUrl = providerUrl;
@@ -138,7 +131,6 @@ public class JmsConnection extends GraphElement implements IConnection {
 		this.user = user;
 		this.pwd = pwd;
 		this.destId = destId;
-		this.passwordEncrypted = passwordEncrypted;
 		this.libraries = libraries;
 		
 		if (iniCtxFtory == null) { // use jndi.properties
@@ -242,25 +234,6 @@ public class JmsConnection extends GraphElement implements IConnection {
 				}
 				if (factory == null)
 					throw new ComponentNotReadyException("Cannot create connection factory");
-
-				if (passwordEncrypted) {
-					Enigma enigma = getGraph().getEnigma();
-					if (enigma == null) {
-						throw new ComponentNotReadyException("Can't decrypt password on JmsConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");
-					}
-					// Enigma enigma = Enigma.getInstance();
-					String decryptedPassword = null;
-					try {
-						decryptedPassword = enigma.decrypt(pwd);
-					} catch (JetelException e) {
-						throw new ComponentNotReadyException("Can't decrypt password on JmsConnection (id=" + this.getId() + "). Incorrect password.", e);
-					}
-					// If password decryption fails, try to use the unencrypted password
-					if (decryptedPassword != null) {
-						pwd = decryptedPassword;
-						passwordEncrypted = false;
-					}
-				}
 			} finally {
 				if (loader != null)
 					Thread.currentThread().setContextClassLoader(prevCl);
@@ -460,8 +433,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 					config.getStringProperty(XML_CON_FACTORY_ATTRIBUTE, null),
 					config.getStringProperty(XML_USERNAME_ATTRIBUTE, null),
 					config.getStringProperty(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.PASSWORD),
-					config.getStringProperty(XML_DESTINATION_ATTRIBUTE, null),
-					config.getBooleanProperty(XML_PASSWORD_ENCRYPTED, false), 
+					config.getStringProperty(XML_DESTINATION_ATTRIBUTE, null), 
 					config.getStringProperty(XML_LIBRARIES_ATTRIBUTE, null)
 					);
 		} else {
@@ -472,7 +444,6 @@ public class JmsConnection extends GraphElement implements IConnection {
 					xattribs.getString(XML_USERNAME_ATTRIBUTE, null),
 					xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.PASSWORD),
 					xattribs.getString(XML_DESTINATION_ATTRIBUTE, null),
-					xattribs.getBoolean(XML_PASSWORD_ENCRYPTED, false),
 					xattribs.getString(XML_LIBRARIES_ATTRIBUTE, null)
 					);
 		}
